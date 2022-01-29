@@ -1,0 +1,8 @@
+.vs
+.out
+build
+compile_commands.json
+external/deps/.bootstrap.json
+external/deps/archives/
+external/deps/src/
+imgui.ini
