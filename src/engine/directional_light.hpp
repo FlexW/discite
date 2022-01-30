@@ -5,6 +5,8 @@
 class DirectionalLight
 {
 public:
+  DirectionalLight();
+
   void      set_direction(const glm::vec3 &value);
   glm::vec3 direction() const;
 
@@ -18,9 +20,9 @@ public:
   glm::vec3 specular_color() const;
 
 private:
-  glm::vec3 direction_ = glm::normalize(glm::vec3{0.0f, -1.0f, -1.0f});
+  glm::vec3 direction_{0.0f};
 
-  glm::vec3 ambient_color_{0.2f};
+  glm::vec3 ambient_color_{0.4f};
   glm::vec3 diffuse_color_{0.8f};
   glm::vec3 specular_color_{1.0f};
 };

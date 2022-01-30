@@ -1,5 +1,9 @@
 #include "directional_light.hpp"
 
+DirectionalLight::DirectionalLight() {
+  set_direction(-glm::vec3{20.0f, 50.0f, 20.0f});
+}
+
 void DirectionalLight::set_direction(const glm::vec3 &value)
 {
   direction_ = glm::normalize(value);

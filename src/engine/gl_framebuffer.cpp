@@ -1,11 +1,13 @@
 #include "gl_framebuffer.hpp"
 #include "gl_renderbuffer.hpp"
 #include "gl_texture.hpp"
+#include "gl_texture_array.hpp"
 
 #include <cassert>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <variant>
 
 GlFramebuffer::GlFramebuffer() { glGenFramebuffers(1, &id_); }
 
@@ -19,104 +21,168 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
 {
   bind();
 
+  bool color_attachment_set = false;
   // Attach the color attachments
   assert(config.color_attachments_.size() <= GL_MAX_COLOR_ATTACHMENTS);
   for (std::size_t i = 0;
        i < config.color_attachments_.size() && i < GL_MAX_COLOR_ATTACHMENTS;
        ++i)
   {
-    const auto &color_attachment = config.color_attachments_[i];
+    const auto &attachment_config = config.color_attachments_[i];
+    if (std::holds_alternative<FramebufferAttachmentCreateConfig>(
+            attachment_config))
+    {
+      const auto &color_attachment =
+          std::get<FramebufferAttachmentCreateConfig>(attachment_config);
 
-    switch (color_attachment.type_)
-    {
-    case AttachmentType::Texture:
-    {
-      auto texture = std::make_shared<GlTexture>();
-      texture->set_storage(color_attachment.width_,
-                           color_attachment.height_,
-                           color_attachment.internal_format_,
-                           color_attachment.format_);
-      glFramebufferTexture2D(GL_FRAMEBUFFER,
+      switch (color_attachment.type_)
+      {
+      case AttachmentType::Texture:
+      {
+        auto texture = std::make_shared<GlTexture>();
+        texture->set_storage(color_attachment.width_,
+                             color_attachment.height_,
+                             color_attachment.internal_format_,
+                             color_attachment.format_);
+        glFramebufferTexture(GL_FRAMEBUFFER,
                              GL_COLOR_ATTACHMENT0 + i,
-                             GL_TEXTURE_2D,
                              texture->id(),
                              0);
-      color_attachments_.push_back(std::move(texture));
-      break;
+        color_attachments_.push_back(std::move(texture));
+        break;
+      }
+      case AttachmentType::Renderbuffer:
+      {
+        auto renderbuffer = std::make_shared<GlRenderbuffer>();
+
+        renderbuffer->set_storage(color_attachment.internal_format_,
+                                  color_attachment.width_,
+                                  color_attachment.height_);
+
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+                                  GL_COLOR_ATTACHMENT0 + i,
+                                  GL_RENDERBUFFER,
+                                  renderbuffer->id());
+
+        color_attachments_.push_back(std::move(renderbuffer));
+        break;
+      }
+      }
     }
-    case AttachmentType::Renderbuffer:
+    else if (std::holds_alternative<std::shared_ptr<GlTextureArray>>(
+                 attachment_config))
     {
-      auto renderbuffer = std::make_shared<GlRenderbuffer>();
-
-      renderbuffer->set_storage(color_attachment.internal_format_,
-                                color_attachment.width_,
-                                color_attachment.height_);
-
-      glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                                GL_COLOR_ATTACHMENT0 + i,
-                                GL_RENDERBUFFER,
-                                renderbuffer->id());
-
-      color_attachments_.push_back(std::move(renderbuffer));
-      break;
+      assert(0);
     }
+    else
+    {
+      assert(0 && "Not implemented");
     }
+    color_attachment_set = true;
+  }
+
+  if (!color_attachment_set)
+  {
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
   }
 
   // Attach the depth attachment
   if (config.depth_attachment_.has_value())
   {
-    const auto &depth_attachment = config.depth_attachment_.value();
-    switch (depth_attachment.type_)
+    const auto &attachment_config = config.depth_attachment_.value();
+    if (std::holds_alternative<FramebufferAttachmentCreateConfig>(
+            attachment_config))
     {
-    case AttachmentType::Texture:
-    {
-      break;
-    }
-    case AttachmentType::Renderbuffer:
-    {
-      auto renderbuffer = std::make_shared<GlRenderbuffer>();
+      const auto &depth_attachment =
+          std::get<FramebufferAttachmentCreateConfig>(attachment_config);
+      switch (depth_attachment.type_)
+      {
+      case AttachmentType::Texture:
+      {
+        auto texture = std::make_shared<GlTexture>();
+        texture->set_storage(depth_attachment.width_,
+                             depth_attachment.height_,
+                             depth_attachment.internal_format_,
+                             depth_attachment.format_);
+        glFramebufferTexture(GL_FRAMEBUFFER,
+                             GL_DEPTH_ATTACHMENT,
+                             texture->id(),
+                             0);
+        color_attachments_.push_back(std::move(texture));
+        break;
+      }
+      case AttachmentType::Renderbuffer:
+      {
+        auto renderbuffer = std::make_shared<GlRenderbuffer>();
 
-      renderbuffer->set_storage(depth_attachment.internal_format_,
-                                depth_attachment.width_,
-                                depth_attachment.height_);
+        renderbuffer->set_storage(depth_attachment.internal_format_,
+                                  depth_attachment.width_,
+                                  depth_attachment.height_);
 
-      glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                                GL_DEPTH_ATTACHMENT,
-                                GL_RENDERBUFFER,
-                                renderbuffer->id());
-      depth_attachment_ = std::move(renderbuffer);
-      break;
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+                                  GL_DEPTH_ATTACHMENT,
+                                  GL_RENDERBUFFER,
+                                  renderbuffer->id());
+        depth_attachment_ = std::move(renderbuffer);
+        break;
+      }
+      }
     }
+    else if (std::holds_alternative<std::shared_ptr<GlTextureArray>>(
+                 attachment_config))
+    {
+      const auto tex_array =
+          std::get<std::shared_ptr<GlTextureArray>>(attachment_config);
+      glFramebufferTexture(GL_FRAMEBUFFER,
+                           GL_DEPTH_ATTACHMENT,
+                           tex_array->id(),
+                           0);
+      depth_attachment_ = tex_array;
+    }
+    else
+    {
+      assert(0 && "Not implemented");
     }
   }
 
   // Attach the stencil attachment
   if (config.stencil_attachment_.has_value())
   {
-    const auto &stencil_attachment = config.stencil_attachment_.value();
-    switch (stencil_attachment.type_)
+    const auto &attachment_config = config.depth_attachment_.value();
+    if (std::holds_alternative<FramebufferAttachmentCreateConfig>(
+            attachment_config))
     {
-    case AttachmentType::Texture:
-    {
-      break;
+      const auto &stencil_attachment =
+          std::get<FramebufferAttachmentCreateConfig>(attachment_config);
+      switch (stencil_attachment.type_)
+      {
+      case AttachmentType::Texture:
+      {
+        assert(0 && "Not implemented");
+        break;
+      }
+      case AttachmentType::Renderbuffer:
+      {
+        auto renderbuffer = std::make_shared<GlRenderbuffer>();
+
+        renderbuffer->set_storage(stencil_attachment.internal_format_,
+                                  stencil_attachment.width_,
+                                  stencil_attachment.height_);
+
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+                                  GL_STENCIL_ATTACHMENT,
+                                  GL_RENDERBUFFER,
+                                  renderbuffer->id());
+
+        stencil_attachment_ = std::move(renderbuffer);
+        break;
+      }
+      }
     }
-    case AttachmentType::Renderbuffer:
+    else
     {
-      auto renderbuffer = std::make_shared<GlRenderbuffer>();
-
-      renderbuffer->set_storage(stencil_attachment.internal_format_,
-                                stencil_attachment.width_,
-                                stencil_attachment.height_);
-
-      glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                                GL_DEPTH_ATTACHMENT,
-                                GL_RENDERBUFFER,
-                                renderbuffer->id());
-
-      stencil_attachment_ = std::move(renderbuffer);
-      break;
-    }
+      assert(0 && "Not implemented");
     }
   }
 

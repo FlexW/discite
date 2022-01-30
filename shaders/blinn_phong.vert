@@ -21,6 +21,7 @@ layout (location = 4) in vec2 in_tex_coord;
 out VS_OUT
 {
   vec3 position;
+  vec3 position_world_space;
   vec3 normal;
   vec3 tangent;
   vec3 bitangent;
@@ -64,6 +65,7 @@ void main()
   B = cross(N, T);
 
   vs_out.position = P.xyz;
+  vs_out.position_world_space = vec3(model_matrix * position);
   vs_out.normal = N;
   vs_out.tangent = T;
   vs_out.bitangent = B;

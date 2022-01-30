@@ -163,7 +163,7 @@ int Application::run()
   }
   catch (const std::runtime_error &error)
   {
-    LOG_WARN() << "Unhandled exception: " << error.what();
+    LOG_ERROR() << "Unhandled exception: " << error.what();
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;

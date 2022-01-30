@@ -1,32 +1,56 @@
 #pragma once
 
-#include <glad/glad.h>
+#include "gl.hpp"
 
+#include <optional>
 #include <vector>
+
+struct TextureArrayData
+{
+  TextureArrayData(GLenum sized_format,
+                   GLenum format,
+                   int    width,
+                   int    height,
+                   int    count)
+      : sized_format{sized_format},
+
+        format{format},
+        width{width},
+        height{height},
+        count{count}
+  {
+  }
+
+  std::vector<unsigned char *> data{};
+  GLenum         sized_format;
+  GLenum         format;
+  GLenum         type{GL_UNSIGNED_BYTE};
+  int            width;
+  int            height;
+  int            count;
+
+  bool is_generate_mipmap{false};
+
+  GLenum mag_filter{GL_NEAREST};
+  GLenum min_filter{GL_NEAREST};
+  GLenum wrap_s{GL_CLAMP_TO_BORDER};
+  GLenum wrap_t{GL_CLAMP_TO_BORDER};
+
+  std::optional<std::vector<float>> border_color;
+};
 
 class GlTextureArray
 {
 public:
-  struct SubTextureData
-  {
-    SubTextureData(unsigned char *data, int width, int height)
-        : data(data),
-          width(width),
-          height(height)
-    {
-    }
-
-    unsigned char *data;
-    int            width;
-    int            height;
-  };
-
   GlTextureArray();
   ~GlTextureArray();
 
   GLuint id() const;
 
-  void set_data(const std::vector<SubTextureData> &sub_textures_data);
+  void set_data(const TextureArrayData &texture_array_data);
+
+  void bind();
+  void unbind();
 
 private:
   GLuint id_{};

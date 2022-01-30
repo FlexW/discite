@@ -20,6 +20,10 @@ public:
   void init(const std::filesystem::path &vertex_shader_file_path,
             const std::filesystem::path &fragment_shader_file_path);
 
+  void init(const std::filesystem::path &vertex_shader_file_path,
+            const std::filesystem::path &geometry_shader_file_path,
+            const std::filesystem::path &fragment_shader_file_path);
+
   void bind();
   void unbind();
 
@@ -30,6 +34,8 @@ public:
   void set_uniform(const std::string &name, const glm::vec4 &value);
   void set_uniform(const std::string &name, const glm::mat2 &value);
   void set_uniform(const std::string &name, const glm::mat4 &value);
+  void set_uniform(const std::string            &name,
+                   const std::vector<glm::mat4> &value);
 
 private:
   GLuint program_id_{};
@@ -42,4 +48,10 @@ private:
   void operator=(GlShader &&) = delete;
 
   [[nodiscard]] GLint uniform_location(const std::string &name);
+
+  GLuint compile_shader(const std::string &shader_code, GLenum type);
+  GLuint compile_shader(const std::filesystem::path &file_path);
+  void   link_shaders(const std::vector<GLuint> &shader_ids);
+
+  void dump_shader_info();
 };

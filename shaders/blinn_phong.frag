@@ -6,6 +6,7 @@
 in VS_OUT
 {
   vec3 position;
+  vec3 position_world_space;
   vec3 normal;
   vec3 tangent;
   vec3 bitangent;
@@ -55,6 +56,13 @@ struct SpotLight
   float outer_cut_off;
 };
 
+#define CASCADES_COUNT 5
+uniform bool directional_light_shadow_enabled = false;
+uniform sampler2DArray directional_light_shadow_tex;
+uniform float far_plane;
+uniform mat4 light_space_matrices[CASCADES_COUNT];
+uniform float cascades_plane_distances[CASCADES_COUNT];
+
 uniform sampler2D in_ambient_tex;
 uniform vec3 in_ambient_color = vec3(0.6);
 uniform bool ambient_tex_enabled = false;
@@ -72,13 +80,79 @@ uniform float specular_power = 200.0f;
 uniform sampler2D in_normal_tex;
 uniform bool normal_tex_enabled = false;
 
-uniform int point_light_count;
+uniform int point_light_count = 0;
 uniform PointLight point_lights[MAX_POINT_LIGHTS_COUNT];
-uniform int spot_light_count;
+uniform int spot_light_count = 0;
 uniform SpotLight spot_lights[MAX_SPOT_LIGHTS_COUNT];
 
-uniform bool directional_light_enabled;
+uniform bool directional_light_enabled = false;
 uniform DirectionalLight directional_light;
+
+float calc_directional_light_shadow()
+{
+    float depth_value = abs(fs_in.position.z);
+
+    int layer = -1;
+    for (int i = 0; i < CASCADES_COUNT; ++i)
+    {
+        if (depth_value < cascades_plane_distances[i])
+        {
+            layer = i;
+            break;
+        }
+    }
+
+    if (layer == -1)
+    {
+        layer = CASCADES_COUNT;
+    }
+
+    vec4 frag_pos_light_space = light_space_matrices[layer] * vec4(fs_in.position_world_space, 1.0);
+    vec3 proj_coords = frag_pos_light_space.xyz / frag_pos_light_space.w;
+    proj_coords = proj_coords * 0.5 + 0.5;
+
+    // calc depth of current fragment from light's perspective
+    float current_depth = proj_coords.z;
+    if (current_depth > 1.0)
+    {
+        return 0.0;
+    }
+
+    // calculate bias (based on depth tex resolution and slope)
+    vec3 normal = normalize(fs_in.normal);
+    float bias = max(0.05 * (1.0 - dot(normal, -directional_light.direction)), 0.005);
+    if (layer == CASCADES_COUNT)
+    {
+        bias *= 1.0 / (far_plane * 0.5);
+    }
+    else
+    {
+        bias *= 1.0 / (cascades_plane_distances[layer] * 0.5f);
+    }
+
+    // PCF
+    float shadow = 0.0;
+    vec2 texel_size = 1.0 / vec2(textureSize(directional_light_shadow_tex, 0));
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float pcf_depth = texture(directional_light_shadow_tex,
+                                      vec3(proj_coords.xy + vec2(x, y) * texel_size, layer)).r;
+            shadow += (current_depth - bias) > pcf_depth ? 1.0 : 0.0;
+
+        }
+    }
+    shadow /= 9.0;
+
+    // keep the shadow at 0.0 when outside the far plane region of the light's frustum
+    if (proj_coords.z > 1.0)
+    {
+        shadow = 0.0;
+    }
+
+    return shadow;
+}
 
 vec3 blinn_phong_point_light(PointLight point_light,
                              vec3 ambient_color,
@@ -125,7 +199,8 @@ vec3 blinn_phong_spot_light(SpotLight spot_light,
     if (N_dot_L > 0.0)
     {
         vec3 H = normalize(L + V);
-        specular = specular_color * pow(max(dot(N, H), 0.0), specular_power) * spot_light.specular_color;
+        specular = specular_color * pow(max(dot(N, H), 0.0), specular_power)
+            * spot_light.specular_color;
     }
 
     float theta = dot(L, normalize(-spot_light.direction));
@@ -161,7 +236,15 @@ vec3 blinn_phong_directional_light(vec3 ambient_color,
     if (N_dot_L > 0.0)
     {
         vec3 H = normalize(L + V);
-        specular = specular_color * pow(max(dot(N, H), 0.0), specular_power) * directional_light.specular_color;
+        specular = specular_color * pow(max(dot(N, H), 0.0), specular_power)
+            * directional_light.specular_color;
+    }
+
+    if (directional_light_shadow_enabled)
+    {
+        float shadow = 1.0 - calc_directional_light_shadow();
+        diffuse *= shadow;
+        specular *= shadow;
     }
 
     return ambient + diffuse + specular;
