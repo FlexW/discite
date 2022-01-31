@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <stdexcept>
+#include <string>
 
 GlTexture::GlTexture() { glGenTextures(1, &texture_id_); }
 
@@ -49,7 +50,8 @@ void GlTexture::set_data(unsigned char *data,
   }
   else
   {
-    throw std::runtime_error("Can not handle channel count");
+    throw std::runtime_error("Can not handle channel count " +
+                             std::to_string(channels_count));
   }
 
   // Send the image data to the GPU

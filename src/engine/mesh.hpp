@@ -42,11 +42,24 @@ public:
   void      set_position(const glm::vec3 &value);
   glm::vec3 position() const;
 
+  void set_rotation(const glm::quat &value);
+
+  void      set_scale(const glm::vec3 &value);
+  glm::vec3 scale() const;
+
+  glm::mat4 model_matrix() const;
+
 private:
   std::vector<std::unique_ptr<Mesh>> meshes_;
 
   glm::vec3 position_{0.0f};
+  glm::quat rotation_{1.0f, 0.0f, 0.0f, 0.0f};
+  glm::vec3 scale_{1.0f};
+
+  glm::mat4 model_matrix_{1.0f};
 
   Model(const Model &) = delete;
   void operator=(const Model &) = delete;
+
+  void recalculate_model_matrix();
 };

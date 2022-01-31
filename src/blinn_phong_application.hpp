@@ -44,7 +44,7 @@ private:
   glm::mat4 projection_matrix_{1.0f};
 
   std::shared_ptr<GlShader> model_shader_;
-  std::shared_ptr<Model>    model_;
+  std::vector<std::shared_ptr<Model>> models_;
 
   int window_width_{0};
   int window_height_{0};
@@ -55,7 +55,7 @@ private:
   GLuint                    quad_vertex_array_{};
   std::shared_ptr<GlShader> depth_debug_shader_{};
 
-  int shadow_tex_width_{4096};
+  int                shadow_tex_width_{2048};
   int                shadow_tex_height_{4096};
   std::vector<float> shadow_cascades_levels_{camera_far_ / 50.0f,
                                              camera_far_ / 25.0f,

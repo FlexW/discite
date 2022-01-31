@@ -3,6 +3,9 @@
 #include "gl_index_buffer.hpp"
 #include "gl_texture.hpp"
 #include "gl_vertex_buffer.hpp"
+#include "glm/ext/matrix_float4x4.hpp"
+#include "glm/ext/matrix_transform.hpp"
+#include "glm/gtx/quaternion.hpp"
 #include "log.hpp"
 #include "math.hpp"
 #include "texture_cache.hpp"
@@ -14,6 +17,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <memory>
 #include <stdexcept>
 
@@ -51,6 +55,15 @@ std::shared_ptr<GlTexture> import_texture(aiMaterial   *ai_material,
 
   aiString path{};
   ai_material->GetTexture(ai_texture_type, 0, &path);
+
+  // replace \ by / if needed
+  for (std::size_t i = 0; i < path.length; ++i)
+  {
+    if (path.data[i] == '\\')
+    {
+      path.data[i] = '/';
+    }
+  }
 
   try
   {
@@ -270,7 +283,7 @@ GlVertexArray *Mesh::vertex_array() const { return vertex_array_.get(); }
 
 Material *Mesh::material() const { return material_.get(); }
 
-Model::Model() = default;
+Model::Model() { recalculate_model_matrix(); }
 
 Model::Model(Model &&other) { meshes_ = std::move(other.meshes_); }
 
@@ -309,6 +322,37 @@ std::vector<Mesh *> Model::meshes() const
   return raw_meshes;
 }
 
-void Model::set_position(const glm::vec3 &value) { position_ = value; }
+void Model::set_position(const glm::vec3 &value)
+{
+  position_ = value;
+  recalculate_model_matrix();
+}
 
 glm::vec3 Model::position() const { return position_; }
+
+void Model::set_rotation(const glm::quat &value)
+{
+  rotation_ = value;
+  recalculate_model_matrix();
+}
+
+void Model::set_scale(const glm::vec3 &value)
+{
+  scale_ = value;
+  recalculate_model_matrix();
+}
+
+glm::vec3 Model::scale() const { return scale_; }
+
+glm::mat4 Model::model_matrix() const { return model_matrix_; }
+
+void Model::recalculate_model_matrix()
+{
+  glm::mat4 model_matrix{1.0f};
+
+  model_matrix = glm::translate(model_matrix, position_);
+  model_matrix_ *= glm::toMat4(rotation_);
+  model_matrix = glm::scale(model_matrix, scale_);
+
+  model_matrix_ = model_matrix;
+}

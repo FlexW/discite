@@ -9,6 +9,7 @@
 #include "engine/mesh.hpp"
 
 #include <cstddef>
+#include <functional>
 #include <ios>
 #include <memory>
 #include <string>
@@ -38,16 +39,25 @@ void BlinnPhongApplication::init()
   // load sponza
   // texture_cache_.set_import_path(
   //     "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF");
-  // model_ = std::make_shared<Model>();
-  // model_->load_from_file(
+  // auto sponza_model = std::make_shared<Model>();
+  // sponza_model->load_from_file(
   //     "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
   //     texture_cache_);
 
   // load runholt
   texture_cache_.set_import_path("external/deps/src/Rungholt");
-  model_ = std::make_shared<Model>();
-  model_->load_from_file("external/deps/src/Rungholt/rungholt.obj",
-                         texture_cache_);
+  auto rungholt_model = std::make_shared<Model>();
+  rungholt_model->load_from_file("external/deps/src/Rungholt/rungholt.obj",
+                                 texture_cache_);
+  models_.push_back(rungholt_model);
+
+  // load bistro
+  // texture_cache_.set_import_path("external/deps/src/bistro/Exterior");
+  // auto bistro_model = std::make_shared<Model>();
+  // bistro_model->load_from_file("external/deps/src/bistro/Exterior/exterior.obj",
+  //                              texture_cache_);
+  // bistro_model->set_scale(glm::vec3{0.01f});
+  // models_.push_back(bistro_model);
 
   // reset texture cache path
   texture_cache_.set_import_path("data/textures");
@@ -290,13 +300,16 @@ void BlinnPhongApplication::on_update(float delta_time)
                                       light_space_matrices[i]);
     }
 
-    const auto model_matrix =
-        glm::translate(glm::mat4{1.0f}, model_->position());
-    shadow_map_shader_->set_uniform("model_matrix", model_matrix);
-
-    for (const auto &mesh : model_->meshes())
+    // iterate through all models
+    for (const auto &model : models_)
     {
-      draw(*mesh->vertex_array(), GL_TRIANGLES);
+      shadow_map_shader_->set_uniform("model_matrix", model->model_matrix());
+
+      // iterate through each mesh
+      for (const auto &mesh : model->meshes())
+      {
+        draw(*mesh->vertex_array(), GL_TRIANGLES);
+      }
     }
 
     shadow_map_shader_->unbind();
@@ -376,83 +389,87 @@ void BlinnPhongApplication::on_update(float delta_time)
                                global_texture_slot);
     ++global_texture_slot;
 
-    const auto model_matrix =
-        glm::translate(glm::mat4{1.0f}, model_->position());
-    model_shader_->set_uniform("model_matrix", model_matrix);
-
-    const auto &meshes = model_->meshes();
-    for (const auto &mesh : meshes)
+    // iterate through all models
+    for (const auto &model : models_)
     {
-      int texture_slot = global_texture_slot;
+      model_shader_->set_uniform("model_matrix", model->model_matrix());
 
-      const auto material = mesh->material();
+      // iterate through all meshes
+      const auto &meshes = model->meshes();
+      for (const auto &mesh : meshes)
+      {
+        int texture_slot = global_texture_slot;
 
-      if (material->ambient_texture())
-      {
-        const auto ambient_texture = material->ambient_texture();
-        glActiveTexture(GL_TEXTURE0 + texture_slot);
-        ambient_texture->bind();
-        model_shader_->set_uniform("in_ambient_tex", texture_slot);
-        model_shader_->set_uniform("ambient_tex_enabled", true);
-        ++texture_slot;
-      }
-      else
-      {
-        model_shader_->set_uniform("in_ambient_color",
-                                   material->ambient_color());
-        model_shader_->set_uniform("ambient_tex_enabled", false);
-      }
+        const auto material = mesh->material();
 
-      if (material->diffuse_texture())
-      {
-        const auto diffuse_texture = material->diffuse_texture();
-        glActiveTexture(GL_TEXTURE0 + texture_slot);
-        diffuse_texture->bind();
-        model_shader_->set_uniform("in_diffuse_tex", texture_slot);
-        model_shader_->set_uniform("diffuse_tex_enabled", true);
-        ++texture_slot;
-      }
-      else
-      {
-        model_shader_->set_uniform("in_diffuse_color",
-                                   material->diffuse_color());
-        model_shader_->set_uniform("diffuse_tex_enabled", false);
-      }
+        if (material->ambient_texture())
+        {
+          const auto ambient_texture = material->ambient_texture();
+          glActiveTexture(GL_TEXTURE0 + texture_slot);
+          ambient_texture->bind();
+          model_shader_->set_uniform("in_ambient_tex", texture_slot);
+          model_shader_->set_uniform("ambient_tex_enabled", true);
+          ++texture_slot;
+        }
+        else
+        {
+          model_shader_->set_uniform("in_ambient_color",
+                                     material->ambient_color());
+          model_shader_->set_uniform("ambient_tex_enabled", false);
+        }
 
-      if (material->specular_texture())
-      {
-        const auto specular_texture = material->specular_texture();
-        glActiveTexture(GL_TEXTURE0 + texture_slot);
-        specular_texture->bind();
-        model_shader_->set_uniform("in_specular_tex", texture_slot);
-        model_shader_->set_uniform("specular_tex_enabled", true);
-        ++texture_slot;
-      }
-      else
-      {
-        model_shader_->set_uniform("in_specular_color",
-                                   material->specular_color());
-        model_shader_->set_uniform("specular_tex_enabled", false);
-      }
+        if (material->diffuse_texture())
+        {
+          const auto diffuse_texture = material->diffuse_texture();
+          glActiveTexture(GL_TEXTURE0 + texture_slot);
+          diffuse_texture->bind();
+          model_shader_->set_uniform("in_diffuse_tex", texture_slot);
+          model_shader_->set_uniform("diffuse_tex_enabled", true);
+          ++texture_slot;
+        }
+        else
+        {
+          model_shader_->set_uniform("in_diffuse_color",
+                                     material->diffuse_color());
+          model_shader_->set_uniform("diffuse_tex_enabled", false);
+        }
 
-      if (material->normal_texture())
-      {
-        const auto normal_texture = material->normal_texture();
-        glActiveTexture(GL_TEXTURE0 + texture_slot);
-        normal_texture->bind();
-        model_shader_->set_uniform("in_normal_tex", texture_slot);
-        model_shader_->set_uniform("normal_tex_enabled", true);
-        ++texture_slot;
-      }
-      else
-      {
-        model_shader_->set_uniform("normal_tex_enabled", false);
-      }
+        if (material->specular_texture())
+        {
+          const auto specular_texture = material->specular_texture();
+          glActiveTexture(GL_TEXTURE0 + texture_slot);
+          specular_texture->bind();
+          model_shader_->set_uniform("in_specular_tex", texture_slot);
+          model_shader_->set_uniform("specular_tex_enabled", true);
+          ++texture_slot;
+        }
+        else
+        {
+          model_shader_->set_uniform("in_specular_color",
+                                     material->specular_color());
+          model_shader_->set_uniform("specular_tex_enabled", false);
+        }
 
-      model_shader_->set_uniform("specular_power", material->specular_power());
+        if (material->normal_texture())
+        {
+          const auto normal_texture = material->normal_texture();
+          glActiveTexture(GL_TEXTURE0 + texture_slot);
+          normal_texture->bind();
+          model_shader_->set_uniform("in_normal_tex", texture_slot);
+          model_shader_->set_uniform("normal_tex_enabled", true);
+          ++texture_slot;
+        }
+        else
+        {
+          model_shader_->set_uniform("normal_tex_enabled", false);
+        }
 
-      const auto vertex_array = mesh->vertex_array();
-      draw(*vertex_array, GL_TRIANGLES);
+        model_shader_->set_uniform("specular_power",
+                                   material->specular_power());
+
+        const auto vertex_array = mesh->vertex_array();
+        draw(*vertex_array, GL_TRIANGLES);
+      }
     }
 
     model_shader_->unbind();
