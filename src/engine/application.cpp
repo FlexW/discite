@@ -8,6 +8,9 @@
 #include <stdexcept>
 
 #include <GLFW/glfw3.h>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 namespace
 {
@@ -255,6 +258,8 @@ void Application::init()
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+  init_imgui();
 }
 
 void Application::main_loop()
@@ -271,8 +276,22 @@ void Application::main_loop()
 
     on_update(delta_time);
 
+    // render imgui
+    {
+      // start imgui frame
+      ImGui_ImplOpenGL3_NewFrame();
+      ImGui_ImplGlfw_NewFrame();
+      ImGui::NewFrame();
+      on_render_imgui();
+      // finish imgui frame
+      ImGui::Render();
+      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+
     glfwSwapBuffers(window_);
   }
+
+  shutdown_imgui();
 }
 
 void Application::on_window_framebuffer_size_callback(GLFWwindow * /*window*/,
@@ -355,3 +374,22 @@ GLFWwindow *Application::glfw_window() const { return window_; }
 int Application::key(int key) const { return glfwGetKey(window_, key); }
 
 void Application::close() { is_close_ = true; }
+
+void Application::init_imgui()
+{
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGui::StyleColorsDark();
+
+  ImGui_ImplGlfw_InitForOpenGL(window_, true);
+  ImGui_ImplOpenGL3_Init("#version 460 core");
+}
+
+void Application::shutdown_imgui()
+{
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+}
+
+void Application::on_render_imgui() {}

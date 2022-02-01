@@ -8,6 +8,7 @@
 #include "engine/gl_texture_array.hpp"
 #include "engine/math.hpp"
 #include "engine/mesh.hpp"
+#include "imgui.h"
 
 #include <cstddef>
 #include <functional>
@@ -27,6 +28,9 @@ BlinnPhongApplication::~BlinnPhongApplication()
 void BlinnPhongApplication::init()
 {
   Application::init();
+
+  // enable the cursor
+  set_move_camera(false);
 
   // get the window size
   glfwGetFramebufferSize(glfw_window(), &window_width_, &window_height_);
@@ -144,7 +148,10 @@ void BlinnPhongApplication::on_mouse_movement_callback(GLFWwindow * /*window*/,
     mouse_last_y_ = y;
   }
 
-  camera_.process_rotation(x_offset, y_offset);
+  if (is_move_camera_)
+  {
+    camera_.process_rotation(x_offset, y_offset);
+  }
 }
 
 std::vector<glm::vec4> BlinnPhongApplication::calc_frustum_corners(
@@ -272,22 +279,7 @@ void BlinnPhongApplication::on_update(float delta_time)
   }
 
   // move the camera
-  if (key(GLFW_KEY_W) == GLFW_PRESS)
-  {
-    camera_.process_movement(CameraMovement::Forward, delta_time);
-  }
-  if (key(GLFW_KEY_S) == GLFW_PRESS)
-  {
-    camera_.process_movement(CameraMovement::Backward, delta_time);
-  }
-  if (key(GLFW_KEY_A) == GLFW_PRESS)
-  {
-    camera_.process_movement(CameraMovement::Left, delta_time);
-  }
-  if (key(GLFW_KEY_D) == GLFW_PRESS)
-  {
-    camera_.process_movement(CameraMovement::Right, delta_time);
-  }
+  move_camera(delta_time);
 
   // sort in transparent and solid meshes
   const auto estimated_meshes_count = models_.size() * 10;
@@ -548,4 +540,64 @@ void BlinnPhongApplication::recalculate_projection_matrix()
 void BlinnPhongApplication::add_model(std::shared_ptr<Model> model)
 {
   models_.push_back(model);
+}
+
+void BlinnPhongApplication::on_render_imgui()
+{
+  bool show_demo_window = true;
+  ImGui::ShowDemoWindow(&show_demo_window);
+}
+
+void BlinnPhongApplication::on_key_callback(GLFWwindow * /*window*/,
+                                            int key,
+                                            int /*scancode*/,
+                                            int action,
+                                            int /*mods*/)
+{
+  if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_PRESS)
+  {
+    set_move_camera(true);
+  }
+  else if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_RELEASE)
+  {
+    set_move_camera(false);
+  }
+}
+
+void BlinnPhongApplication::set_move_camera(bool value)
+{
+  if (value)
+  {
+    glfwSetInputMode(glfw_window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  }
+  else
+  {
+    glfwSetInputMode(glfw_window(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  }
+  is_move_camera_ = value;
+}
+
+void BlinnPhongApplication::move_camera(float delta_time)
+{
+  if (!is_move_camera_)
+  {
+    return;
+  }
+
+  if (key(GLFW_KEY_W) == GLFW_PRESS)
+  {
+    camera_.process_movement(CameraMovement::Forward, delta_time);
+  }
+  if (key(GLFW_KEY_S) == GLFW_PRESS)
+  {
+    camera_.process_movement(CameraMovement::Backward, delta_time);
+  }
+  if (key(GLFW_KEY_A) == GLFW_PRESS)
+  {
+    camera_.process_movement(CameraMovement::Left, delta_time);
+  }
+  if (key(GLFW_KEY_D) == GLFW_PRESS)
+  {
+    camera_.process_movement(CameraMovement::Right, delta_time);
+  }
 }

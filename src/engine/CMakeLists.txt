@@ -1,6 +1,9 @@
 add_library(engine)
 set_warnings_as_errors(engine)
 
+ # We include the GL loader ourselfs
+target_compile_definitions(engine PUBLIC GLFW_INCLUDE_NONE)
+
 target_sources(engine PRIVATE
   camera.cpp
   config.cpp
@@ -31,6 +34,7 @@ target_link_libraries(engine PUBLIC
   fastdelegate
   glm
   stb
+  imgui
   glad
   glfw
   assimp

@@ -24,6 +24,14 @@
     }
 },
 {
+    "name": "imgui",
+    "source": {
+        "type": "git",
+        "url": "https://github.com/ocornut/imgui.git",
+        "revision" : "v1.86"
+    }
+},
+{
     "name": "glTF-Sample-Models",
     "source": {
         "type": "git",

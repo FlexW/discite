@@ -19,6 +19,7 @@ public:
 protected:
   void init() override;
   void on_update(float delta_time) override;
+  void on_render_imgui() override;
 
   void on_window_framebuffer_size_callback(GLFWwindow *window,
                                            int         width,
@@ -29,12 +30,20 @@ protected:
 
   void on_window_close_callback(GLFWwindow *window) override;
 
+  void on_key_callback(GLFWwindow *window,
+                       int         key,
+                       int         scancode,
+                       int         action,
+                       int         mods) override;
+
 private:
   struct MeshInfo
   {
     glm::mat4 model_matrix;
     Mesh     *mesh;
   };
+
+  bool is_move_camera_{false};
 
   DirectionalLight directional_light_;
   TextureCache     texture_cache_;
@@ -81,4 +90,6 @@ private:
   std::vector<glm::mat4> calc_light_space_matrices() const;
 
   void add_model(std::shared_ptr<Model> model);
+  void set_move_camera(bool value);
+  void move_camera(float delta_time);
 };

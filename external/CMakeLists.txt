@@ -67,3 +67,18 @@ set(ASSIMP_BUILD_X3D_IMPORTER "OFF" CACHE STRING "")
 set(ASSIMP_BUILD_3MF_IMPORTER "OFF" CACHE STRING "")
 set(ASSIMP_BUILD_MMD_IMPORTER "OFF" CACHE STRING "")
 add_subdirectory(deps/src/assimp)
+
+# ImGui
+add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
+add_library(imgui STATIC)
+target_sources(imgui PRIVATE
+  deps/src/imgui/imgui.cpp
+  deps/src/imgui/imgui_demo.cpp
+  deps/src/imgui/imgui_draw.cpp
+  deps/src/imgui/imgui_tables.cpp
+  deps/src/imgui/imgui_widgets.cpp
+
+  deps/src/imgui/backends/imgui_impl_glfw.cpp
+  deps/src/imgui/backends/imgui_impl_opengl3.cpp
+  )
+target_include_directories(imgui PUBLIC deps/src/imgui deps/src/imgui/backends)

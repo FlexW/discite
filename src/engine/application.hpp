@@ -15,6 +15,7 @@ public:
 protected:
   virtual void init();
   virtual void on_update(float delta_time) = 0;
+  virtual void on_render_imgui();
 
   virtual void on_window_framebuffer_size_callback(GLFWwindow *window,
                                                    int         width,
@@ -47,6 +48,8 @@ private:
   bool is_close_{false};
 
   void main_loop();
+  void init_imgui();
+  void shutdown_imgui();
 
   static void
   window_framebuffer_size_callback(GLFWwindow *window, int width, int height);
