@@ -28,6 +28,7 @@ target_sources(engine PRIVATE
   mesh.cpp
   application.cpp
   directional_light.cpp
+  imgui.cpp
   )
 
 target_link_libraries(engine PUBLIC

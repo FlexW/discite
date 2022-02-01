@@ -45,6 +45,8 @@ private:
 
   bool is_move_camera_{false};
 
+  glm::vec3 sky_color_{0.3f, 0.81f, 0.92f};
+
   DirectionalLight directional_light_;
   TextureCache     texture_cache_;
 

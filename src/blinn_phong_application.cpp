@@ -1,11 +1,11 @@
 #include "blinn_phong_application.hpp"
-#include "GLFW/glfw3.h"
 #include "engine/application.hpp"
 #include "engine/defer.hpp"
 #include "engine/gl_framebuffer.hpp"
 #include "engine/gl_shader.hpp"
 #include "engine/gl_texture.hpp"
 #include "engine/gl_texture_array.hpp"
+#include "engine/imgui.hpp"
 #include "engine/math.hpp"
 #include "engine/mesh.hpp"
 #include "imgui.h"
@@ -395,7 +395,7 @@ void BlinnPhongApplication::on_update(float delta_time)
 
     glViewport(0, 0, window_width_, window_height_);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    glClearColor(0.3f, 0.81f, 0.92f, 1.0f);
+    glClearColor(sky_color_.r, sky_color_.g, sky_color_.b, 1.0f);
 
     const auto view_matrix = camera_.view_matrix();
 
@@ -544,8 +544,35 @@ void BlinnPhongApplication::add_model(std::shared_ptr<Model> model)
 
 void BlinnPhongApplication::on_render_imgui()
 {
-  bool show_demo_window = true;
-  ImGui::ShowDemoWindow(&show_demo_window);
+  ImGui::Begin("Debug");
+  {
+    ImGui::Text("Sky");
+    imgui_input("Color", sky_color_);
+  }
+  ImGui::Separator();
+  {
+    ImGui::Text("Sun");
+
+    auto direction = directional_light_.direction();
+    imgui_input("Direction", direction);
+    directional_light_.set_direction(direction);
+
+    auto ambient_color = directional_light_.ambient_color();
+    imgui_input("Ambient color", ambient_color);
+    directional_light_.set_ambient_color(ambient_color);
+
+    auto diffuse_color = directional_light_.diffuse_color();
+    imgui_input("Diffuse color", diffuse_color);
+    directional_light_.set_diffuse_color(diffuse_color);
+
+    auto specular_color = directional_light_.specular_color();
+    imgui_input("Specular color", specular_color);
+    directional_light_.set_specular_color(specular_color);
+  }
+
+  ImGui::Separator();
+
+  ImGui::End();
 }
 
 void BlinnPhongApplication::on_key_callback(GLFWwindow * /*window*/,
