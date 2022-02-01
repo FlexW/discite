@@ -32,6 +32,9 @@ public:
   void set_normal_texture(std::shared_ptr<GlTexture> value);
   std::shared_ptr<GlTexture> normal_texture() const;
 
+  void set_transparent(bool value);
+  bool is_transparent() const;
+
 private:
   float specular_power_{200.0f};
 
@@ -44,4 +47,6 @@ private:
   glm::vec3 specular_color_{0.6f};
 
   std::shared_ptr<GlTexture> normal_texture_{};
+
+  bool is_transparent_{false};
 };

@@ -30,6 +30,12 @@ protected:
   void on_window_close_callback(GLFWwindow *window) override;
 
 private:
+  struct MeshInfo
+  {
+    glm::mat4 model_matrix;
+    Mesh     *mesh;
+  };
+
   DirectionalLight directional_light_;
   TextureCache     texture_cache_;
 
@@ -44,12 +50,16 @@ private:
   glm::mat4 projection_matrix_{1.0f};
 
   std::shared_ptr<GlShader> model_shader_;
+
   std::vector<std::shared_ptr<Model>> models_;
+  std::vector<MeshInfo>               transparent_meshes_;
+  std::vector<MeshInfo>               solid_meshes_;
 
   int window_width_{0};
   int window_height_{0};
 
   std::shared_ptr<GlShader>       shadow_map_shader_{};
+  std::shared_ptr<GlShader>       shadow_map_transparent_shader_{};
   std::shared_ptr<GlTextureArray> shadow_tex_array_{};
 
   GLuint                    quad_vertex_array_{};
@@ -69,4 +79,6 @@ private:
             calc_frustum_corners(const glm::mat4 &projection_matrix) const;
   glm::mat4 calc_light_space_matrix(float near_plane, float far_plane) const;
   std::vector<glm::mat4> calc_light_space_matrices() const;
+
+  void add_model(std::shared_ptr<Model> model);
 };

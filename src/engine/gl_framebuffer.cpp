@@ -72,7 +72,13 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
     else if (std::holds_alternative<std::shared_ptr<GlTextureArray>>(
                  attachment_config))
     {
-      assert(0);
+      const auto tex_array =
+          std::get<std::shared_ptr<GlTextureArray>>(attachment_config);
+      glFramebufferTexture(GL_FRAMEBUFFER,
+                           GL_COLOR_ATTACHMENT0 + i,
+                           tex_array->id(),
+                           0);
+      color_attachments_.push_back(tex_array);
     }
     else
     {

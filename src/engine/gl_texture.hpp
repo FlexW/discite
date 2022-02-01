@@ -27,8 +27,12 @@ public:
   void bind();
   void unbind();
 
+  GLenum format() const;
+
 private:
   GLuint texture_id_{};
+
+  GLenum format_{GL_RGB};
 
   GlTexture(const GlTexture &) = delete;
   void operator=(const GlTexture &) = delete;

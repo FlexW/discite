@@ -1,6 +1,7 @@
 #include "blinn_phong_application.hpp"
 #include "GLFW/glfw3.h"
 #include "engine/application.hpp"
+#include "engine/defer.hpp"
 #include "engine/gl_framebuffer.hpp"
 #include "engine/gl_shader.hpp"
 #include "engine/gl_texture.hpp"
@@ -36,20 +37,21 @@ void BlinnPhongApplication::init()
   // model_->load_from_file("external/deps/src/cubes/cubes.obj",
   // texture_cache_);
 
-  // load sponza
+  // // load sponza
   // texture_cache_.set_import_path(
   //     "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF");
   // auto sponza_model = std::make_shared<Model>();
   // sponza_model->load_from_file(
   //     "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
   //     texture_cache_);
+  // add_model(sponza_model);
 
   // load runholt
   texture_cache_.set_import_path("external/deps/src/Rungholt");
   auto rungholt_model = std::make_shared<Model>();
   rungholt_model->load_from_file("external/deps/src/Rungholt/rungholt.obj",
                                  texture_cache_);
-  models_.push_back(rungholt_model);
+  add_model(rungholt_model);
 
   // load bistro
   // texture_cache_.set_import_path("external/deps/src/bistro/Exterior");
@@ -91,6 +93,11 @@ void BlinnPhongApplication::init()
   shadow_map_shader_->init("shaders/shadow_map.vert",
                            "shaders/shadow_map.geom",
                            "shaders/shadow_map.frag");
+
+  shadow_map_transparent_shader_ = std::make_shared<GlShader>();
+  shadow_map_transparent_shader_->init("shaders/shadow_map_transparent.vert",
+                                       "shaders/shadow_map_transparent.geom",
+                                       "shaders/shadow_map_transparent.frag");
 
   // load depth debug shader
   glGenVertexArrays(1, &quad_vertex_array_);
@@ -282,6 +289,32 @@ void BlinnPhongApplication::on_update(float delta_time)
     camera_.process_movement(CameraMovement::Right, delta_time);
   }
 
+  // sort in transparent and solid meshes
+  const auto estimated_meshes_count = models_.size() * 10;
+  solid_meshes_.reserve(estimated_meshes_count);
+  transparent_meshes_.reserve(estimated_meshes_count);
+  defer(solid_meshes_.clear());
+  defer(transparent_meshes_.clear());
+
+  for (const auto &model : models_)
+  {
+    for (const auto &mesh : model->meshes())
+    {
+      MeshInfo mesh_info{};
+      mesh_info.mesh         = mesh;
+      mesh_info.model_matrix = model->model_matrix();
+
+      if (mesh->material()->is_transparent())
+      {
+        transparent_meshes_.push_back(mesh_info);
+      }
+      else
+      {
+        solid_meshes_.push_back(mesh_info);
+      }
+    }
+  }
+
   const auto light_space_matrices = calc_light_space_matrices();
 
   // render the shadow map
@@ -293,6 +326,7 @@ void BlinnPhongApplication::on_update(float delta_time)
 
     shadow_map_shader_->bind();
 
+    // set light space matrices
     for (std::size_t i = 0; i < light_space_matrices.size(); ++i)
     {
       shadow_map_shader_->set_uniform("light_space_matrices[" +
@@ -300,19 +334,45 @@ void BlinnPhongApplication::on_update(float delta_time)
                                       light_space_matrices[i]);
     }
 
-    // iterate through all models
-    for (const auto &model : models_)
+    // iterate through all solid meshes
+    for (const auto &mesh_info : solid_meshes_)
     {
-      shadow_map_shader_->set_uniform("model_matrix", model->model_matrix());
+      shadow_map_shader_->set_uniform("model_matrix", mesh_info.model_matrix);
 
-      // iterate through each mesh
-      for (const auto &mesh : model->meshes())
-      {
-        draw(*mesh->vertex_array(), GL_TRIANGLES);
-      }
+      draw(*mesh_info.mesh->vertex_array(), GL_TRIANGLES);
     }
 
     shadow_map_shader_->unbind();
+
+    shadow_map_transparent_shader_->bind();
+
+    // set light space matrices
+    for (std::size_t i = 0; i < light_space_matrices.size(); ++i)
+    {
+      shadow_map_transparent_shader_->set_uniform("light_space_matrices[" +
+                                                      std::to_string(i) + "]",
+                                                  light_space_matrices[i]);
+    }
+
+    // iterate through all transparent meshes
+    for (const auto &mesh_info : transparent_meshes_)
+    {
+      const auto diffuse_tex = mesh_info.mesh->material()->diffuse_texture();
+      if (!diffuse_tex)
+      {
+        continue;
+      }
+      // TODO: why does 1 work and 0 not?
+      glActiveTexture(GL_TEXTURE1);
+      diffuse_tex->bind();
+      shadow_map_transparent_shader_->set_uniform("tex", 1);
+      shadow_map_transparent_shader_->set_uniform("model_matrix",
+                                                  mesh_info.model_matrix);
+
+      draw(*mesh_info.mesh->vertex_array(), GL_TRIANGLES);
+    }
+
+    shadow_map_transparent_shader_->unbind();
 
     shadow_framebuffer_->unbind();
   }
@@ -483,4 +543,9 @@ void BlinnPhongApplication::recalculate_projection_matrix()
                        static_cast<float>(window_width_) / window_height_,
                        camera_near_,
                        camera_far_);
+}
+
+void BlinnPhongApplication::add_model(std::shared_ptr<Model> model)
+{
+  models_.push_back(model);
 }

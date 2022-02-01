@@ -31,21 +31,20 @@ void GlTexture::set_data(unsigned char *data,
   bind();
 
   // Figure out the image format
-  GLenum format{};
-  GLint  internal_format{};
+  GLint internal_format{};
   if (channels_count == 1)
   {
-    format          = GL_RED;
+    format_         = GL_RED;
     internal_format = GL_RED;
   }
   else if (channels_count == 3)
   {
-    format          = GL_RGB;
+    format_         = GL_RGB;
     internal_format = GL_RGB;
   }
   else if (channels_count == 4)
   {
-    format          = GL_RGBA;
+    format_         = GL_RGBA;
     internal_format = GL_RGBA;
   }
   else
@@ -61,7 +60,7 @@ void GlTexture::set_data(unsigned char *data,
                width,
                height,
                0,
-               format,
+               format_,
                GL_UNSIGNED_BYTE,
                data);
 
@@ -118,3 +117,5 @@ void GlTexture::set_storage(GLsizei width,
 
   unbind();
 }
+
+GLenum GlTexture::format() const { return format_; }
