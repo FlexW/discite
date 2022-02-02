@@ -45,7 +45,7 @@ private:
 
   bool is_move_camera_{false};
 
-  glm::vec3 sky_color_{0.3f, 0.81f, 0.92f};
+  glm::vec3 sky_color_{30.0f, 81.0f, 92.0f};
 
   DirectionalLight directional_light_;
   TextureCache     texture_cache_;
@@ -85,6 +85,10 @@ private:
 
   std::shared_ptr<GlFramebuffer> shadow_framebuffer_{};
 
+  float                          exposure_{0.01f};
+  std::shared_ptr<GlShader>      hdr_shader_{};
+  std::shared_ptr<GlFramebuffer> scene_framebuffer_{};
+
   void                   recalculate_projection_matrix();
   std::vector<glm::vec4>
             calc_frustum_corners(const glm::mat4 &projection_matrix) const;
@@ -94,4 +98,6 @@ private:
   void add_model(std::shared_ptr<Model> model);
   void set_move_camera(bool value);
   void move_camera(float delta_time);
+
+  void recreate_scene_framebuffer();
 };

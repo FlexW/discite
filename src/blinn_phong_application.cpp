@@ -74,6 +74,9 @@ void BlinnPhongApplication::init()
 
   recalculate_projection_matrix();
 
+  // create scene framebuffer
+  recreate_scene_framebuffer();
+
   // create framebuffer for shadow map
   shadow_tex_array_ = std::make_shared<GlTextureArray>();
   TextureArrayData texture_array_data{
@@ -107,6 +110,16 @@ void BlinnPhongApplication::init()
   glGenVertexArrays(1, &quad_vertex_array_);
   depth_debug_shader_ = std::make_shared<GlShader>();
   depth_debug_shader_->init("shaders/quad.vert", "shaders/debug_depth.frag");
+
+  // load hdr shader
+  hdr_shader_ = std::make_shared<GlShader>();
+  hdr_shader_->init("shaders/quad.vert", "shaders/hdr.frag");
+
+  // setup sun
+  directional_light_.set_direction(glm::vec3{-0.2f, -1.0f, -0.1f});
+  directional_light_.set_ambient_color(glm::vec3{10.0f});
+  directional_light_.set_diffuse_color(glm::vec3{80.0f});
+  directional_light_.set_specular_color(glm::vec3{100.0f});
 }
 
 void BlinnPhongApplication::on_window_framebuffer_size_callback(
@@ -118,6 +131,7 @@ void BlinnPhongApplication::on_window_framebuffer_size_callback(
   window_height_ = height;
 
   recalculate_projection_matrix();
+  recreate_scene_framebuffer();
 }
 
 void BlinnPhongApplication::on_window_close_callback(GLFWwindow *window)
@@ -372,8 +386,8 @@ void BlinnPhongApplication::on_update(float delta_time)
   // // render debug quad
   // {
   //   glViewport(0, 0, window_width_, window_height_);
-  //   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
   //   glClearColor(0.3f, 0.81f, 0.92f, 1.0f);
+  //   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
   //   depth_debug_shader_->bind();
   //   glActiveTexture(GL_TEXTURE0);
@@ -389,13 +403,15 @@ void BlinnPhongApplication::on_update(float delta_time)
   // }
   // return;
 
-  // render the model
+  // render the scene
   {
+    scene_framebuffer_->bind();
+
     int global_texture_slot = 0;
 
     glViewport(0, 0, window_width_, window_height_);
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glClearColor(sky_color_.r, sky_color_.g, sky_color_.b, 1.0f);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     const auto view_matrix = camera_.view_matrix();
 
@@ -493,6 +509,32 @@ void BlinnPhongApplication::on_update(float delta_time)
     }
 
     model_shader_->unbind();
+    scene_framebuffer_->unbind();
+  }
+
+  // perform hdr to sdr conversation
+  {
+    // make sure the framebuffer of the window gets used
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, window_width_, window_height_);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    hdr_shader_->bind();
+
+    const auto scene_tex = std::get<std::shared_ptr<GlTexture>>(
+        scene_framebuffer_->color_attachment(0));
+    glActiveTexture(GL_TEXTURE0);
+    scene_tex->bind();
+    hdr_shader_->set_uniform("exposure", exposure_);
+    hdr_shader_->set_uniform("hdr_tex", 0);
+
+    // draw quad
+    glBindVertexArray(quad_vertex_array_);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    hdr_shader_->unbind();
   }
 }
 
@@ -539,6 +581,11 @@ void BlinnPhongApplication::on_render_imgui()
   }
 
   ImGui::Separator();
+
+  {
+    ImGui::Text("HDR");
+    imgui_input("Exposure", exposure_);
+  }
 
   ImGui::End();
 }
@@ -595,4 +642,28 @@ void BlinnPhongApplication::move_camera(float delta_time)
   {
     camera_.process_movement(CameraMovement::Right, delta_time);
   }
+}
+
+void BlinnPhongApplication::recreate_scene_framebuffer()
+{
+  FramebufferAttachmentCreateConfig color_config{};
+  color_config.type_            = AttachmentType::Texture;
+  color_config.format_          = GL_RGBA;
+  color_config.internal_format_ = GL_RGBA16F;
+  color_config.height_          = window_height_;
+  color_config.width_           = window_width_;
+
+  FramebufferAttachmentCreateConfig depth_config{};
+  depth_config.type_            = AttachmentType::Renderbuffer;
+  depth_config.format_          = GL_DEPTH_COMPONENT;
+  depth_config.internal_format_ = GL_DEPTH_COMPONENT32F;
+  depth_config.width_           = window_width_;
+  depth_config.height_          = window_height_;
+
+  FramebufferConfig config{};
+  config.color_attachments_.push_back(color_config);
+  config.depth_attachment_ = depth_config;
+
+  scene_framebuffer_ = std::make_shared<GlFramebuffer>();
+  scene_framebuffer_->attach(config);
 }

@@ -232,7 +232,7 @@ void Application::init()
   }
 
   glEnable(GL_SAMPLES);
-  glfwWindowHint(GLFW_SAMPLES, 8);
+  glfwWindowHint(GLFW_SAMPLES, 0);
 
   if (opengl_debug)
   {
