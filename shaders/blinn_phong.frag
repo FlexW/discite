@@ -63,17 +63,17 @@ uniform float far_plane;
 uniform mat4 light_space_matrices[CASCADES_COUNT];
 uniform float cascades_plane_distances[CASCADES_COUNT];
 
-uniform sampler2D in_ambient_tex;
-uniform vec3 in_ambient_color = vec3(0.6);
-uniform bool ambient_tex_enabled = false;
+// uniform sampler2D in_ambient_tex;
+// uniform vec3 in_ambient_color = vec3(0.6);
+// uniform bool ambient_tex_enabled = false;
 
 uniform sampler2D in_diffuse_tex;
 uniform vec3 in_diffuse_color = vec3(0.6);
 uniform bool diffuse_tex_enabled = false;
 
-uniform sampler2D in_specular_tex;
-uniform vec3 in_specular_color = vec3(0.6);
-uniform bool specular_tex_enabled = false;
+// uniform sampler2D in_specular_tex;
+// uniform vec3 in_specular_color = vec3(0.6);
+// uniform bool specular_tex_enabled = false;
 
 uniform float specular_power = 200.0f;
 
@@ -264,37 +264,37 @@ vec3 calc_diffuse_color()
     return in_diffuse_color;
 }
 
-vec3 calc_ambient_color()
-{
-    if (ambient_tex_enabled)
-    {
-        vec4 ambient_texture = texture(in_ambient_tex, fs_in.tex_coord).rgba;
-        if (ambient_texture.a <= 0.01f)
-        {
-            discard;
-        }
-        return ambient_texture.rgb;
-    }
-    else if (diffuse_tex_enabled)
-    {
-        return calc_diffuse_color();
-    }
-    return in_ambient_color;
-}
+// vec3 calc_ambient_color()
+// {
+//     if (ambient_tex_enabled)
+//     {
+//         vec4 ambient_texture = texture(in_ambient_tex, fs_in.tex_coord).rgba;
+//         if (ambient_texture.a <= 0.01f)
+//         {
+//             discard;
+//         }
+//         return ambient_texture.rgb;
+//     }
+//     else if (diffuse_tex_enabled)
+//     {
+//         return calc_diffuse_color();
+//     }
+//     return in_ambient_color;
+// }
 
-vec3 calc_specular_color()
-{
-    if (specular_tex_enabled)
-    {
-        vec4 specular_texture = texture(in_specular_tex, fs_in.tex_coord).rrra;
-        return specular_texture.rgb;
-    }
-    else if (diffuse_tex_enabled)
-    {
-        return calc_diffuse_color();
-    }
-    return in_specular_color;
-}
+// vec3 calc_specular_color()
+// {
+//     if (specular_tex_enabled)
+//     {
+//         vec4 specular_texture = texture(in_specular_tex, fs_in.tex_coord).rrra;
+//         return specular_texture.rgb;
+//     }
+//     else if (diffuse_tex_enabled)
+//     {
+//         return calc_diffuse_color();
+//     }
+//     return in_specular_color;
+// }
 
 vec3 calc_normal()
 {
@@ -313,9 +313,9 @@ vec3 calc_normal()
 void main()
 {
   vec3 normal = calc_normal();
-  vec3 ambient_color = calc_ambient_color();
   vec3 diffuse_color = calc_diffuse_color();
-  vec3 specular_color = calc_specular_color();
+  vec3 ambient_color = diffuse_color;
+  vec3 specular_color = diffuse_color;
 
   vec3 color = vec3(0.0f);
   for (int i = 0; i < point_light_count; ++i)

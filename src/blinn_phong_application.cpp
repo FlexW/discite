@@ -41,21 +41,21 @@ void BlinnPhongApplication::init()
   // model_->load_from_file("external/deps/src/cubes/cubes.obj",
   // texture_cache_);
 
-  // // load sponza
-  // texture_cache_.set_import_path(
-  //     "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF");
-  // auto sponza_model = std::make_shared<Model>();
-  // sponza_model->load_from_file(
-  //     "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
-  //     texture_cache_);
-  // add_model(sponza_model);
+  // load sponza
+  texture_cache_.set_import_path(
+      "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF");
+  auto sponza_model = std::make_shared<Model>();
+  sponza_model->load_from_file(
+      "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
+      texture_cache_);
+  add_model(sponza_model);
 
   // load runholt
-  texture_cache_.set_import_path("external/deps/src/Rungholt");
-  auto rungholt_model = std::make_shared<Model>();
-  rungholt_model->load_from_file("external/deps/src/Rungholt/rungholt.obj",
-                                 texture_cache_);
-  add_model(rungholt_model);
+  // texture_cache_.set_import_path("external/deps/src/Rungholt");
+  // auto rungholt_model = std::make_shared<Model>();
+  // rungholt_model->load_from_file("external/deps/src/Rungholt/rungholt.obj",
+  //                                texture_cache_);
+  // add_model(rungholt_model);
 
   // load bistro
   // texture_cache_.set_import_path("external/deps/src/bistro/Exterior");
@@ -454,22 +454,6 @@ void BlinnPhongApplication::on_update(float delta_time)
 
         const auto material = mesh->material();
 
-        if (material->ambient_texture())
-        {
-          const auto ambient_texture = material->ambient_texture();
-          glActiveTexture(GL_TEXTURE0 + texture_slot);
-          ambient_texture->bind();
-          model_shader_->set_uniform("in_ambient_tex", texture_slot);
-          model_shader_->set_uniform("ambient_tex_enabled", true);
-          ++texture_slot;
-        }
-        else
-        {
-          model_shader_->set_uniform("in_ambient_color",
-                                     material->ambient_color());
-          model_shader_->set_uniform("ambient_tex_enabled", false);
-        }
-
         if (material->diffuse_texture())
         {
           const auto diffuse_texture = material->diffuse_texture();
@@ -484,22 +468,6 @@ void BlinnPhongApplication::on_update(float delta_time)
           model_shader_->set_uniform("in_diffuse_color",
                                      material->diffuse_color());
           model_shader_->set_uniform("diffuse_tex_enabled", false);
-        }
-
-        if (material->specular_texture())
-        {
-          const auto specular_texture = material->specular_texture();
-          glActiveTexture(GL_TEXTURE0 + texture_slot);
-          specular_texture->bind();
-          model_shader_->set_uniform("in_specular_tex", texture_slot);
-          model_shader_->set_uniform("specular_tex_enabled", true);
-          ++texture_slot;
-        }
-        else
-        {
-          model_shader_->set_uniform("in_specular_color",
-                                     material->specular_color());
-          model_shader_->set_uniform("specular_tex_enabled", false);
         }
 
         if (material->normal_texture())

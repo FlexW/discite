@@ -83,13 +83,6 @@ std::unique_ptr<Material> import_material(const aiScene *ai_scene,
 {
   const auto ai_material = ai_scene->mMaterials[ai_mesh->mMaterialIndex];
 
-  auto ambient_texture =
-      import_texture(ai_material, aiTextureType_AMBIENT, texture_cache);
-  if (!ambient_texture)
-  {
-    ambient_texture =
-        import_texture(ai_material, aiTextureType_BASE_COLOR, texture_cache);
-  }
   auto diffuse_texture =
       import_texture(ai_material, aiTextureType_DIFFUSE, texture_cache);
   if (!diffuse_texture)
@@ -97,17 +90,13 @@ std::unique_ptr<Material> import_material(const aiScene *ai_scene,
     diffuse_texture =
         import_texture(ai_material, aiTextureType_BASE_COLOR, texture_cache);
   }
-  const auto specular_texture =
-      import_texture(ai_material, aiTextureType_SPECULAR, texture_cache);
   const auto normal_texture =
       import_texture(ai_material, aiTextureType_NORMALS, texture_cache);
 
   const std::string material_name(ai_material->GetName().C_Str());
   auto              material = std::make_unique<Material>();
 
-  material->set_ambient_texture(ambient_texture);
   material->set_diffuse_texture(diffuse_texture);
-  material->set_specular_texture(specular_texture);
   material->set_normal_texture(normal_texture);
 
   return material;
