@@ -29,6 +29,7 @@ target_sources(engine PRIVATE
   application.cpp
   directional_light.cpp
   imgui.cpp
+  point_light.cpp
   )
 
 target_link_libraries(engine PUBLIC

@@ -8,6 +8,7 @@
 #include "engine/imgui.hpp"
 #include "engine/math.hpp"
 #include "engine/mesh.hpp"
+#include "engine/point_light.hpp"
 #include "imgui.h"
 
 #include <cstddef>
@@ -49,6 +50,34 @@ void BlinnPhongApplication::init()
       "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
       texture_cache_);
   add_model(sponza_model);
+
+  PointLight point_light1{};
+  point_light1.set_position(glm::vec3{-9.5f, 1.0f, 3.0f});
+  point_light1.set_ambient_color(glm::vec3{100.0f, 38.0f, 8.6f});
+  point_light1.set_diffuse_color(glm::vec3{100.0f, 38.0f, 8.6f});
+  point_light1.set_specular_color(glm::vec3{100.0f, 38.0f, 8.6f});
+  point_lights_.push_back(point_light1);
+
+  PointLight point_light2{};
+  point_light2.set_position(glm::vec3{-9.5f, 1.0f, -3.0f});
+  point_light2.set_ambient_color(glm::vec3{83.0f, 27.0f, 0.0f});
+  point_light2.set_diffuse_color(glm::vec3{83.0f, 27.0f, 0.0f});
+  point_light2.set_specular_color(glm::vec3{83.0f, 27.0f, 0.0f});
+  point_lights_.push_back(point_light2);
+
+  PointLight point_light3{};
+  point_light3.set_position(glm::vec3{9.5f, 1.0f, 3.0f});
+  point_light3.set_ambient_color(glm::vec3{83.0f, 27.0f, 0.0f});
+  point_light3.set_diffuse_color(glm::vec3{83.0f, 27.0f, 0.0f});
+  point_light3.set_specular_color(glm::vec3{83.0f, 27.0f, 0.0f});
+  point_lights_.push_back(point_light3);
+
+  PointLight point_light4{};
+  point_light4.set_position(glm::vec3{9.5f, 1.0f, -3.0f});
+  point_light4.set_ambient_color(glm::vec3{57.0f, 18.0f, 0.0f});
+  point_light4.set_diffuse_color(glm::vec3{57.0f, 18.0f, 0.0f});
+  point_light4.set_specular_color(glm::vec3{57.0f, 18.0f, 0.0f});
+  point_lights_.push_back(point_light4);
 
   // load runholt
   // texture_cache_.set_import_path("external/deps/src/Rungholt");
@@ -117,9 +146,9 @@ void BlinnPhongApplication::init()
 
   // setup sun
   directional_light_.set_direction(glm::vec3{-0.2f, -1.0f, -0.1f});
-  directional_light_.set_ambient_color(glm::vec3{10.0f});
-  directional_light_.set_diffuse_color(glm::vec3{80.0f});
-  directional_light_.set_specular_color(glm::vec3{100.0f});
+  directional_light_.set_ambient_color(glm::vec3{1.0f});
+  directional_light_.set_diffuse_color(glm::vec3{15.0f});
+  directional_light_.set_specular_color(glm::vec3{50.0f});
 }
 
 void BlinnPhongApplication::on_window_framebuffer_size_callback(
@@ -419,7 +448,35 @@ void BlinnPhongApplication::on_update(float delta_time)
     model_shader_->set_uniform("view_matrix", view_matrix);
     model_shader_->set_uniform("projection_matrix", projection_matrix_);
 
-    model_shader_->set_uniform("point_light_count", 0);
+    const int point_light_count =
+        point_lights_.size() <= 5 ? point_lights_.size() : 5;
+    model_shader_->set_uniform("point_light_count", point_light_count);
+    for (int i = 0; i < point_light_count; ++i)
+    {
+      model_shader_->set_uniform("point_lights[" + std::to_string(i) +
+                                     "].ambient_color",
+                                 point_lights_[i].ambient_color());
+      model_shader_->set_uniform("point_lights[" + std::to_string(i) +
+                                     "].diffuse_color",
+                                 point_lights_[i].diffuse_color());
+      model_shader_->set_uniform("point_lights[" + std::to_string(i) +
+                                     "].specular_color",
+                                 point_lights_[i].specular_color());
+      model_shader_->set_uniform(
+          "point_lights[" + std::to_string(i) + "].position",
+          glm::vec3(view_matrix *
+                    glm::vec4(point_lights_[i].position(), 1.0f)));
+      model_shader_->set_uniform("point_lights[" + std::to_string(i) +
+                                     "].linear",
+                                 point_lights_[i].linear());
+      model_shader_->set_uniform("point_lights[" + std::to_string(i) +
+                                     "].constant",
+                                 point_lights_[i].constant());
+      model_shader_->set_uniform("point_lights[" + std::to_string(i) +
+                                     "].quadratic",
+                                 point_lights_[i].quadratic());
+    }
+
     model_shader_->set_uniform("spot_light_count", 0);
 
     model_shader_->set_uniform("directional_light_enabled", 1);

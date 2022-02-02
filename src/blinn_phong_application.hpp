@@ -7,6 +7,7 @@
 #include "engine/gl_shader.hpp"
 #include "engine/gl_texture_array.hpp"
 #include "engine/mesh.hpp"
+#include "engine/point_light.hpp"
 #include "engine/texture_cache.hpp"
 
 #include <memory>
@@ -59,6 +60,8 @@ private:
   float  camera_far_{500.0f};
 
   glm::mat4 projection_matrix_{1.0f};
+
+  std::vector<PointLight> point_lights_;
 
   std::shared_ptr<GlShader> model_shader_;
 
