@@ -4,7 +4,10 @@ void Material::set_diffuse_texture(std::shared_ptr<GlTexture> value)
 {
   diffuse_texture_ = value;
 
-  set_transparent(diffuse_texture_->format() == GL_RGBA);
+  if (diffuse_texture_)
+  {
+    set_transparent(diffuse_texture_->format() == GL_RGBA);
+  }
 }
 
 std::shared_ptr<GlTexture> Material::diffuse_texture() const

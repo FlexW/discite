@@ -1,8 +1,8 @@
 #version 460 core
 
-#define LIGHT_SPACE_MATRICES_COUNT 5
+#define LIGHT_SPACE_MATRICES_COUNT 4
 
-layout(triangles, invocations = 5) in;
+layout(triangles, invocations = LIGHT_SPACE_MATRICES_COUNT) in;
 layout(triangle_strip, max_vertices = 3) out;
 
 in VS_OUT

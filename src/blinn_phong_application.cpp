@@ -30,6 +30,8 @@ void BlinnPhongApplication::init()
 {
   Application::init();
 
+  calc_shadow_cascades_splits();
+
   // enable the cursor
   set_move_camera(false);
 
@@ -37,10 +39,10 @@ void BlinnPhongApplication::init()
   glfwGetFramebufferSize(glfw_window(), &window_width_, &window_height_);
 
   // load cubes
-  // texture_cache_.set_import_path("external/deps/src/cubes");
-  // model_ = std::make_shared<Model>();
-  // model_->load_from_file("external/deps/src/cubes/cubes.obj",
-  // texture_cache_);
+  // texture_cache_.set_import_path("data/cubes");
+  // auto cubes_model = std::make_shared<Model>();
+  // cubes_model->load_from_file("data/cubes/cubes.gltf", texture_cache_);
+  // add_model(cubes_model);
 
   // load sponza
   texture_cache_.set_import_path(
@@ -108,12 +110,13 @@ void BlinnPhongApplication::init()
 
   // create framebuffer for shadow map
   shadow_tex_array_ = std::make_shared<GlTextureArray>();
-  TextureArrayData texture_array_data{
-      GL_DEPTH_COMPONENT32F,
-      GL_DEPTH_COMPONENT,
-      shadow_tex_width_,
-      shadow_tex_height_,
-      static_cast<int>(shadow_cascades_levels_.size()) + 1};
+  TextureArrayData texture_array_data{GL_DEPTH_COMPONENT32F,
+                                      GL_DEPTH_COMPONENT,
+                                      shadow_tex_width_,
+                                      shadow_tex_height_,
+                                      static_cast<int>(shadow_cascades_count_)};
+  texture_array_data.min_filter   = GL_NEAREST;
+  texture_array_data.mag_filter   = GL_NEAREST;
   texture_array_data.type         = GL_FLOAT;
   texture_array_data.border_color = {1.0f, 1.0f, 1.0f, 1.0f};
   shadow_tex_array_->set_data(texture_array_data);
@@ -145,10 +148,14 @@ void BlinnPhongApplication::init()
   hdr_shader_->init("shaders/quad.vert", "shaders/hdr.frag");
 
   // setup sun
-  directional_light_.set_direction(glm::vec3{-0.2f, -1.0f, -0.1f});
+  directional_light_.set_direction(glm::vec3{-0.49f, -0.64f, -0.59f});
   directional_light_.set_ambient_color(glm::vec3{1.0f});
   directional_light_.set_diffuse_color(glm::vec3{15.0f});
   directional_light_.set_specular_color(glm::vec3{50.0f});
+
+  white_texture_ = std::make_shared<GlTexture>();
+  std::vector<unsigned char> white_tex_data{255};
+  white_texture_->set_data(white_tex_data.data(), 1, 1, 1, false);
 }
 
 void BlinnPhongApplication::on_window_framebuffer_size_callback(
@@ -290,24 +297,32 @@ glm::mat4 BlinnPhongApplication::calc_light_space_matrix(float near_plane,
 std::vector<glm::mat4> BlinnPhongApplication::calc_light_space_matrices() const
 {
   std::vector<glm::mat4> matrices;
-  for (std::size_t i = 0; i < shadow_cascades_levels_.size() + 1; ++i)
+  matrices.reserve(cascade_frustums_.size());
+  for (const auto &frustum : cascade_frustums_)
   {
-    if (i == 0)
-    {
-      matrices.push_back(
-          calc_light_space_matrix(camera_near_, shadow_cascades_levels_[i]));
-    }
-    else if (i < shadow_cascades_levels_.size())
-    {
-      matrices.push_back(calc_light_space_matrix(shadow_cascades_levels_[i - 1],
-                                                 shadow_cascades_levels_[i]));
-    }
-    else
-    {
-      matrices.push_back(
-          calc_light_space_matrix(shadow_cascades_levels_[i - 1], camera_far_));
-    }
+    matrices.push_back(calc_light_space_matrix(frustum.near, frustum.far));
   }
+
+  // for (std::size_t i = 0; i < shadow_cascades_levels_.size() + 1; ++i)
+  // {
+  //   if (i == 0)
+  //   {
+  //     matrices.push_back(
+  //         calc_light_space_matrix(camera_near_, shadow_cascades_levels_[i]));
+  //   }
+  //   else if (i < shadow_cascades_levels_.size())
+  //   {
+  //     matrices.push_back(calc_light_space_matrix(shadow_cascades_levels_[i -
+  //     1],
+  //                                                shadow_cascades_levels_[i]));
+  //   }
+  //   else
+  //   {
+  //     matrices.push_back(
+  //         calc_light_space_matrix(shadow_cascades_levels_[i - 1],
+  //         camera_far_));
+  //   }
+  // }
 
   return matrices;
 }
@@ -353,12 +368,13 @@ void BlinnPhongApplication::on_update(float delta_time)
   const auto light_space_matrices = calc_light_space_matrices();
 
   // render the shadow map
+  if (is_shadows_enabled_)
   {
     shadow_framebuffer_->bind();
 
     glViewport(0, 0, shadow_tex_width_, shadow_tex_height_);
     glClear(GL_DEPTH_BUFFER_BIT);
-
+    glCullFace(GL_FRONT);
     shadow_map_shader_->bind();
 
     // set light space matrices
@@ -389,6 +405,7 @@ void BlinnPhongApplication::on_update(float delta_time)
                                                   light_space_matrices[i]);
     }
 
+    glCullFace(GL_BACK);
     // iterate through all transparent meshes
     for (const auto &mesh_info : transparent_meshes_)
     {
@@ -412,31 +429,15 @@ void BlinnPhongApplication::on_update(float delta_time)
     shadow_framebuffer_->unbind();
   }
 
-  // // render debug quad
-  // {
-  //   glViewport(0, 0, window_width_, window_height_);
-  //   glClearColor(0.3f, 0.81f, 0.92f, 1.0f);
-  //   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-  //   depth_debug_shader_->bind();
-  //   glActiveTexture(GL_TEXTURE0);
-  //   shadow_tex_array_->bind();
-  //   depth_debug_shader_->set_uniform("depth_tex", 0);
-  //   // depth_debug_shader_->set_uniform("near_plane");
-  //   // depth_debug_shader_->set_uniform("far_plane");
-  //   depth_debug_shader_->set_uniform("layer", 2);
-  //   glBindVertexArray(quad_vertex_array_);
-  //   glDrawArrays(GL_TRIANGLES, 0, 6);
-  //   glBindVertexArray(0);
-  //   depth_debug_shader_->unbind();
-  // }
-  // return;
-
   // render the scene
   {
     scene_framebuffer_->bind();
+    glCullFace(GL_BACK);
 
     int global_texture_slot = 0;
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     glViewport(0, 0, window_width_, window_height_);
     glClearColor(sky_color_.r, sky_color_.g, sky_color_.b, 1.0f);
@@ -479,7 +480,12 @@ void BlinnPhongApplication::on_update(float delta_time)
 
     model_shader_->set_uniform("spot_light_count", 0);
 
-    model_shader_->set_uniform("directional_light_enabled", 1);
+    model_shader_->set_uniform("smooth_shadows", smooth_shadows_);
+    model_shader_->set_uniform("shadow_bias_min", shadow_bias_min_);
+    model_shader_->set_uniform("light_size", light_size_);
+    model_shader_->set_uniform("directional_light_enabled", true);
+    model_shader_->set_uniform("directional_light.direction_ws",
+                               directional_light_.direction());
     model_shader_->set_uniform(
         "directional_light.direction",
         glm::vec3{view_matrix *
@@ -491,28 +497,31 @@ void BlinnPhongApplication::on_update(float delta_time)
     model_shader_->set_uniform("directional_light.specular_color",
                                directional_light_.specular_color());
 
-    model_shader_->set_uniform("directional_light_shadow_enabled", true);
+    model_shader_->set_uniform("directional_light_shadow_enabled", is_shadows_enabled_);
     model_shader_->set_uniform("far_plane", camera_far_);
 
-    for (std::size_t i = 0; i < light_space_matrices.size(); ++i)
     {
-      model_shader_->set_uniform("light_space_matrices[" + std::to_string(i) +
-                                     "]",
-                                 light_space_matrices[i]);
-    }
+      for (std::size_t i = 0; i < light_space_matrices.size(); ++i)
+      {
+        model_shader_->set_uniform("light_space_matrices[" + std::to_string(i) +
+                                       "]",
+                                   light_space_matrices[i]);
+      }
 
-    for (std::size_t i = 0; i < shadow_cascades_levels_.size(); ++i)
-    {
-      model_shader_->set_uniform("cascades_plane_distances[" +
-                                     std::to_string(i) + "]",
-                                 shadow_cascades_levels_[i]);
-    }
+      model_shader_->set_uniform("show_shadow_cascades", show_shadow_cascades_);
+      for (std::size_t i = 0; i < shadow_cascades_count_; ++i)
+      {
+        model_shader_->set_uniform("cascades_plane_distances[" +
+                                       std::to_string(i) + "]",
+                                   cascade_frustums_[i].far);
+      }
 
-    glActiveTexture(GL_TEXTURE0 + global_texture_slot);
-    shadow_tex_array_->bind();
-    model_shader_->set_uniform("directional_light_shadow_tex",
-                               global_texture_slot);
-    ++global_texture_slot;
+      glActiveTexture(GL_TEXTURE0 + global_texture_slot);
+      shadow_tex_array_->bind();
+      model_shader_->set_uniform("directional_light_shadow_tex",
+                                 global_texture_slot);
+      ++global_texture_slot;
+    }
 
     // iterate through all models
     for (const auto &model : models_)
@@ -526,7 +535,6 @@ void BlinnPhongApplication::on_update(float delta_time)
         int texture_slot = global_texture_slot;
 
         const auto material = mesh->material();
-
         if (material->diffuse_texture())
         {
           const auto diffuse_texture = material->diffuse_texture();
@@ -538,6 +546,9 @@ void BlinnPhongApplication::on_update(float delta_time)
         }
         else
         {
+          glActiveTexture(GL_TEXTURE0 + texture_slot);
+          white_texture_->bind();
+          model_shader_->set_uniform("in_diffuse_tex", texture_slot);
           model_shader_->set_uniform("in_diffuse_color",
                                      material->diffuse_color());
           model_shader_->set_uniform("diffuse_tex_enabled", false);
@@ -554,6 +565,9 @@ void BlinnPhongApplication::on_update(float delta_time)
         }
         else
         {
+          glActiveTexture(GL_TEXTURE0 + texture_slot);
+          white_texture_->bind();
+          model_shader_->set_uniform("in_normal_tex", texture_slot);
           model_shader_->set_uniform("normal_tex_enabled", false);
         }
 
@@ -609,9 +623,8 @@ void BlinnPhongApplication::add_model(std::shared_ptr<Model> model)
   models_.push_back(model);
 }
 
-void BlinnPhongApplication::on_render_imgui()
+void BlinnPhongApplication::render_imgui_general()
 {
-  ImGui::Begin("Debug");
   {
     ImGui::Text("Sky");
     imgui_input("Color", sky_color_);
@@ -643,8 +656,119 @@ void BlinnPhongApplication::on_render_imgui()
     ImGui::Text("HDR");
     imgui_input("Exposure", exposure_);
   }
+}
 
-  ImGui::End();
+void BlinnPhongApplication::recreate_debug_quad_framebuffer(int new_width,
+                                                            int new_height)
+{
+  if (debug_quad_width_ == new_width && debug_quad_height_ == new_height)
+  {
+    return;
+  }
+
+  debug_quad_width_  = new_width;
+  debug_quad_height_ = new_height;
+
+  FramebufferAttachmentCreateConfig color_attachment_config{};
+  color_attachment_config.format_          = GL_RGB;
+  color_attachment_config.internal_format_ = GL_RGB32F;
+  color_attachment_config.width_           = debug_quad_width_;
+  color_attachment_config.height_          = debug_quad_height_;
+  color_attachment_config.type_            = AttachmentType::Texture;
+
+  FramebufferConfig framebuffer_config{};
+  framebuffer_config.color_attachments_.push_back(color_attachment_config);
+
+  debug_quad_framebuffer_ = std::make_shared<GlFramebuffer>();
+  debug_quad_framebuffer_->attach(framebuffer_config);
+}
+
+void BlinnPhongApplication::render_imgui_shadows()
+{
+  ImGui::Checkbox("Enable shadows", &is_shadows_enabled_);
+  if (!is_shadows_enabled_)
+  {
+    return;
+  }
+  ImGui::Checkbox("Show cascades", &show_shadow_cascades_);
+
+  imgui_input("Light size", light_size_);
+  imgui_input("Bias", shadow_bias_min_);
+  imgui_input("Smooth", smooth_shadows_);
+
+  const int color_tex_width  = 1024;
+  const int color_tex_height = 1024;
+  recreate_debug_quad_framebuffer(color_tex_width, color_tex_height);
+
+  // let the user select a cascade
+  const auto selected_cascade = std::to_string(debug_selected_cascade_);
+  if (ImGui::BeginCombo("Cascade", selected_cascade.c_str()))
+  {
+    for (std::size_t i = 0; i < cascade_frustums_.size(); ++i)
+    {
+      const auto is_selected = i == debug_selected_cascade_;
+      const auto cascade_str = std::to_string(i);
+      if (ImGui::Selectable(cascade_str.c_str(), is_selected))
+      {
+        debug_selected_cascade_ = i;
+      }
+
+      if (is_selected)
+      {
+        ImGui::SetItemDefaultFocus();
+      }
+    }
+    ImGui::EndCombo();
+  }
+
+  // render a debug quad with the selected cascade
+  {
+    debug_quad_framebuffer_->bind();
+    glViewport(0, 0, color_tex_width, color_tex_height);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+    depth_debug_shader_->bind();
+    glActiveTexture(GL_TEXTURE0);
+    shadow_tex_array_->bind();
+    depth_debug_shader_->set_uniform("depth_tex", 0);
+    depth_debug_shader_->set_uniform("layer",
+                                     static_cast<int>(debug_selected_cascade_));
+    glBindVertexArray(quad_vertex_array_);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+    depth_debug_shader_->unbind();
+    debug_quad_framebuffer_->unbind();
+  }
+
+  // display the cascade to the user
+  const auto area = ImGui::GetContentRegionAvail();
+  const auto tex = std::get<std::shared_ptr<GlTexture>>(
+      debug_quad_framebuffer_->color_attachment(0));
+  ImGui::Text("Cascades");
+  ImGui::Image(reinterpret_cast<void *>(tex->id()), {area.x, area.x});
+}
+
+void BlinnPhongApplication::on_render_imgui()
+{
+  ImGui::ShowDemoWindow();
+
+  if (ImGui::BeginTabBar("Renderer tabs"))
+  {
+    if (ImGui::BeginTabItem("General"))
+    {
+      render_imgui_general();
+      ImGui::EndTabItem();
+    }
+
+    if (ImGui::BeginTabItem("Shadows"))
+    {
+      render_imgui_shadows();
+      ImGui::EndTabItem();
+    }
+
+    ImGui::EndTabBar();
+  }
 }
 
 void BlinnPhongApplication::on_key_callback(GLFWwindow * /*window*/,
@@ -723,4 +847,29 @@ void BlinnPhongApplication::recreate_scene_framebuffer()
 
   scene_framebuffer_ = std::make_shared<GlFramebuffer>();
   scene_framebuffer_->attach(config);
+}
+
+void BlinnPhongApplication::calc_shadow_cascades_splits()
+{
+  assert(shadow_cascades_count_ > 0);
+  cascade_frustums_.resize(shadow_cascades_count_);
+
+  const auto near   = camera_near_;
+  const auto lambda = 0.75f;
+  const auto ratio  = camera_far_ / near;
+
+  cascade_frustums_[0].near = near;
+
+  for (std::size_t i = 0; i < cascade_frustums_.size(); ++i)
+  {
+    const auto si = i / static_cast<float>(cascade_frustums_.size());
+
+    cascade_frustums_[i].near =
+        lambda * (near * glm::pow(ratio, si)) +
+        (1 - lambda) * (near + (camera_far_ - near) * si);
+
+    cascade_frustums_[static_cast<int>(i) - 1].far =
+        cascade_frustums_[i].near * 1.005f;
+  }
+  cascade_frustums_[cascade_frustums_.size() - 1].far = camera_far_;
 }

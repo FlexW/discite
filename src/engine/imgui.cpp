@@ -11,3 +11,8 @@ bool imgui_input(const std::string &name, float &value)
 {
   return ImGui::InputFloat(name.c_str(), &value);
 }
+
+bool imgui_input(const std::string &name, bool &value)
+{
+  return ImGui::Checkbox(name.c_str(), &value);
+}

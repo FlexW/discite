@@ -21,9 +21,9 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
 {
   bind();
 
-  bool color_attachment_set = false;
   // Attach the color attachments
   assert(config.color_attachments_.size() <= GL_MAX_COLOR_ATTACHMENTS);
+  std::vector<GLuint> color_attachment_targets;
   for (std::size_t i = 0;
        i < config.color_attachments_.size() && i < GL_MAX_COLOR_ATTACHMENTS;
        ++i)
@@ -44,10 +44,9 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
                              color_attachment.height_,
                              color_attachment.internal_format_,
                              color_attachment.format_);
-        glFramebufferTexture(GL_FRAMEBUFFER,
-                             GL_COLOR_ATTACHMENT0 + i,
-                             texture->id(),
-                             0);
+        const auto target = GL_COLOR_ATTACHMENT0 + i;
+        glFramebufferTexture(GL_FRAMEBUFFER, target, texture->id(), 0);
+        color_attachment_targets.push_back(target);
         color_attachments_.push_back(std::move(texture));
         break;
       }
@@ -59,11 +58,13 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
                                   color_attachment.width_,
                                   color_attachment.height_);
 
+        const auto target = GL_COLOR_ATTACHMENT0 + i;
         glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                                  GL_COLOR_ATTACHMENT0 + i,
+                                  target,
                                   GL_RENDERBUFFER,
                                   renderbuffer->id());
 
+        color_attachment_targets.push_back(target);
         color_attachments_.push_back(std::move(renderbuffer));
         break;
       }
@@ -84,13 +85,17 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
     {
       assert(0 && "Not implemented");
     }
-    color_attachment_set = true;
   }
 
-  if (!color_attachment_set)
+  if (color_attachment_targets.size() == 0)
   {
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
+  }
+  else
+  {
+    glDrawBuffers(color_attachment_targets.size(),
+                  color_attachment_targets.data());
   }
 
   // Attach the depth attachment
