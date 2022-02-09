@@ -13,10 +13,10 @@
 
 #include <memory>
 
-class BlinnPhongApplication : public Application
+class Game : public Application
 {
 public:
-  ~BlinnPhongApplication() override;
+  ~Game() override;
 
 protected:
   void init() override;
@@ -47,13 +47,10 @@ private:
     Mesh     *mesh;
   };
 
-  struct LightFrustum
+  struct CascadeSplit
   {
     float near{};
     float far{};
-    float fov{};
-    float ratio{};
-    float point[8];
   };
 
   bool is_move_camera_{false};
@@ -105,11 +102,7 @@ private:
   int                shadow_tex_width_{4096};
   int                shadow_tex_height_{4096};
   unsigned                  shadow_cascades_count_{4};
-  std::vector<LightFrustum> cascade_frustums_;
-  // std::vector<float> shadow_cascades_levels_{camera_far_ / 50.0f,
-  //                                            camera_far_ / 25.0f,
-  //                                            camera_far_ / 10.0f,
-  //                                            camera_far_ / 2.0f};
+  std::vector<CascadeSplit> cascade_frustums_;
 
   std::shared_ptr<GlFramebuffer> shadow_framebuffer_{};
 

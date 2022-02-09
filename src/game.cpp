@@ -1,4 +1,4 @@
-#include "blinn_phong_application.hpp"
+#include "game.hpp"
 #include "engine/application.hpp"
 #include "engine/defer.hpp"
 #include "engine/gl_framebuffer.hpp"
@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 
-BlinnPhongApplication::~BlinnPhongApplication()
+Game::~Game()
 {
   if (quad_vertex_array_)
   {
@@ -26,7 +26,7 @@ BlinnPhongApplication::~BlinnPhongApplication()
   }
 }
 
-void BlinnPhongApplication::init()
+void Game::init()
 {
   Application::init();
 
@@ -158,10 +158,9 @@ void BlinnPhongApplication::init()
   white_texture_->set_data(white_tex_data.data(), 1, 1, 1, false);
 }
 
-void BlinnPhongApplication::on_window_framebuffer_size_callback(
-    GLFWwindow * /*window*/,
-    int width,
-    int height)
+void Game::on_window_framebuffer_size_callback(GLFWwindow * /*window*/,
+                                               int width,
+                                               int height)
 {
   window_width_  = width;
   window_height_ = height;
@@ -170,14 +169,14 @@ void BlinnPhongApplication::on_window_framebuffer_size_callback(
   recreate_scene_framebuffer();
 }
 
-void BlinnPhongApplication::on_window_close_callback(GLFWwindow *window)
+void Game::on_window_close_callback(GLFWwindow *window)
 {
   glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-void BlinnPhongApplication::on_mouse_movement_callback(GLFWwindow * /*window*/,
-                                                       double x,
-                                                       double y)
+void Game::on_mouse_movement_callback(GLFWwindow * /*window*/,
+                                      double x,
+                                      double y)
 {
   auto x_offset = 0.0;
   auto y_offset = 0.0;
@@ -204,8 +203,8 @@ void BlinnPhongApplication::on_mouse_movement_callback(GLFWwindow * /*window*/,
   }
 }
 
-std::vector<glm::vec4> BlinnPhongApplication::calc_frustum_corners(
-    const glm::mat4 &projection_matrix) const
+std::vector<glm::vec4>
+Game::calc_frustum_corners(const glm::mat4 &projection_matrix) const
 {
   const auto inv = glm::inverse(projection_matrix * camera_.view_matrix());
 
@@ -228,8 +227,7 @@ std::vector<glm::vec4> BlinnPhongApplication::calc_frustum_corners(
   return frustum_corners;
 }
 
-glm::mat4 BlinnPhongApplication::calc_light_space_matrix(float near_plane,
-                                                         float far_plane) const
+glm::mat4 Game::calc_light_space_matrix(float near_plane, float far_plane) const
 {
   const auto projection = glm::perspective(
       glm::radians(camera_.zoom()),
@@ -294,7 +292,7 @@ glm::mat4 BlinnPhongApplication::calc_light_space_matrix(float near_plane,
   return light_projection * light_view;
 }
 
-std::vector<glm::mat4> BlinnPhongApplication::calc_light_space_matrices() const
+std::vector<glm::mat4> Game::calc_light_space_matrices() const
 {
   std::vector<glm::mat4> matrices;
   matrices.reserve(cascade_frustums_.size());
@@ -303,31 +301,10 @@ std::vector<glm::mat4> BlinnPhongApplication::calc_light_space_matrices() const
     matrices.push_back(calc_light_space_matrix(frustum.near, frustum.far));
   }
 
-  // for (std::size_t i = 0; i < shadow_cascades_levels_.size() + 1; ++i)
-  // {
-  //   if (i == 0)
-  //   {
-  //     matrices.push_back(
-  //         calc_light_space_matrix(camera_near_, shadow_cascades_levels_[i]));
-  //   }
-  //   else if (i < shadow_cascades_levels_.size())
-  //   {
-  //     matrices.push_back(calc_light_space_matrix(shadow_cascades_levels_[i -
-  //     1],
-  //                                                shadow_cascades_levels_[i]));
-  //   }
-  //   else
-  //   {
-  //     matrices.push_back(
-  //         calc_light_space_matrix(shadow_cascades_levels_[i - 1],
-  //         camera_far_));
-  //   }
-  // }
-
   return matrices;
 }
 
-void BlinnPhongApplication::on_update(float delta_time)
+void Game::on_update(float delta_time)
 {
   // do we need to close the application?
   if (key(GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -609,7 +586,7 @@ void BlinnPhongApplication::on_update(float delta_time)
   }
 }
 
-void BlinnPhongApplication::recalculate_projection_matrix()
+void Game::recalculate_projection_matrix()
 {
   projection_matrix_ =
       glm::perspective(glm::radians(camera_.zoom()),
@@ -618,12 +595,9 @@ void BlinnPhongApplication::recalculate_projection_matrix()
                        camera_far_);
 }
 
-void BlinnPhongApplication::add_model(std::shared_ptr<Model> model)
-{
-  models_.push_back(model);
-}
+void Game::add_model(std::shared_ptr<Model> model) { models_.push_back(model); }
 
-void BlinnPhongApplication::render_imgui_general()
+void Game::render_imgui_general()
 {
   {
     ImGui::Text("Sky");
@@ -658,8 +632,7 @@ void BlinnPhongApplication::render_imgui_general()
   }
 }
 
-void BlinnPhongApplication::recreate_debug_quad_framebuffer(int new_width,
-                                                            int new_height)
+void Game::recreate_debug_quad_framebuffer(int new_width, int new_height)
 {
   if (debug_quad_width_ == new_width && debug_quad_height_ == new_height)
   {
@@ -683,7 +656,7 @@ void BlinnPhongApplication::recreate_debug_quad_framebuffer(int new_width,
   debug_quad_framebuffer_->attach(framebuffer_config);
 }
 
-void BlinnPhongApplication::render_imgui_shadows()
+void Game::render_imgui_shadows()
 {
   ImGui::Checkbox("Enable shadows", &is_shadows_enabled_);
   if (!is_shadows_enabled_)
@@ -749,10 +722,8 @@ void BlinnPhongApplication::render_imgui_shadows()
   ImGui::Image(reinterpret_cast<void *>(tex->id()), {area.x, area.x});
 }
 
-void BlinnPhongApplication::on_render_imgui()
+void Game::on_render_imgui()
 {
-  ImGui::ShowDemoWindow();
-
   if (ImGui::BeginTabBar("Renderer tabs"))
   {
     if (ImGui::BeginTabItem("General"))
@@ -771,11 +742,11 @@ void BlinnPhongApplication::on_render_imgui()
   }
 }
 
-void BlinnPhongApplication::on_key_callback(GLFWwindow * /*window*/,
-                                            int key,
-                                            int /*scancode*/,
-                                            int action,
-                                            int /*mods*/)
+void Game::on_key_callback(GLFWwindow * /*window*/,
+                           int key,
+                           int /*scancode*/,
+                           int action,
+                           int /*mods*/)
 {
   if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_PRESS)
   {
@@ -787,7 +758,7 @@ void BlinnPhongApplication::on_key_callback(GLFWwindow * /*window*/,
   }
 }
 
-void BlinnPhongApplication::set_move_camera(bool value)
+void Game::set_move_camera(bool value)
 {
   if (value)
   {
@@ -800,7 +771,7 @@ void BlinnPhongApplication::set_move_camera(bool value)
   is_move_camera_ = value;
 }
 
-void BlinnPhongApplication::move_camera(float delta_time)
+void Game::move_camera(float delta_time)
 {
   if (!is_move_camera_)
   {
@@ -825,7 +796,7 @@ void BlinnPhongApplication::move_camera(float delta_time)
   }
 }
 
-void BlinnPhongApplication::recreate_scene_framebuffer()
+void Game::recreate_scene_framebuffer()
 {
   FramebufferAttachmentCreateConfig color_config{};
   color_config.type_            = AttachmentType::Texture;
@@ -849,7 +820,7 @@ void BlinnPhongApplication::recreate_scene_framebuffer()
   scene_framebuffer_->attach(config);
 }
 
-void BlinnPhongApplication::calc_shadow_cascades_splits()
+void Game::calc_shadow_cascades_splits()
 {
   assert(shadow_cascades_count_ > 0);
   cascade_frustums_.resize(shadow_cascades_count_);

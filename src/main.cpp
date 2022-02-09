@@ -1,7 +1,7 @@
-#include "blinn_phong_application.hpp"
+#include "game.hpp"
 
 int main()
 {
-  BlinnPhongApplication app;
+  Game app;
   return app.run();
 }
