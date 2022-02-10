@@ -22,7 +22,7 @@ public:
 private:
   glm::vec3 direction_{0.0f};
 
-  glm::vec3 ambient_color_{0.4f};
-  glm::vec3 diffuse_color_{0.8f};
-  glm::vec3 specular_color_{1.0f};
+  glm::vec3 ambient_color_{1.0f};
+  glm::vec3 diffuse_color_{15.0f};
+  glm::vec3 specular_color_{50.0f};
 };

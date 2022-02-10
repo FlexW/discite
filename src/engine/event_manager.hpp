@@ -9,7 +9,7 @@
 #include <queue>
 #include <unordered_map>
 
-using EventListener = fastdelegate::FastDelegate1<std::shared_ptr<Event>>;
+using EventListener = fastdelegate::FastDelegate1<const Event &>;
 
 class EventManager
 {

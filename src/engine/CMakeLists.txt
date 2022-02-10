@@ -5,6 +5,9 @@ set_warnings_as_errors(engine)
 target_compile_definitions(engine PUBLIC GLFW_INCLUDE_NONE)
 
 target_sources(engine PRIVATE
+  event.cpp
+  event_manager.cpp
+  window.cpp
   camera.cpp
   config.cpp
   debug_draw.cpp
@@ -26,7 +29,7 @@ target_sources(engine PRIVATE
   material.cpp
   texture_cache.cpp
   mesh.cpp
-  application.cpp
+  engine.cpp
   directional_light.cpp
   imgui.cpp
   point_light.cpp

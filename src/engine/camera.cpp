@@ -1,21 +1,9 @@
 #include "camera.hpp"
 
-#include <iostream>
-
-Camera::Camera(const glm::vec3 &position,
-               const glm::vec3 &world_up,
-               const float      yaw,
-               const float      pitch)
-    : position_(position),
-      front_(glm::vec3(0.0f, 0.0f, -1.0f)),
-      world_up_(world_up),
-      yaw_(yaw),
-      pitch_(pitch),
-      movement_speed_(SPEED),
-      mouse_sensitivity_(SENSITIVITY),
-      zoom_(ZOOM)
+Camera::Camera()
 {
   update_camera_vectors();
+  recalculate_projection_matrix();
 }
 
 glm::mat4 Camera::view_matrix() const
@@ -131,3 +119,37 @@ void Camera::set_pitch(float value)
   pitch_ = value;
   update_camera_vectors();
 }
+
+void Camera::set_near_plane(float value)
+{
+  near_plane_ = value;
+  recalculate_projection_matrix();
+}
+
+float Camera::near_plane() const { return near_plane_; }
+
+void Camera::set_far_plane(float value)
+{
+  far_plane_ = value;
+  recalculate_projection_matrix();
+}
+
+float Camera::far_plane() const { return far_plane_; }
+
+void Camera::set_aspect_ratio(float value)
+{
+  aspect_ratio_ = value;
+  recalculate_projection_matrix();
+}
+
+float Camera::aspect_ratio() const { return aspect_ratio_; }
+
+void Camera::recalculate_projection_matrix()
+{
+  projection_matrix_ = glm::perspective(glm::radians(zoom_),
+                                        aspect_ratio_,
+                                        near_plane_,
+                                        far_plane_);
+}
+
+glm::mat4 Camera::projection_matrix() const { return projection_matrix_; }

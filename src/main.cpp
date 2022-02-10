@@ -1,7 +1,11 @@
-#include "game.hpp"
+#include "discite.hpp"
+#include "engine/engine.hpp"
+
+#include <memory>
 
 int main()
 {
-  Game app;
-  return app.run();
+  const auto engine = Engine::instance();
+  engine->set_game(std::make_unique<Discite>());
+  return engine->run();
 }

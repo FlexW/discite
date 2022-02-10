@@ -67,7 +67,7 @@ void EventManager::dispatch()
     for (auto iter = listeners.begin(); iter != listeners.end(); ++iter)
     {
       auto &listener = (*iter);
-      listener(event);
+      listener(*event);
     }
   }
 }

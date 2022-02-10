@@ -82,3 +82,6 @@ target_sources(imgui PRIVATE
   deps/src/imgui/backends/imgui_impl_opengl3.cpp
   )
 target_include_directories(imgui PUBLIC deps/src/imgui deps/src/imgui/backends)
+
+# EnTT
+add_subdirectory(deps/src/entt)

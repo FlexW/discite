@@ -9,21 +9,21 @@ void PointLight::set_ambient_color(const glm::vec3 &value)
   ambient_color_ = value;
 }
 
-glm::vec3 PointLight::ambient_color() { return ambient_color_; }
+glm::vec3 PointLight::ambient_color() const { return ambient_color_; }
 
 void PointLight::set_diffuse_color(const glm::vec3 &value)
 {
   diffuse_color_ = value;
 }
 
-glm::vec3 PointLight::diffuse_color() { return diffuse_color_; }
+glm::vec3 PointLight::diffuse_color() const { return diffuse_color_; }
 
 void PointLight::set_specular_color(const glm::vec3 &value)
 {
   specular_color_ = value;
 }
 
-glm::vec3 PointLight::specular_color() { return specular_color_; }
+glm::vec3 PointLight::specular_color() const { return specular_color_; }
 
 void PointLight::set_constant(float value) { constant_ = value; }
 

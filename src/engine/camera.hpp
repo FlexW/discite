@@ -10,19 +10,10 @@ enum class CameraMovement
   Right
 };
 
-const float YAW         = -90.0f;
-const float PITCH       = 0.0f;
-const float SPEED       = 20.0f;
-const float SENSITIVITY = 0.2f;
-const float ZOOM        = 45.0f;
-
 class Camera
 {
 public:
-  Camera(const glm::vec3 &position = glm::vec3(0.0f),
-         const glm::vec3 &world_up = glm::vec3(0.0f, 1.0f, 0.0f),
-         const float      yaw      = YAW,
-         const float      pitch    = PITCH);
+  Camera();
 
   glm::mat4 view_matrix() const;
 
@@ -50,22 +41,39 @@ public:
 
   void set_movement_speed(float value);
 
+  void  set_near_plane(float value);
+  float near_plane() const;
+
+  void  set_far_plane(float value);
+  float far_plane() const;
+
+  void  set_aspect_ratio(float value);
+  float aspect_ratio() const;
+
+  glm::mat4 projection_matrix() const;
+
 private:
-  glm::vec3 position_;
-  glm::vec3 front_;
-  glm::vec3 front_movement_;
-  glm::vec3 up_;
+  glm::vec3 position_{0.0f};
+  glm::vec3 front_{0.0f, 0.0f, -1.0f};
+  glm::vec3 front_movement_{front_};
+  glm::vec3 world_up_{0.0f, 1.0f, 0.0f};
+  glm::vec3 up_{world_up_};
   glm::vec3 right_;
-  glm::vec3 world_up_;
 
-  float yaw_;
-  float pitch_;
+  float yaw_{-90.0f};
+  float pitch_{0.0f};
 
-  float movement_speed_;
-  float mouse_sensitivity_;
-  float zoom_;
+  float movement_speed_{20.0f};
+  float mouse_sensitivity_{0.2f};
+  float zoom_{45.0f};
 
-  bool free_fly_ = true;
+  bool free_fly_{true};
+
+  float     near_plane_{0.1f};
+  float     far_plane_{500.0f};
+  float     aspect_ratio_{1280.0f / 1024.0f};
+  glm::mat4 projection_matrix_{1.0f};
 
   void update_camera_vectors();
+  void recalculate_projection_matrix();
 };

@@ -9,13 +9,13 @@ public:
   glm::vec3 position() const;
 
   void      set_ambient_color(const glm::vec3 &value);
-  glm::vec3 ambient_color();
+  glm::vec3 ambient_color() const;
 
   void      set_diffuse_color(const glm::vec3 &value);
-  glm::vec3 diffuse_color();
+  glm::vec3 diffuse_color() const;
 
   void      set_specular_color(const glm::vec3 &value);
-  glm::vec3 specular_color();
+  glm::vec3 specular_color() const;
 
   void  set_constant(float value);
   float constant() const;
