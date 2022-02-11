@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/camera.hpp"
+#include "camera.hpp"
 
 struct CameraComponent
 {

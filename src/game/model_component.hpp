@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/mesh.hpp"
+#include "mesh.hpp"
 
 struct ModelComponent
 {

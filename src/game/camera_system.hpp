@@ -1,8 +1,9 @@
 #pragma once
 
-#include "engine/event.hpp"
+#include "event.hpp"
 #include "scene.hpp"
 #include "system.hpp"
+#include "window.hpp"
 
 class CameraSystem : public System
 {
@@ -16,11 +17,13 @@ public:
   void render(SceneRenderInfo &scene_render_info,
               ViewRenderInfo  &view_render_info) override;
 
+  bool on_event(const Event &event) override;
+
 private:
   std::weak_ptr<Scene> scene_{};
 
   void shutdown();
 
-  void on_mouse_movement(const Event &event);
-  void on_window_resize(const Event &event);
+  bool on_mouse_movement(const MouseMovementEvent &event);
+  bool on_window_resize(const WindowResizeEvent &event);
 };

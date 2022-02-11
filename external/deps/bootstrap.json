@@ -28,7 +28,7 @@
     "source": {
       "type": "git",
       "url": "https://github.com/ocornut/imgui.git",
-      "revision": "v1.86"
+      "revision": "1e14cc5cae703b7cdf0e33c50165d6dd289fcb1f"
     }
   },
   {

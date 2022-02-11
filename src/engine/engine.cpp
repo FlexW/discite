@@ -8,9 +8,9 @@
 #include <memory>
 #include <stdexcept>
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+// #include <imgui.h>
+// #include <imgui_impl_glfw.h>
+// #include <imgui_impl_opengl3.h>
 
 Engine *Engine::instance()
 {
@@ -34,7 +34,10 @@ int Engine::run()
   return EXIT_SUCCESS;
 }
 
-void Engine::set_game(std::unique_ptr<Game> game) { game_ = std::move(game); }
+void Engine::push_layer(std::unique_ptr<Layer> layer)
+{
+  layer_stack_.push_layer(std::move(layer));
+}
 
 void Engine::load_config()
 {
@@ -81,41 +84,38 @@ void Engine::init()
 {
   load_config();
   set_log_level();
-  window_ = std::make_unique<Window>();
-  init_imgui();
-  assert(game_);
-  game_->init();
+  window_ = std::make_shared<Window>();
+  // init_imgui();
+  layer_stack_.init();
 }
 
 void Engine::main_loop()
 {
-  assert(game_);
-
   auto last_time = current_time_millis();
 
   while (!window_->is_close() && !is_close_)
   {
     window_->dispatch_events();
-    event_manager_->dispatch();
+    event_manager_->dispatch([this](const Event &event)
+                             { layer_stack_.on_event(event); });
 
     // calculate delta time
     const auto delta_time = (current_time_millis() - last_time) / 1000.0f;
     last_time             = current_time_millis();
 
-    game_->update(delta_time);
-    game_->render();
+    layer_stack_.update(delta_time);
+    layer_stack_.render();
 
-    // render imgui
-    {
-      // start imgui frame
-      ImGui_ImplOpenGL3_NewFrame();
-      ImGui_ImplGlfw_NewFrame();
-      ImGui::NewFrame();
-      game_->render_imgui();
-      // finish imgui frame
-      ImGui::Render();
-      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    }
+    // // render imgui
+    // {
+    //   // start imgui frame
+    //   ImGui_ImplOpenGL3_NewFrame();
+    //   ImGui_ImplGlfw_NewFrame();
+    //   ImGui::NewFrame();
+    //   // finish imgui frame
+    //   ImGui::Render();
+    //   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    // }
 
     window_->swap_buffers();
   }
@@ -123,11 +123,11 @@ void Engine::main_loop()
 
 void Engine::shutdown()
 {
-  // make sure game gets unloaded before the engine stops
-  game_ = nullptr;
+  // make sure layers get unloaded before the engine stops
+  layer_stack_.shutdown();
 
   // stop the window
-  shutdown_imgui();
+  // shutdown_imgui();
   window_ = nullptr;
 
   // shutdown other systems
@@ -139,19 +139,19 @@ void Engine::set_close(bool value) { is_close_ = value; }
 
 void Engine::init_imgui()
 {
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  ImGui::StyleColorsDark();
+  // IMGUI_CHECKVERSION();
+  // ImGui::CreateContext();
+  // ImGui::StyleColorsDark();
 
-  ImGui_ImplGlfw_InitForOpenGL(window_->handle(), true);
-  ImGui_ImplOpenGL3_Init("#version 460 core");
+  // ImGui_ImplGlfw_InitForOpenGL(window_->handle(), true);
+  // ImGui_ImplOpenGL3_Init("#version 460 core");
 }
 
 void Engine::shutdown_imgui()
 {
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplGlfw_Shutdown();
-  ImGui::DestroyContext();
+  // ImGui_ImplOpenGL3_Shutdown();
+  // ImGui_ImplGlfw_Shutdown();
+  // ImGui::DestroyContext();
 }
 
 Config *Engine::config() const { return config_.get(); }
@@ -159,3 +159,5 @@ Config *Engine::config() const { return config_.get(); }
 Window *Engine::window() const { return window_.get(); }
 
 EventManager *Engine::event_manager() const { return event_manager_.get(); }
+
+LayerStack *Engine::layer_stack() { return &layer_stack_; }

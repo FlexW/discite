@@ -2,12 +2,10 @@
 
 #include "config.hpp"
 #include "event_manager.hpp"
-#include "game.hpp"
 #include "gl.hpp"
+#include "layer_stack.hpp"
 #include "log.hpp"
 #include "window.hpp"
-
-#include <GLFW/glfw3.h>
 
 #include <filesystem>
 #include <memory>
@@ -19,19 +17,21 @@ public:
 
   int run();
 
-  void set_game(std::unique_ptr<Game> game);
+  void push_layer(std::unique_ptr<Layer> layer);
+
   void set_close(bool value);
 
   Config       *config() const;
   Window       *window() const;
   EventManager *event_manager() const;
+  LayerStack   *layer_stack();
 
 private:
   std::filesystem::path project_path_ = std::filesystem::current_path();
 
   std::unique_ptr<Config>       config_{std::make_unique<Config>()};
-  std::unique_ptr<Game>         game_;
-  std::unique_ptr<Window>       window_;
+  LayerStack                    layer_stack_;
+  std::shared_ptr<Window>       window_;
   std::unique_ptr<EventManager> event_manager_{
       std::make_unique<EventManager>()};
 

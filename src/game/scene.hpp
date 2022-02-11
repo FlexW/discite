@@ -16,6 +16,8 @@ public:
   void render(SceneRenderInfo &scene_render_info,
               ViewRenderInfo  &view_render_info);
 
+  bool on_event(const Event &event);
+
   template <typename TSystem, typename... TArgs>
   void create_system(TArgs &&...args)
   {

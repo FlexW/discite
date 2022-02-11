@@ -4,6 +4,8 @@ set_warnings_as_errors(engine)
  # We include the GL loader ourselfs
 target_compile_definitions(engine PUBLIC GLFW_INCLUDE_NONE)
 
+target_include_directories(engine PUBLIC .)
+
 target_sources(engine PRIVATE
   event.cpp
   event_manager.cpp
@@ -33,6 +35,7 @@ target_sources(engine PRIVATE
   directional_light.cpp
   imgui.cpp
   point_light.cpp
+  layer_stack.cpp
   )
 
 target_link_libraries(engine PUBLIC

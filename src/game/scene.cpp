@@ -1,5 +1,6 @@
 #include "scene.hpp"
 #include "entity.hpp"
+#include "event.hpp"
 #include "render_system.hpp"
 #include "tag_component.hpp"
 #include "transform_component.hpp"
@@ -34,6 +35,16 @@ void Scene::render(SceneRenderInfo &scene_render_info,
   {
     system->render(scene_render_info, view_render_info);
   }
+}
+
+bool Scene::on_event(const Event &event)
+{
+  for (const auto &system : systems_)
+  {
+    system->on_event(event);
+  }
+
+  return false;
 }
 
 entt::registry &Scene::registry() { return registry_; }

@@ -1,38 +1,17 @@
 #include "camera_system.hpp"
 #include "camera_component.hpp"
-#include "engine/camera.hpp"
-#include "engine/engine.hpp"
-#include "engine/log.hpp"
-#include "engine/window.hpp"
+#include "engine.hpp"
+#include "log.hpp"
 #include "transform_component.hpp"
+#include "window.hpp"
 
 CameraSystem::CameraSystem(std::weak_ptr<Scene> scene) : scene_{scene} {}
 
 CameraSystem::~CameraSystem() { shutdown(); }
 
-void CameraSystem::shutdown()
-{
-  const auto event_manager = Engine::instance()->event_manager();
+void CameraSystem::shutdown() {}
 
-  event_manager->unsubscribe(
-      fastdelegate::MakeDelegate(this, &CameraSystem::on_window_resize),
-      WindowResizeEvent::id);
-  event_manager->unsubscribe(
-      fastdelegate::MakeDelegate(this, &CameraSystem::on_mouse_movement),
-      MouseMovementEvent::id);
-}
-
-void CameraSystem::init()
-{
-  const auto event_manager = Engine::instance()->event_manager();
-
-  event_manager->subscribe(
-      fastdelegate::MakeDelegate(this, &CameraSystem::on_window_resize),
-      WindowResizeEvent::id);
-  event_manager->subscribe(
-      fastdelegate::MakeDelegate(this, &CameraSystem::on_mouse_movement),
-      MouseMovementEvent::id);
-}
+void CameraSystem::init() {}
 
 void CameraSystem::update(float delta_time)
 {
@@ -113,15 +92,12 @@ void CameraSystem::render(SceneRenderInfo & /*scene_render_info*/,
   }
 }
 
-void CameraSystem::on_mouse_movement(const Event &event)
+bool CameraSystem::on_mouse_movement(const MouseMovementEvent &event)
 {
-  const auto &mouse_movement_event =
-      dynamic_cast<const MouseMovementEvent &>(event);
-
   const auto scene = scene_.lock();
   if (!scene)
   {
-    return;
+    return false;
   }
 
   auto &registry = scene->registry();
@@ -136,20 +112,18 @@ void CameraSystem::on_mouse_movement(const Event &event)
     }
 
     auto &camera = camera_component.camera_;
-    camera.process_rotation(mouse_movement_event.offset_x_,
-                            mouse_movement_event.offset_y_);
+    camera.process_rotation(event.offset_x_, event.offset_y_);
   }
+
+  return false;
 }
 
-void CameraSystem::on_window_resize(const Event &event)
+bool CameraSystem::on_window_resize(const WindowResizeEvent &event)
 {
-  const auto &window_resize_event =
-      dynamic_cast<const WindowResizeEvent &>(event);
-
   const auto scene = scene_.lock();
   if (!scene)
   {
-    return;
+    return false;
   }
 
   auto &registry = scene->registry();
@@ -164,7 +138,24 @@ void CameraSystem::on_window_resize(const Event &event)
     }
 
     auto &camera = camera_component.camera_;
-    camera.set_aspect_ratio(static_cast<float>(window_resize_event.width_) /
-                            window_resize_event.height_);
+    camera.set_aspect_ratio(static_cast<float>(event.width_) / event.height_);
   }
+
+  return false;
+}
+
+bool CameraSystem::on_event(const Event &event)
+{
+  const auto event_id = event.id();
+
+  if (event_id == MouseMovementEvent::id)
+  {
+    return on_mouse_movement(dynamic_cast<const MouseMovementEvent &>(event));
+  }
+  else if (event_id == WindowResizeEvent::id)
+  {
+    return on_window_resize(dynamic_cast<const WindowResizeEvent &>(event));
+  }
+
+  return false;
 }

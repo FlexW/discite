@@ -1,12 +1,12 @@
 #pragma once
 
-#include "engine/directional_light.hpp"
-#include "engine/gl_framebuffer.hpp"
-#include "engine/gl_shader.hpp"
-#include "engine/gl_texture_array.hpp"
-#include "engine/math.hpp"
-#include "engine/mesh.hpp"
-#include "engine/point_light.hpp"
+#include "directional_light.hpp"
+#include "gl_framebuffer.hpp"
+#include "gl_shader.hpp"
+#include "gl_texture_array.hpp"
+#include "math.hpp"
+#include "mesh.hpp"
+#include "point_light.hpp"
 
 #include <memory>
 
@@ -85,9 +85,10 @@ public:
   void submit(const SceneRenderInfo &scene_render_info,
               const ViewRenderInfo  &view_render_info);
 
-  void render_imgui();
-
 private:
+  // TODO: Workaround. Expose public API
+  friend class RendererPanel;
+
   struct CascadeSplit
   {
     float near{};
@@ -154,7 +155,4 @@ private:
 
   void recreate_scene_framebuffer(int width, int height);
   void recreate_debug_quad_framebuffer(int new_width, int new_height);
-
-  void render_imgui_general();
-  void render_imgui_shadows();
 };

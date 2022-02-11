@@ -2,12 +2,12 @@
 #include "camera_component.hpp"
 #include "camera_system.hpp"
 #include "directional_light_component.hpp"
-#include "engine/engine.hpp"
-#include "engine/texture_cache.hpp"
+#include "engine.hpp"
 #include "entity.hpp"
 #include "model_component.hpp"
 #include "render_system.hpp"
 #include "renderer.hpp"
+#include "texture_cache.hpp"
 #include "transform_component.hpp"
 
 #include <memory>
@@ -50,6 +50,8 @@ void Discite::init()
   scene_->init();
 }
 
+void Discite::shutdown() {}
+
 void Discite::update(float delta_time)
 {
   if (scene_)
@@ -72,4 +74,6 @@ void Discite::render()
   renderer_->submit(scene_render_info, view_render_info);
 }
 
-void Discite::render_imgui() { renderer_->render_imgui(); }
+std::shared_ptr<Renderer> Discite::renderer() const { return renderer_; }
+
+bool Discite::on_event(const Event &event) { return scene_->on_event(event); }

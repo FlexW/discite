@@ -4,7 +4,10 @@
 #include "gl.hpp"
 #include "log.hpp"
 
+#include <GLFW/glfw3.h>
+
 #include <cassert>
+#include <memory>
 #include <stdexcept>
 
 namespace
@@ -168,6 +171,7 @@ Key to_key(int key)
   }
 
   LOG_WARN() << "Unknown key: " << key;
+  assert(0);
 
   return Key::Undefined;
 }
@@ -198,6 +202,7 @@ MouseButton to_mouse_button(int mouse_button)
   }
 
   LOG_WARN() << "Unknown GLFW mouse button: " << mouse_button;
+  assert(0);
 
   return MouseButton::Undefined;
 }
@@ -217,24 +222,158 @@ MouseButtonAction to_mouse_button_action(int mouse_button_action)
   return MouseButtonAction::Undefined;
 }
 
+} // namespace
+
 int to_glfw(Key key)
 {
   switch (key)
   {
-  case Key::W:
-    return GLFW_KEY_W;
-
-  case Key::S:
-    return GLFW_KEY_S;
-
   case Key::A:
     return GLFW_KEY_A;
+
+  case Key::B:
+    return GLFW_KEY_B;
+
+  case Key::C:
+    return GLFW_KEY_C;
 
   case Key::D:
     return GLFW_KEY_D;
 
+  case Key::E:
+    return GLFW_KEY_E;
+
+  case Key::F:
+    return GLFW_KEY_F;
+
+  case Key::G:
+    return GLFW_KEY_G;
+
+  case Key::H:
+    return GLFW_KEY_H;
+
+  case Key::I:
+    return GLFW_KEY_I;
+
+  case Key::J:
+    return GLFW_KEY_J;
+
+  case Key::K:
+    return GLFW_KEY_K;
+
+  case Key::L:
+    return GLFW_KEY_L;
+
+  case Key::M:
+    return GLFW_KEY_M;
+
+  case Key::N:
+    return GLFW_KEY_N;
+
+  case Key::O:
+    return GLFW_KEY_O;
+
+  case Key::P:
+    return GLFW_KEY_P;
+
+  case Key::Q:
+    return GLFW_KEY_Q;
+
+  case Key::R:
+    return GLFW_KEY_R;
+
+  case Key::S:
+    return GLFW_KEY_S;
+
+  case Key::T:
+    return GLFW_KEY_T;
+
+  case Key::U:
+    return GLFW_KEY_U;
+
+  case Key::V:
+    return GLFW_KEY_V;
+
+  case Key::W:
+    return GLFW_KEY_W;
+
+  case Key::X:
+    return GLFW_KEY_X;
+
+  case Key::Y:
+    return GLFW_KEY_Y;
+
+  case Key::Z:
+    return GLFW_KEY_Z;
+
+  case Key::Tab:
+    return GLFW_KEY_TAB;
+
+  case Key::Home:
+    return GLFW_KEY_HOME;
+
+  case Key::End:
+    return GLFW_KEY_END;
+
+  case Key::PageUp:
+    return GLFW_KEY_PAGE_UP;
+
+  case Key::PageDown:
+    return GLFW_KEY_PAGE_DOWN;
+
+  case Key::KeyPadEnter:
+    return GLFW_KEY_KP_ENTER;
+
+  case Key::LeftShift:
+    return GLFW_KEY_LEFT_SHIFT;
+
+  case Key::RightShift:
+    return GLFW_KEY_RIGHT_SHIFT;
+
+  case Key::RightSuper:
+    return GLFW_KEY_RIGHT_SUPER;
+
+  case Key::LeftSuper:
+    return GLFW_KEY_LEFT_SUPER;
+
   case Key::LeftControl:
     return GLFW_KEY_LEFT_CONTROL;
+
+  case Key::RightControl:
+    return GLFW_KEY_LEFT_CONTROL;
+
+  case Key::LeftAlt:
+    return GLFW_KEY_LEFT_ALT;
+
+  case Key::RightAlt:
+    return GLFW_KEY_RIGHT_ALT;
+
+  case Key::Left:
+    return GLFW_KEY_LEFT;
+
+  case Key::Right:
+    return GLFW_KEY_RIGHT;
+
+  case Key::Up:
+    return GLFW_KEY_UP;
+
+  case Key::Down:
+    return GLFW_KEY_DOWN;
+
+  case Key::Space:
+    return GLFW_KEY_SPACE;
+
+  case Key::Backspace:
+    return GLFW_KEY_BACKSPACE;
+
+  case Key::Delete:
+    return GLFW_KEY_DELETE;
+
+  case Key::Insert:
+    return GLFW_KEY_INSERT;
+
+  case Key::Enter:
+    return GLFW_KEY_ENTER;
 
   case Key::Escape:
     return GLFW_KEY_ESCAPE;
@@ -246,7 +385,54 @@ int to_glfw(Key key)
   return GLFW_KEY_UNKNOWN;
 }
 
-} // namespace
+int to_glfw(KeyAction action)
+{
+  switch (action)
+  {
+  case KeyAction::Press:
+    return GLFW_PRESS;
+
+  case KeyAction::Release:
+    return GLFW_RELEASE;
+
+  case KeyAction::Undefined:
+    return GLFW_RELEASE;
+  };
+  assert(0);
+}
+
+int to_glfw(MouseButton button)
+{
+  switch (button)
+  {
+  case MouseButton::Left:
+    return GLFW_MOUSE_BUTTON_LEFT;
+
+  case MouseButton::Right:
+    return GLFW_MOUSE_BUTTON_RIGHT;
+
+  case MouseButton::Undefined:
+    return GLFW_MOUSE_BUTTON_LEFT;
+  }
+
+  assert(0);
+}
+
+int to_glfw(MouseButtonAction action)
+{
+  switch (action)
+  {
+  case MouseButtonAction::Press:
+    return GLFW_PRESS;
+
+  case MouseButtonAction::Release:
+    return GLFW_RELEASE;
+
+  case MouseButtonAction::Undefined:
+    return GLFW_RELEASE;
+  };
+  assert(0);
+}
 
 EventId WindowResizeEvent::id = 0xc5f4032c;
 
@@ -263,10 +449,11 @@ WindowCloseEvent::WindowCloseEvent() : Event{id} {}
 
 EventId KeyEvent::id = 0x7d186e9f;
 
-KeyEvent::KeyEvent(Key key, KeyAction key_action)
+KeyEvent::KeyEvent(Key key, KeyAction key_action, int scancode)
     : Event{id},
       key_{key},
-      key_action_{key_action}
+      key_action_{key_action},
+      scancode_{scancode}
 {
 }
 
@@ -277,6 +464,42 @@ MouseButtonEvent::MouseButtonEvent(MouseButton       mouse_button,
     : Event{id},
       mouse_button_{mouse_button},
       mouse_button_action_{mouse_button_action}
+{
+}
+
+EventId WindowFocusEvent::id = 0x753c7d2a;
+
+WindowFocusEvent::WindowFocusEvent(bool focused) : Event{id}, focused_{focused}
+{
+}
+
+EventId CursorEnterEvent::id = 0xd0223452;
+
+CursorEnterEvent::CursorEnterEvent(bool entered) : Event{id}, entered_{entered}
+{
+}
+
+EventId ScrollEvent::id = 0xe00815fa;
+
+ScrollEvent::ScrollEvent(double x_offset, double y_offset)
+    : Event{id},
+      x_offset_{x_offset},
+      y_offset_{y_offset}
+{
+}
+
+EventId CharEvent::id = 0x0a7091f6;
+
+CharEvent::CharEvent(unsigned int character) : Event{id}, character_{character}
+{
+}
+
+EventId MonitorEvent::id = 0xdaabb915;
+
+MonitorEvent::MonitorEvent(std::shared_ptr<Monitor> monitor, int event)
+    : Event{id},
+      monitor_{monitor},
+      event_{event}
 {
 }
 
@@ -293,6 +516,10 @@ MouseMovementEvent::MouseMovementEvent(double x,
       offset_y_{offset_y}
 {
 }
+
+Monitor::Monitor(GLFWmonitor *handle) : handle_{handle} {}
+
+GLFWmonitor *Monitor::handle() { return handle_; }
 
 Window::Window()
 {
@@ -340,10 +567,15 @@ Window::Window()
   // enable vsync
   glfwSwapInterval(0);
 
-  glfwSetFramebufferSizeCallback(window_, window_framebuffer_size_callback);
+  glfwSetWindowFocusCallback(window_, window_focus_callback);
+  glfwSetCursorEnterCallback(window_, cursor_enter_callback);
   glfwSetCursorPosCallback(window_, mouse_movement_callback);
   glfwSetMouseButtonCallback(window_, mouse_button_callback);
+  glfwSetScrollCallback(window_, scroll_callback);
   glfwSetKeyCallback(window_, key_callback);
+  glfwSetCharCallback(window_, char_callback);
+  glfwSetMonitorCallback(monitor_callback);
+  glfwSetFramebufferSizeCallback(window_, window_framebuffer_size_callback);
   glfwSetWindowCloseCallback(window_, window_close_callback);
 
   glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -386,13 +618,73 @@ Window::Window()
 
 bool Window::is_close() { return glfwWindowShouldClose(window_); }
 
+void Window::set_capture_mouse(bool value)
+{
+  if (value)
+  {
+    glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  }
+  else
+  {
+    glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  }
+}
+
+bool Window::cursor_captured() const
+{
+  return glfwGetInputMode(window_, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
+}
+
+void Window::set_cursor_position(double x, double y)
+{
+  glfwSetCursorPos(window_, x, y);
+}
+
+std::pair<double, double> Window::cursor_position() const
+{
+  double mouse_x{};
+  double mouse_y{};
+
+  glfwGetCursorPos(window_, &mouse_x, &mouse_y);
+
+  return {mouse_x, mouse_y};
+}
+
+std::pair<int, int> Window::position() const
+{
+  int window_x{};
+  int window_y{};
+
+  glfwGetWindowPos(window_, &window_x, &window_y);
+
+  return {window_x, window_y};
+}
+
 int Window::width() const { return window_width_; }
 
 int Window::height() const { return window_height_; }
 
+int Window::framebuffer_width() const
+{
+  int w{};
+  int h{};
+  glfwGetFramebufferSize(window_, &w, &h);
+  return w;
+}
+
+int Window::framebuffer_height() const
+{
+  int w{};
+  int h{};
+  glfwGetFramebufferSize(window_, &w, &h);
+  return h;
+}
+
 void Window::dispatch_events() { glfwPollEvents(); }
 
 void Window::swap_buffers() { glfwSwapBuffers(window_); }
+
+double Window::time() const { return glfwGetTime(); }
 
 void Window::window_framebuffer_size_callback(GLFWwindow *w,
                                               int         width,
@@ -400,14 +692,14 @@ void Window::window_framebuffer_size_callback(GLFWwindow *w,
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
   assert(window);
-  window->on_window_framebuffer_size_callback(width, height);
+  window->on_window_framebuffer_size(width, height);
 }
 
 void Window::window_close_callback(GLFWwindow *w)
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
   assert(window);
-  window->on_window_close_callback();
+  window->on_window_close();
 }
 
 void Window::key_callback(GLFWwindow *w,
@@ -418,7 +710,7 @@ void Window::key_callback(GLFWwindow *w,
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
   assert(window);
-  window->on_key_callback(key, scancode, action, mods);
+  window->on_key(key, scancode, action, mods);
 }
 
 void Window::mouse_button_callback(GLFWwindow *w,
@@ -428,17 +720,76 @@ void Window::mouse_button_callback(GLFWwindow *w,
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
   assert(window);
-  window->on_mouse_button_callback(button, action, mods);
+  window->on_mouse_button(button, action, mods);
 }
 
 void Window::mouse_movement_callback(GLFWwindow *w, double x, double y)
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
   assert(window);
-  window->on_mouse_movement_callback(x, y);
+  window->on_mouse_movement(x, y);
 }
 
-void Window::on_window_framebuffer_size_callback(int width, int height)
+void Window::monitor_callback(GLFWmonitor *m, int event)
+{
+  const auto monitor       = std::make_shared<Monitor>(m);
+  const auto monitor_event = std::make_shared<MonitorEvent>(monitor, event);
+  Engine::instance()->event_manager()->publish(monitor_event);
+}
+
+void Window::char_callback(GLFWwindow *w, unsigned int character)
+{
+  auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
+  assert(window);
+  window->on_char(character);
+}
+
+void Window::scroll_callback(GLFWwindow *w, double xoffset, double yoffset)
+{
+  auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
+  assert(window);
+  window->on_scroll(xoffset, yoffset);
+}
+
+void Window::cursor_enter_callback(GLFWwindow *w, int entered)
+{
+  auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
+  assert(window);
+  window->on_cursor_enter(entered);
+}
+
+void Window::window_focus_callback(GLFWwindow *w, int focused)
+{
+  auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
+  assert(window);
+  window->on_window_focus(focused);
+}
+
+void Window::on_char(char character)
+{
+  const auto event = std::make_shared<CharEvent>(character);
+  Engine::instance()->event_manager()->publish(event);
+}
+
+void Window::on_scroll(double xoffset, double yoffset)
+{
+  const auto event = std::make_shared<ScrollEvent>(xoffset, yoffset);
+  Engine::instance()->event_manager()->publish(event);
+}
+
+void Window::on_cursor_enter(int entered)
+{
+  const auto event = std::make_shared<CursorEnterEvent>(entered);
+  Engine::instance()->event_manager()->publish(event);
+}
+
+void Window::on_window_focus(int focused)
+{
+  const auto event = std::make_shared<WindowFocusEvent>(focused);
+  Engine::instance()->event_manager()->publish(event);
+}
+
+void Window::on_window_framebuffer_size(int width, int height)
 {
   window_width_  = width;
   window_height_ = height;
@@ -447,7 +798,7 @@ void Window::on_window_framebuffer_size_callback(int width, int height)
   Engine::instance()->event_manager()->publish(event);
 }
 
-void Window::on_window_close_callback()
+void Window::on_window_close()
 {
   glfwSetWindowShouldClose(window_, GLFW_TRUE);
 
@@ -455,17 +806,14 @@ void Window::on_window_close_callback()
   Engine::instance()->event_manager()->publish(event);
 }
 
-void Window::on_key_callback(int key,
-                             int /*scancode*/,
-                             int action,
-                             int /*mods*/)
+void Window::on_key(int key, int scancode, int action, int /*mods*/)
 {
   const auto event =
-      std::make_shared<KeyEvent>(to_key(key), to_key_action(action));
+      std::make_shared<KeyEvent>(to_key(key), to_key_action(action), scancode);
   Engine::instance()->event_manager()->publish(event);
 }
 
-void Window::on_mouse_button_callback(int button, int action, int /*mods*/)
+void Window::on_mouse_button(int button, int action, int /*mods*/)
 {
   const auto event =
       std::make_shared<MouseButtonEvent>(to_mouse_button(button),
@@ -473,7 +821,7 @@ void Window::on_mouse_button_callback(int button, int action, int /*mods*/)
   Engine::instance()->event_manager()->publish(event);
 }
 
-void Window::on_mouse_movement_callback(double x, double y)
+void Window::on_mouse_movement(double x, double y)
 {
   auto x_offset = 0.0;
   auto y_offset = 0.0;
@@ -507,3 +855,8 @@ KeyAction Window::key(Key value) const
 }
 
 GLFWwindow *Window::handle() const { return window_; }
+
+bool Window::focused() const
+{
+  return glfwGetWindowAttrib(window_, GLFW_FOCUSED) != 0;
+}
