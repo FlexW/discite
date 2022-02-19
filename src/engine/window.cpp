@@ -156,22 +156,149 @@ Key to_key(int key)
 {
   switch (key)
   {
-  case GLFW_KEY_W:
-    return Key::W;
-  case GLFW_KEY_S:
-    return Key::S;
   case GLFW_KEY_A:
     return Key::A;
+
+  case GLFW_KEY_B:
+    return Key::B;
+
+  case GLFW_KEY_C:
+    return Key::C;
+
   case GLFW_KEY_D:
     return Key::D;
+
+  case GLFW_KEY_E:
+    return Key::E;
+
+  case GLFW_KEY_F:
+    return Key::F;
+
+  case GLFW_KEY_G:
+    return Key::G;
+
+  case GLFW_KEY_H:
+    return Key::H;
+
+  case GLFW_KEY_I:
+    return Key::I;
+
+  case GLFW_KEY_J:
+    return Key::J;
+
+  case GLFW_KEY_K:
+    return Key::K;
+
+  case GLFW_KEY_L:
+    return Key::L;
+
+  case GLFW_KEY_M:
+    return Key::M;
+
+  case GLFW_KEY_N:
+    return Key::N;
+
+  case GLFW_KEY_O:
+    return Key::O;
+
+  case GLFW_KEY_Q:
+    return Key::Q;
+
+  case GLFW_KEY_R:
+    return Key::R;
+
+  case GLFW_KEY_S:
+    return Key::S;
+
+  case GLFW_KEY_T:
+    return Key::T;
+
+  case GLFW_KEY_V:
+    return Key::V;
+
+  case GLFW_KEY_W:
+    return Key::W;
+
+  case GLFW_KEY_X:
+    return Key::X;
+
+  case GLFW_KEY_Y:
+    return Key::Y;
+
+  case GLFW_KEY_Z:
+    return Key::Z;
+
   case GLFW_KEY_LEFT_CONTROL:
     return Key::LeftControl;
+
+  case GLFW_KEY_RIGHT_CONTROL:
+    return Key::RightControl;
+
+  case GLFW_KEY_LEFT_ALT:
+    return Key::LeftAlt;
+
+  case GLFW_KEY_RIGHT_ALT:
+    return Key::RightAlt;
+
+  case GLFW_KEY_LEFT_SHIFT:
+    return Key::LeftShift;
+
+  case GLFW_KEY_RIGHT_SHIFT:
+    return Key::RightShift;
+
+  case GLFW_KEY_LEFT_SUPER:
+    return Key::LeftShift;
+
+  case GLFW_KEY_RIGHT_SUPER:
+    return Key::RightShift;
+
+  case GLFW_KEY_TAB:
+    return Key::Tab;
+
+  case GLFW_KEY_LEFT:
+    return Key::Left;
+
+  case GLFW_KEY_RIGHT:
+    return Key::Right;
+
+  case GLFW_KEY_UP:
+    return Key::Up;
+
+  case GLFW_KEY_DOWN:
+    return Key::Down;
+
+  case GLFW_KEY_PAGE_DOWN:
+    return Key::PageDown;
+
+  case GLFW_KEY_PAGE_UP:
+    return Key::PageUp;
+
+  case GLFW_KEY_HOME:
+    return Key::Home;
+
+  case GLFW_KEY_END:
+    return Key::End;
+
+  case GLFW_KEY_INSERT:
+    return Key::Insert;
+
+  case GLFW_KEY_KP_ENTER:
+    return Key::KeyPadEnter;
+
+  case GLFW_KEY_SPACE:
+    return Key::Space;
+
+  case GLFW_KEY_BACKSPACE:
+    return Key::Backspace;
+
+  case GLFW_KEY_ENTER:
+    return Key::Enter;
+
   case GLFW_KEY_ESCAPE:
     return Key::Escape;
   }
 
-  LOG_WARN() << "Unknown key: " << key;
-  assert(0);
+  LOG_WARN() << "Unknown GLFW key: " << key;
 
   return Key::Undefined;
 }
