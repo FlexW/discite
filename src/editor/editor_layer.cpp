@@ -15,9 +15,10 @@ void EditorLayer::init()
   set_capture_mouse(false);
 
   const auto renderer_panel = std::make_shared<RendererPanel>();
-  renderer_panel->set_renderer(game_->renderer());
+  renderer_panel->set_renderer(game_layer_->renderer());
 
   const auto viewport_panel = std::make_shared<ViewportPanel>();
+  viewport_panel->set_renderer(game_layer_->renderer());
 
   const auto dockspace_panel = std::make_shared<DockspacePanel>();
 
@@ -32,14 +33,14 @@ void EditorLayer::shutdown() {}
 
 void EditorLayer::update(float /*delta_time*/) {}
 
-void EditorLayer::render() { game_->render(); }
+void EditorLayer::render() {}
 
 void EditorLayer::setup_game()
 {
-  assert(!game_);
+  assert(!game_layer_);
 
-  game_ = std::make_unique<Discite>();
-  game_->init();
+  game_layer_ = std::make_unique<GameLayer>();
+  game_layer_->init();
 }
 
 void EditorLayer::set_capture_mouse(bool value)

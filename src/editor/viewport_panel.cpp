@@ -4,8 +4,10 @@
 #include "gl_texture.hpp"
 #include "imgui.h"
 #include "imgui_panel.hpp"
+#include "renderer.hpp"
 #include "scene.hpp"
 #include "window.hpp"
+#include <memory>
 
 ViewportPanel::ViewportPanel() : ImGuiPanel{"Viewport"} {}
 
@@ -16,7 +18,8 @@ void ViewportPanel::on_render()
   const auto viewport_size = calc_viewport_size();
   account_for_window_size_changes(viewport_size.x, viewport_size.y);
 
-  const auto scene = scene_.lock();
+  const auto scene    = scene_.lock();
+  const auto renderer = renderer_.lock();
   if (scene)
   {
     SceneRenderInfo scene_render_info{};
@@ -31,9 +34,9 @@ void ViewportPanel::on_render()
     view_render_info.set_view_matrix(editor_camera_.view_matrix());
     view_render_info.set_viewport_info({0, 0, scene_width_, scene_height_});
 
-    renderer_->submit(scene_render_info,
-                      view_render_info,
-                      scene_framebuffer_.get());
+    renderer->submit(scene_render_info,
+                     view_render_info,
+                     scene_framebuffer_.get());
   }
   else
   {
@@ -262,4 +265,9 @@ void ViewportPanel::rotate_editor_camera(double offset_x, double offset_y)
   }
 
   editor_camera_.process_rotation(offset_x, offset_y);
+}
+
+void ViewportPanel::set_renderer(std::shared_ptr<Renderer> renderer)
+{
+  renderer_ = renderer;
 }

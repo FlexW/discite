@@ -6,7 +6,7 @@
 
 #include <memory>
 
-class Discite : public Layer
+class GameLayer : public Layer
 {
 public:
   void init() override;

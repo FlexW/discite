@@ -1,7 +1,7 @@
 #pragma once
 
-#include "discite.hpp"
 #include "event.hpp"
+#include "game_layer.hpp"
 #include "layer.hpp"
 #include "window.hpp"
 
@@ -18,7 +18,7 @@ public:
   bool on_event(const Event &event) override;
 
 private:
-  std::unique_ptr<Discite> game_{};
+  std::unique_ptr<GameLayer> game_layer_{};
 
   void setup_game();
   void set_capture_mouse(bool value);

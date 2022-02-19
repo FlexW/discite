@@ -4,7 +4,7 @@ set_warnings_as_errors(game)
 target_include_directories(game PUBLIC .)
 
 target_sources(game PRIVATE
-  discite.cpp
+  game_layer.cpp
   scene.cpp
   render_system.cpp
   camera_system.cpp

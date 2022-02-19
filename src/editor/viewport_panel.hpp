@@ -18,6 +18,8 @@ public:
   void update(float delta_time) override;
   bool on_event(const Event &event) override;
 
+  void set_renderer(std::shared_ptr<Renderer> renderer);
+
 private:
   Camera editor_camera_;
   bool   is_move_editor_camara_{false};
@@ -25,7 +27,7 @@ private:
   int scene_width_{0};
   int scene_height_{0};
 
-  std::unique_ptr<Renderer> renderer_{std::make_unique<Renderer>()};
+  std::weak_ptr<Renderer> renderer_{};
 
   std::weak_ptr<Scene>           scene_{};
   std::shared_ptr<GlFramebuffer> scene_framebuffer_{};
