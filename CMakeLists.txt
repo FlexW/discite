@@ -19,6 +19,11 @@ endif()
 include(warnings)
 include(FeatureSummary)
 
+message(STATUS "Bootstrap dependencies")
+execute_process(
+  COMMAND "python" "${CMAKE_SOURCE_DIR}/bootstrap.py"
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 add_subdirectory(external)
 add_subdirectory(src)
 
