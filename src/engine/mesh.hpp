@@ -7,6 +7,30 @@
 #include <filesystem>
 #include <memory>
 
+#include <assimp/Importer.hpp>
+#include <assimp/material.h>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+
+glm::vec3 to_glm(const aiVector3t<float> &value);
+
+std::shared_ptr<GlTexture> import_texture(aiMaterial   *ai_material,
+                                          aiTextureType ai_texture_type,
+                                          TextureCache &texture_cache);
+
+std::unique_ptr<Material> import_material(const aiScene *ai_scene,
+                                          const aiMesh  *ai_mesh,
+                                          TextureCache  &texture_cache);
+
+struct Vertex
+{
+  glm::vec3 position;
+  glm::vec3 normal;
+  glm::vec3 tangent;
+  glm::vec3 bitangent;
+  glm::vec2 tex_coords;
+};
+
 class Mesh
 {
 public:
@@ -37,6 +61,7 @@ public:
   void load_from_file(const std::filesystem::path &file_path,
                       TextureCache                &texture_cache);
 
+  void                set_meshes(std::vector<std::unique_ptr<Mesh>> meshes);
   std::vector<Mesh *> meshes() const;
 
 private:

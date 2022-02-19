@@ -64,11 +64,25 @@ public:
 
   entt::entity entity_handle() const;
 
-  std::string name() const;
   void        set_name(const std::string &name);
+  std::string name() const;
 
   glm::mat4 transform_matrix() const;
-  void      set_transform(const glm::mat4 &transform);
+
+  void      set_local_transform_matrix(const glm::mat4 &transform);
+  glm::mat4 local_transform_matrix() const;
+
+  void      set_position(const glm::vec3 &positon);
+  glm::vec3 position() const;
+
+  void      set_rotation(const glm::vec3 &rotation);
+  glm::vec3 rotation() const;
+
+  void      set_scale(const glm::vec3 &scale);
+  glm::vec3 scale() const;
+
+  void add_child(Entity child);
+  void set_parent(Entity parent);
 
 private:
   entt::entity         entity_handle_{entt::null};

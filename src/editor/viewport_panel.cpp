@@ -3,9 +3,11 @@
 #include "engine.hpp"
 #include "gl_framebuffer.hpp"
 #include "gl_texture.hpp"
+#include "glm/ext/quaternion_common.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui.h"
 #include "imgui_panel.hpp"
+#include "relationship_component.hpp"
 #include "renderer.hpp"
 #include "scene.hpp"
 #include "scene_panel.hpp"
@@ -92,7 +94,17 @@ void ViewportPanel::on_render()
 
     if (ImGuizmo::IsUsing())
     {
-      selected_entity_.set_transform(entity_transform_matrix);
+      auto &relationship_component =
+          selected_entity_.component<RelationshipComponent>();
+      if (relationship_component.parent_.valid())
+      {
+        // account for parent transformation
+        const auto parent_transform =
+            relationship_component.parent_.transform_matrix();
+        entity_transform_matrix =
+            glm::inverse(parent_transform) * entity_transform_matrix;
+      }
+      selected_entity_.set_local_transform_matrix(entity_transform_matrix);
     }
   }
 }

@@ -35,31 +35,27 @@ void EntityPanel::on_render()
 
   {
     // transformation info
-
-    auto &transform_component = entity_.component<TransformComponent>();
-
-    auto  position            = transform_component.position();
+    auto position = entity_.position();
     if (imgui_input("Position", position))
     {
-      transform_component.set_position(position);
+      entity_.set_position(position);
     }
 
-    const auto rotation = transform_component.rotation();
+    const auto rotation = entity_.rotation();
     glm::vec3  rotation_degrees{glm::degrees(rotation.x),
                                glm::degrees(rotation.y),
                                glm::degrees(rotation.z)};
     if (imgui_input("Rotation", rotation_degrees))
     {
-      transform_component.set_rotation(
-          glm::vec3{glm::radians(rotation_degrees.x),
-                    glm::radians(rotation_degrees.y),
-                    glm::radians(rotation_degrees.z)});
+      entity_.set_rotation(glm::vec3{glm::radians(rotation_degrees.x),
+                                     glm::radians(rotation_degrees.y),
+                                     glm::radians(rotation_degrees.z)});
     }
 
-    auto scale = transform_component.scale();
+    auto scale = entity_.scale();
     if (imgui_input("Scale", scale))
     {
-      transform_component.set_scale(scale);
+      entity_.set_scale(scale);
     }
   }
 

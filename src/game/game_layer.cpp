@@ -16,7 +16,16 @@
 void GameLayer::init()
 {
   renderer_ = std::make_unique<Renderer>();
-  scene_                        = std::make_shared<Scene>();
+
+  TextureCache texture_cache;
+  texture_cache.set_import_path(
+      "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF");
+
+  // load_scene
+  // scene_                        = Scene::create();
+  scene_ = Scene::load_from_file(
+      "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
+      texture_cache);
   const auto scene_loaded_event = std::make_shared<SceneLoadedEvent>(scene_);
   Engine::instance()->event_manager()->publish(scene_loaded_event);
 
@@ -25,17 +34,14 @@ void GameLayer::init()
   scene_->create_system<RenderSystem>(scene_);
 
   // create dummy scene
-  TextureCache texture_cache;
-  texture_cache.set_import_path(
-      "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF");
-  auto sponza_model = std::make_shared<Model>();
-  sponza_model->load_from_file(
-      "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
-      texture_cache);
+  // auto sponza_model = std::make_shared<Model>();
+  // sponza_model->load_from_file(
+  //     "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
+  //     texture_cache);
 
-  auto  sponza_entity    = scene_->create_entity("Sponza");
-  auto &model_component  = sponza_entity.add_component<ModelComponent>();
-  model_component.model_ = sponza_model;
+  // auto  sponza_entity    = scene_->create_entity("Sponza");
+  // auto &model_component  = sponza_entity.add_component<ModelComponent>();
+  // model_component.model_ = sponza_model;
 
   auto sun_entity = scene_->create_entity("Sun");
   sun_entity.add_component<DirectionalLightComponent>();

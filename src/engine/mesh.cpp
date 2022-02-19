@@ -21,18 +21,6 @@
 #include <memory>
 #include <stdexcept>
 
-namespace
-{
-
-struct Vertex
-{
-  glm::vec3 position;
-  glm::vec3 normal;
-  glm::vec3 tangent;
-  glm::vec3 bitangent;
-  glm::vec2 tex_coords;
-};
-
 glm::vec3 to_glm(const aiVector3t<float> &value)
 {
   return {value.x, value.y, value.z};
@@ -102,13 +90,16 @@ std::unique_ptr<Material> import_material(const aiScene *ai_scene,
   return material;
 }
 
+namespace
+{
+
 void do_load_model(const aiScene                      *ai_scene,
                    aiNode                             *ai_node,
                    aiMatrix4x4                        &parent_transform,
                    std::vector<std::unique_ptr<Mesh>> &meshes,
                    TextureCache                       &texture_cache)
 {
-  auto generated_dummy_texture_coords = false;
+  bool generated_dummy_texture_coords{false};
 
   auto transform = parent_transform * ai_node->mTransformation;
 
@@ -307,4 +298,9 @@ std::vector<Mesh *> Model::meshes() const
     raw_meshes[i] = meshes_[i].get();
   }
   return raw_meshes;
+}
+
+void Model::set_meshes(std::vector<std::unique_ptr<Mesh>> meshes)
+{
+  meshes_ = std::move(meshes);
 }
