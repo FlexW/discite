@@ -272,8 +272,6 @@ GlVertexArray *Mesh::vertex_array() const { return vertex_array_.get(); }
 
 Material *Mesh::material() const { return material_.get(); }
 
-Model::Model() { recalculate_model_matrix(); }
-
 Model::Model(Model &&other) { meshes_ = std::move(other.meshes_); }
 
 void Model::operator=(Model &&other) { meshes_ = std::move(other.meshes_); }
@@ -309,39 +307,4 @@ std::vector<Mesh *> Model::meshes() const
     raw_meshes[i] = meshes_[i].get();
   }
   return raw_meshes;
-}
-
-void Model::set_position(const glm::vec3 &value)
-{
-  position_ = value;
-  recalculate_model_matrix();
-}
-
-glm::vec3 Model::position() const { return position_; }
-
-void Model::set_rotation(const glm::quat &value)
-{
-  rotation_ = value;
-  recalculate_model_matrix();
-}
-
-void Model::set_scale(const glm::vec3 &value)
-{
-  scale_ = value;
-  recalculate_model_matrix();
-}
-
-glm::vec3 Model::scale() const { return scale_; }
-
-glm::mat4 Model::model_matrix() const { return model_matrix_; }
-
-void Model::recalculate_model_matrix()
-{
-  glm::mat4 model_matrix{1.0f};
-
-  model_matrix = glm::translate(model_matrix, position_);
-  model_matrix_ *= glm::toMat4(rotation_);
-  model_matrix = glm::scale(model_matrix, scale_);
-
-  model_matrix_ = model_matrix;
 }
