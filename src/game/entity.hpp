@@ -1,11 +1,13 @@
 #pragma once
 
 #include "entt/entity/entity.hpp"
+#include "entt/entity/fwd.hpp"
 #include "scene.hpp"
 
 #include <cassert>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 class Entity
@@ -59,6 +61,11 @@ public:
   }
 
   bool valid() { return entity_handle_ != entt::null; }
+
+  entt::entity entity_handle() const;
+
+  std::string name() const;
+  void        set_name(const std::string &name);
 
 private:
   entt::entity         entity_handle_{entt::null};

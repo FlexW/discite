@@ -1,8 +1,8 @@
 #include "scene.hpp"
 #include "entity.hpp"
 #include "event.hpp"
+#include "name_component.hpp"
 #include "render_system.hpp"
-#include "tag_component.hpp"
 #include "transform_component.hpp"
 
 EventId SceneLoadedEvent::id = 0x87a8e8c9;
@@ -69,7 +69,7 @@ Entity Scene::create_entity(const std::string &name)
 {
   Entity     entity{registry_.create(), shared_from_this()};
   const auto entity_name = name.empty() ? "Entity" : name;
-  entity.add_component<TagComponent>(name);
+  entity.add_component<NameComponent>(name);
   entity.add_component<TransformComponent>();
   return entity;
 }

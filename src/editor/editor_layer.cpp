@@ -1,8 +1,10 @@
 #include "editor_layer.hpp"
 #include "dockspace_panel.hpp"
 #include "engine.hpp"
+#include "entity_panel.hpp"
 #include "imgui_layer.hpp"
 #include "renderer_panel.hpp"
+#include "scene_panel.hpp"
 #include "viewport_panel.hpp"
 #include "window.hpp"
 
@@ -14,19 +16,24 @@ void EditorLayer::init()
   setup_game();
   set_capture_mouse(false);
 
+  const auto dockspace_panel = std::make_shared<DockspacePanel>();
+
   const auto renderer_panel = std::make_shared<RendererPanel>();
   renderer_panel->set_renderer(game_layer_->renderer());
 
   const auto viewport_panel = std::make_shared<ViewportPanel>();
   viewport_panel->set_renderer(game_layer_->renderer());
 
-  const auto dockspace_panel = std::make_shared<DockspacePanel>();
+  const auto scene_panel  = std::make_shared<ScenePanel>();
+  const auto entity_panel = std::make_shared<EntityPanel>();
 
   const auto imgui_layer =
       Engine::instance()->layer_stack()->layer<ImGuiLayer>();
   imgui_layer->add_panel(dockspace_panel);
   imgui_layer->add_panel(renderer_panel);
   imgui_layer->add_panel(viewport_panel);
+  imgui_layer->add_panel(scene_panel);
+  imgui_layer->add_panel(entity_panel);
 }
 
 void EditorLayer::shutdown() {}
