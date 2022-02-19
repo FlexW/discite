@@ -1,12 +1,16 @@
 #pragma once
 
 #include "camera.hpp"
+#include "entity.hpp"
 #include "event.hpp"
 #include "gl_framebuffer.hpp"
 #include "imgui_panel.hpp"
 #include "renderer.hpp"
 #include "scene.hpp"
+#include "scene_panel.hpp"
 #include "window.hpp"
+
+#include <ImGuizmo.h>
 
 #include <memory>
 
@@ -27,6 +31,10 @@ private:
   int scene_width_{0};
   int scene_height_{0};
 
+  Entity              selected_entity_;
+  bool                is_show_gizmo_{false};
+  ImGuizmo::OPERATION guizmo_operation_{ImGuizmo::OPERATION::TRANSLATE};
+
   std::weak_ptr<Renderer> renderer_{};
 
   std::weak_ptr<Scene>           scene_{};
@@ -46,10 +54,12 @@ private:
   void stop_move_editor_camera();
   void set_capture_mouse(bool value);
 
-  bool on_key_event(const KeyEvent &event);
-  bool on_mouse_button_event(const MouseButtonEvent &event);
-  bool on_mouse_movement_event(const MouseMovementEvent &event);
-  bool on_scene_loaded_event(const SceneLoadedEvent &event);
+  bool on_key(const KeyEvent &event);
+  bool on_mouse_button(const MouseButtonEvent &event);
+  bool on_mouse_movement(const MouseMovementEvent &event);
+  bool on_scene_loaded(const SceneLoadedEvent &event);
+  bool on_scene_unloaded(const SceneUnloadedEvent &event);
+  bool on_entity_selected(const EntitySelectedEvent &event);
 
   void move_editor_camera(float delta_time);
   void rotate_editor_camera(double offset_x, double offset_y);

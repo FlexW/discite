@@ -7,6 +7,7 @@ target_compile_definitions(engine PUBLIC GLFW_INCLUDE_NONE)
 target_include_directories(engine PUBLIC .)
 
 target_sources(engine PRIVATE
+  math.cpp
   event.cpp
   event_manager.cpp
   window.cpp
@@ -33,7 +34,6 @@ target_sources(engine PRIVATE
   mesh.cpp
   engine.cpp
   directional_light.cpp
-  imgui.cpp
   point_light.cpp
   layer_stack.cpp
   )

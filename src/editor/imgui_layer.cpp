@@ -5,6 +5,7 @@
 #include "util.hpp"
 #include "window.hpp"
 
+#include <ImGuizmo.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
@@ -53,6 +54,7 @@ void ImGuiLayer::render()
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
+  ImGuizmo::BeginFrame();
 
   render_panels();
 

@@ -18,13 +18,7 @@ glm::quat TransformComponent::rotation_quat() const { return rotation_; }
 
 void TransformComponent::set_rotation(const glm::vec3 &value)
 {
-  const auto transform_x = glm::eulerAngleX(value.x);
-  const auto transform_y = glm::eulerAngleY(value.y);
-  const auto transform_z = glm::eulerAngleZ(value.z);
-
-  const auto transform = transform_x * transform_y * transform_z;
-
-  rotation_ = glm::toQuat(transform);
+  rotation_ = glm::quat(value);
   recalculate_transform_matrix();
 }
 

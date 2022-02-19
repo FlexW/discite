@@ -5,6 +5,7 @@ target_include_directories(editor PRIVATE .)
 
 target_sources(editor PRIVATE
   main.cpp
+  imgui.cpp
   editor_layer.cpp
   imgui_layer.cpp
   imgui_panel.cpp
@@ -16,5 +17,7 @@ target_sources(editor PRIVATE
   )
 
 target_link_libraries(editor PRIVATE
+  imgui
+  imguizmo
   game
   )

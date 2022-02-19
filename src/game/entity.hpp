@@ -67,6 +67,9 @@ public:
   std::string name() const;
   void        set_name(const std::string &name);
 
+  glm::mat4 transform_matrix() const;
+  void      set_transform(const glm::mat4 &transform);
+
 private:
   entt::entity         entity_handle_{entt::null};
   std::weak_ptr<Scene> scene_;

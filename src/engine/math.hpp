@@ -11,3 +11,12 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/string_cast.hpp>
+
+namespace math
+{
+
+bool decompose_transform(const glm::mat4 &transform,
+                         glm::vec3       &translation,
+                         glm::vec3       &rotation,
+                         glm::vec3       &scale);
+}

@@ -83,5 +83,12 @@ target_sources(imgui PRIVATE
   )
 target_include_directories(imgui PUBLIC deps/src/imgui deps/src/imgui/backends)
 
+# ImGuizmo
+add_library(imguizmo STATIC)
+target_sources(imguizmo PRIVATE
+  deps/src/imguizmo/ImGuizmo.cpp
+  )
+target_include_directories(imguizmo PUBLIC deps/src/imgui deps/src/imguizmo)
+
 # EnTT
 add_subdirectory(deps/src/entt)

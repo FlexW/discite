@@ -31,6 +31,14 @@
       "revision": "1e14cc5cae703b7cdf0e33c50165d6dd289fcb1f"
     }
   },
+    {
+    "name": "imguizmo",
+    "source": {
+      "type": "git",
+      "url": "https://github.com/CedricGuillemet/ImGuizmo.git",
+      "revision": "cf287a3fd48d503ad19a8f8ca81a1a15b63bccf1"
+    }
+    },
   {
     "name": "entt",
     "source": {
