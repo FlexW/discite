@@ -70,12 +70,18 @@ bool ViewportPanel::on_event(const Event &event)
     return on_mouse_movement_event(
         dynamic_cast<const MouseMovementEvent &>(event));
   }
+  else if (event_id == MouseButtonEvent::id)
+  {
+    return on_mouse_button_event(dynamic_cast<const MouseButtonEvent &>(event));
+  }
   return false;
 }
 
-void ViewportPanel::on_before_render()
+ImGuiWindowFlags ViewportPanel::on_before_render()
 {
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+  return ImGuiWindowFlags_None;
 }
 
 void ViewportPanel::on_after_render() { ImGui::PopStyleVar(); }
@@ -157,21 +163,45 @@ bool ViewportPanel::on_key_event(const KeyEvent &event)
 {
 
   if (event.key_ == Key::LeftControl && event.key_action_ == KeyAction::Press &&
-      is_focused())
+      is_hovered())
   {
     start_move_editor_camera();
   }
   else if (event.key_ == Key::LeftControl &&
-           event.key_action_ == KeyAction::Release && is_focused())
+           event.key_action_ == KeyAction::Release)
   {
     stop_move_editor_camera();
   }
+
+  if (is_move_editor_camara_)
+  {
+    // make sure key events do not propagate to other layers (imgui)
+    return true;
+  }
+
   return false;
 }
 
 bool ViewportPanel::on_mouse_movement_event(const MouseMovementEvent &event)
 {
   rotate_editor_camera(event.offset_x_, event.offset_y_);
+
+  if (is_move_editor_camara_)
+  {
+    // make sure mouse movements events do not propagate to other layers (imgui)
+    return true;
+  }
+
+  return false;
+}
+
+bool ViewportPanel::on_mouse_button_event(const MouseButtonEvent & /*event*/)
+{
+  if (is_move_editor_camara_)
+  {
+    // make sure mouse button events do not propagate to other layers (imgui)
+    return true;
+  }
   return false;
 }
 
@@ -183,6 +213,11 @@ void ViewportPanel::start_move_editor_camera()
 
 void ViewportPanel::stop_move_editor_camera()
 {
+  if (!is_move_editor_camara_)
+  {
+    return;
+  }
+
   is_move_editor_camara_ = false;
   set_capture_mouse(false);
 }

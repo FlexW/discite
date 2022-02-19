@@ -1,4 +1,5 @@
 #include "editor_layer.hpp"
+#include "dockspace_panel.hpp"
 #include "engine.hpp"
 #include "imgui_layer.hpp"
 #include "renderer_panel.hpp"
@@ -18,8 +19,11 @@ void EditorLayer::init()
 
   const auto viewport_panel = std::make_shared<ViewportPanel>();
 
+  const auto dockspace_panel = std::make_shared<DockspacePanel>();
+
   const auto imgui_layer =
       Engine::instance()->layer_stack()->layer<ImGuiLayer>();
+  imgui_layer->add_panel(dockspace_panel);
   imgui_layer->add_panel(renderer_panel);
   imgui_layer->add_panel(viewport_panel);
 }

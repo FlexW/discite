@@ -15,12 +15,14 @@ public:
   virtual bool on_event(const Event & /*event*/) { return false; }
 
   bool is_focused() const;
+  bool is_hovered() const;
 
 private:
   std::string name_;
   bool        focused_{false};
+  bool        hovered_{false};
 
   virtual void on_render() = 0;
-  virtual void on_before_render();
+  virtual ImGuiWindowFlags on_before_render();
   virtual void on_after_render();
 };

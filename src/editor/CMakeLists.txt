@@ -10,6 +10,7 @@ target_sources(editor PRIVATE
   imgui_panel.cpp
   renderer_panel.cpp
   viewport_panel.cpp
+  dockspace_panel.cpp
   )
 
 target_link_libraries(editor PRIVATE

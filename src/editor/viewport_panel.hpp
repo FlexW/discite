@@ -31,7 +31,7 @@ private:
   std::shared_ptr<GlFramebuffer> scene_framebuffer_{};
 
   void on_render() override;
-  void on_before_render() override;
+  ImGuiWindowFlags on_before_render() override;
   void on_after_render() override;
 
   glm::ivec2 calc_viewport_size() const;
@@ -45,6 +45,7 @@ private:
   void set_capture_mouse(bool value);
 
   bool on_key_event(const KeyEvent &event);
+  bool on_mouse_button_event(const MouseButtonEvent &event);
   bool on_mouse_movement_event(const MouseMovementEvent &event);
   bool on_scene_loaded_event(const SceneLoadedEvent &event);
 
