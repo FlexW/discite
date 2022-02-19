@@ -18,15 +18,9 @@ public:
   bool on_event(const Event &event) override;
 
 private:
-  bool is_play_game_{false};
-
   std::unique_ptr<Discite> game_{};
 
   void setup_game();
-  void start_play_game();
-  void stop_play_game();
-
   void set_capture_mouse(bool value);
-
   bool on_key_event(const KeyEvent &event);
 };

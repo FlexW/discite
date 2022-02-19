@@ -5,6 +5,22 @@
 #include "tag_component.hpp"
 #include "transform_component.hpp"
 
+EventId SceneLoadedEvent::id = 0x87a8e8c9;
+
+SceneLoadedEvent::SceneLoadedEvent(std::shared_ptr<Scene> scene)
+    : Event{id},
+      scene_{scene}
+{
+}
+
+EventId SceneUnloadedEvent::id = 0xa26517c8;
+
+SceneUnloadedEvent::SceneUnloadedEvent(std::shared_ptr<Scene> scene)
+    : Event{id},
+      scene_{scene}
+{
+}
+
 void Scene::init_systems()
 {
   systems_.emplace_back(std::make_unique<RenderSystem>(shared_from_this()));

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "event.hpp"
 #include "system.hpp"
 
 #include <entt/entt.hpp>
@@ -7,6 +8,33 @@
 #include <memory>
 
 class Entity;
+class Scene;
+
+/**
+ * Event gets fired after the scene has been loaded
+ */
+class SceneLoadedEvent : public Event
+{
+public:
+  static EventId id;
+
+  std::shared_ptr<Scene> scene_;
+
+  SceneLoadedEvent(std::shared_ptr<Scene> scene);
+};
+
+/**
+ * Event gets fired after the scene got unloaded
+ */
+class SceneUnloadedEvent : public Event
+{
+public:
+  static EventId id;
+
+  std::shared_ptr<Scene> scene_;
+
+  SceneUnloadedEvent(std::shared_ptr<Scene> scene);
+};
 
 class Scene : public std::enable_shared_from_this<Scene>
 {

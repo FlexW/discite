@@ -1,7 +1,10 @@
 #include "renderer_panel.hpp"
 #include "imgui.hpp"
+#include "imgui_panel.hpp"
 
-void RendererPanel::render()
+RendererPanel::RendererPanel() : ImGuiPanel{"Renderer"} {}
+
+void RendererPanel::on_render()
 {
   if (ImGui::BeginTabBar("Renderer tabs"))
   {

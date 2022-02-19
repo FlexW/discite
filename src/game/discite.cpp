@@ -7,6 +7,7 @@
 #include "model_component.hpp"
 #include "render_system.hpp"
 #include "renderer.hpp"
+#include "scene.hpp"
 #include "texture_cache.hpp"
 #include "transform_component.hpp"
 
@@ -15,7 +16,9 @@
 void Discite::init()
 {
   renderer_ = std::make_unique<Renderer>();
-  scene_    = std::make_shared<Scene>();
+  scene_                        = std::make_shared<Scene>();
+  const auto scene_loaded_event = std::make_shared<SceneLoadedEvent>(scene_);
+  Engine::instance()->event_manager()->publish(scene_loaded_event);
 
   // add systems, order matters
   scene_->create_system<CameraSystem>(scene_);

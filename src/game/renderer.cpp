@@ -1,6 +1,9 @@
 #include "renderer.hpp"
 #include "defer.hpp"
 #include "directional_light.hpp"
+#include "gl_framebuffer.hpp"
+
+#include <optional>
 
 void SceneRenderInfo::add_mesh(const MeshInfo &mesh_info)
 {
@@ -91,8 +94,9 @@ Renderer::~Renderer()
   }
 }
 
-void Renderer::submit(const SceneRenderInfo &scene_render_info,
-                      const ViewRenderInfo  &view_render_info)
+void Renderer::submit(const SceneRenderInfo         &scene_render_info,
+                      const ViewRenderInfo          &view_render_info,
+                      std::optional<GlFramebuffer *> framebuffer)
 {
   const auto &viewport_info = view_render_info.viewport_info();
   recreate_scene_framebuffer(viewport_info.width_, viewport_info.height_);
@@ -339,8 +343,17 @@ void Renderer::submit(const SceneRenderInfo &scene_render_info,
 
   // perform hdr to sdr conversation
   {
-    // make sure the framebuffer of the window gets used
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    if (framebuffer.has_value())
+    {
+      // render in the user submitted framebuffer
+      framebuffer.value()->bind();
+    }
+    else
+    {
+      // render to the windows default framebuffer
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
     glViewport(0, 0, viewport_info.width_, viewport_info.height_);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -360,6 +373,9 @@ void Renderer::submit(const SceneRenderInfo &scene_render_info,
     glBindVertexArray(0);
 
     hdr_shader_->unbind();
+
+    // bind default framebuffer in any case
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 }
 

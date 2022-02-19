@@ -82,8 +82,9 @@ public:
   Renderer();
   ~Renderer();
 
-  void submit(const SceneRenderInfo &scene_render_info,
-              const ViewRenderInfo  &view_render_info);
+  void submit(const SceneRenderInfo         &scene_render_info,
+              const ViewRenderInfo          &view_render_info,
+              std::optional<GlFramebuffer *> framebuffer = {});
 
 private:
   // TODO: Workaround. Expose public API

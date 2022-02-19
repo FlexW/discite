@@ -40,7 +40,13 @@ void ImGuiLayer::shutdown()
   ImGui::DestroyContext();
 }
 
-void ImGuiLayer::update(float /*delta_time*/) {}
+void ImGuiLayer::update(float delta_time)
+{
+  for (const auto &panel : panels_)
+  {
+    panel->update(delta_time);
+  }
+}
 
 void ImGuiLayer::render()
 {
@@ -65,6 +71,14 @@ void ImGuiLayer::render()
 
 bool ImGuiLayer::on_event(const Event &event)
 {
+  for (auto &panel : panels_)
+  {
+    if (panel->on_event(event))
+    {
+      return true;
+    }
+  }
+
   const auto event_id = event.id();
 
   if (event_id == KeyEvent::id)

@@ -7,7 +7,9 @@ target_sources(editor PRIVATE
   main.cpp
   editor_layer.cpp
   imgui_layer.cpp
+  imgui_panel.cpp
   renderer_panel.cpp
+  viewport_panel.cpp
   )
 
 target_link_libraries(editor PRIVATE
