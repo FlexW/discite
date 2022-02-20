@@ -297,3 +297,26 @@ void Entity::add_child(Entity child)
 }
 
 void Entity::set_parent(Entity parent) { parent.add_child(*this); }
+
+Entity Entity::parent() const
+{
+  const auto &relationship_component = component<RelationshipComponent>();
+  return relationship_component.parent_;
+}
+
+bool Entity::has_parent() const { return parent().valid(); }
+
+bool Entity::operator==(const Entity &other) const
+{
+  auto scene       = scene_.lock();
+  auto other_scene = other.scene_.lock();
+
+  return other.entity_handle_ == entity_handle_ && scene == other_scene;
+}
+
+bool Entity::has_childs() const
+{
+  return component<RelationshipComponent>().first_child_.valid();
+}
+
+bool Entity::operator!=(const Entity &other) const { return !(*this == other); }

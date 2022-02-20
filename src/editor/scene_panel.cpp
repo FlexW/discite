@@ -1,10 +1,12 @@
 #include "scene_panel.hpp"
 #include "engine.hpp"
 #include "entity.hpp"
+#include "entt/core/fwd.hpp"
 #include "event.hpp"
 #include "imgui.h"
 #include "imgui_panel.hpp"
 #include "name_component.hpp"
+#include "relationship_component.hpp"
 #include "scene.hpp"
 
 #include <limits>
@@ -32,39 +34,54 @@ void ScenePanel::on_render()
     }
   }
 
-  const auto float_min = std::numeric_limits<float>::min();
-  if (ImGui::BeginListBox("Entities", {-float_min, -float_min}))
+  const auto scene = scene_.lock();
+  if (scene)
   {
-    const auto scene = scene_.lock();
-    if (scene)
+    const auto &registry = scene->registry();
+    const auto  view = registry.view<NameComponent, RelationshipComponent>();
+    for (const auto &e : view)
     {
-      const auto &registry = scene->registry();
-      const auto  view     = registry.view<NameComponent>();
-
-      for (const auto &entity_handle : view)
+      Entity entity{e, scene};
+      if (!entity.has_parent())
       {
-        Entity entity{entity_handle, scene_};
-
-        const auto is_selected =
-            selected_entity_.entity_handle() == entity_handle;
-
-        const auto text = entity.name();
-        if (ImGui::Selectable(text.c_str(), is_selected))
-        {
-          selected_entity_ = entity;
-          const auto event =
-              std::make_shared<EntitySelectedEvent>(selected_entity_);
-          Engine::instance()->event_manager()->publish(event);
-        }
-
-        if (is_selected)
-        {
-          ImGui::SetItemDefaultFocus();
-        }
+        draw_entity_node(entity);
       }
     }
-    ImGui::EndListBox();
   }
+
+  // const auto float_min = std::numeric_limits<float>::min();
+  // if (ImGui::BeginListBox("Entities", {-float_min, -float_min}))
+  // {
+  //   const auto scene = scene_.lock();
+  //   if (scene)
+  //   {
+  //     const auto &registry = scene->registry();
+  //     const auto  view     = registry.view<NameComponent>();
+
+  //     for (const auto &entity_handle : view)
+  //     {
+  //       Entity entity{entity_handle, scene_};
+
+  //       const auto is_selected =
+  //           selected_entity_.entity_handle() == entity_handle;
+
+  //       const auto text = entity.name();
+  //       if (ImGui::Selectable(text.c_str(), is_selected))
+  //       {
+  //         selected_entity_ = entity;
+  //         const auto event =
+  //             std::make_shared<EntitySelectedEvent>(selected_entity_);
+  //         Engine::instance()->event_manager()->publish(event);
+  //       }
+
+  //       if (is_selected)
+  //       {
+  //         ImGui::SetItemDefaultFocus();
+  //       }
+  //     }
+  //   }
+  //   ImGui::EndListBox();
+  // }
 }
 
 bool ScenePanel::on_event(const Event &event)
@@ -82,4 +99,44 @@ bool ScenePanel::on_scene_loaded(const SceneLoadedEvent &event)
 {
   scene_ = event.scene_;
   return false;
+}
+
+void ScenePanel::draw_entity_node(Entity entity)
+{
+  ImGuiTreeNodeFlags flags{ImGuiTreeNodeFlags_OpenOnArrow |
+                           ImGuiTreeNodeFlags_SpanAvailWidth};
+  if (selected_entity_ == entity)
+  {
+    flags |= ImGuiTreeNodeFlags_Selected;
+  }
+  if (!entity.has_childs())
+  {
+    flags |= ImGuiTreeNodeFlags_Leaf;
+  }
+
+  const auto id = static_cast<entt::id_type>(entity.entity_handle());
+
+  const auto opened = ImGui::TreeNodeEx(reinterpret_cast<void *>(id),
+                                        flags,
+                                        "%s",
+                                        entity.name().c_str());
+
+  if (ImGui::IsItemClicked())
+  {
+    selected_entity_ = entity;
+    const auto event = std::make_shared<EntitySelectedEvent>(selected_entity_);
+    Engine::instance()->event_manager()->publish(event);
+  }
+
+  if (opened)
+  {
+    auto child = entity.component<RelationshipComponent>().first_child_;
+    while (child.valid())
+    {
+      draw_entity_node(child);
+      child = child.component<RelationshipComponent>().next_sibling_;
+    }
+
+    ImGui::TreePop();
+  }
 }

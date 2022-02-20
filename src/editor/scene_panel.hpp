@@ -31,4 +31,6 @@ private:
   void on_render() override;
 
   bool on_scene_loaded(const SceneLoadedEvent &event);
+
+  void draw_entity_node(Entity entity);
 };

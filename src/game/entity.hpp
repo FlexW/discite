@@ -60,6 +60,18 @@ public:
     throw std::runtime_error("Can not get component if no scene is set");
   }
 
+  template <typename TComponent> decltype(auto) component() const
+  {
+    assert(has_component<TComponent>());
+
+    if (const auto scene = scene_.lock())
+    {
+      return scene->registry().get<TComponent>(entity_handle_);
+    }
+
+    throw std::runtime_error("Can not get component if no scene is set");
+  }
+
   bool valid() { return entity_handle_ != entt::null; }
 
   entt::entity entity_handle() const;
@@ -82,7 +94,15 @@ public:
   glm::vec3 scale() const;
 
   void add_child(Entity child);
-  void set_parent(Entity parent);
+
+  void   set_parent(Entity parent);
+  Entity parent() const;
+
+  bool has_parent() const;
+  bool has_childs() const;
+
+  bool operator==(const Entity &other) const;
+  bool operator!=(const Entity &other) const;
 
 private:
   entt::entity         entity_handle_{entt::null};
