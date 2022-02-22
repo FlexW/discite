@@ -12,6 +12,10 @@
 
 struct MeshInfo
 {
+  glm::vec3 position_;
+  glm::quat rotation_;
+  glm::vec3 scale_;
+  glm::mat4 parent_transform_matrix_;
   glm::mat4 model_matrix_;
   Mesh     *mesh_;
 };
@@ -82,7 +86,7 @@ public:
   Renderer();
   ~Renderer();
 
-  void submit(const SceneRenderInfo         &scene_render_info,
+  void render(const SceneRenderInfo         &scene_render_info,
               const ViewRenderInfo          &view_render_info,
               std::optional<GlFramebuffer *> framebuffer = {});
 
@@ -129,6 +133,10 @@ private:
   float                          exposure_{0.01f};
   std::shared_ptr<GlShader>      hdr_shader_{};
   std::shared_ptr<GlFramebuffer> scene_framebuffer_{};
+
+  glm::vec3                 outline_color_{10.0f, 0.0f, 60.0f};
+  float                     outline_thickness_{1.1f};
+  std::shared_ptr<GlShader> selected_shader_{};
 
   std::vector<MeshInfo> transparent_meshes_;
   std::vector<MeshInfo> solid_meshes_;

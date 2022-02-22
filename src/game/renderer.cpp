@@ -2,7 +2,10 @@
 #include "defer.hpp"
 #include "directional_light.hpp"
 #include "gl_framebuffer.hpp"
+#include "gl_shader.hpp"
+#include "glm/ext/matrix_transform.hpp"
 
+#include <memory>
 #include <optional>
 
 void SceneRenderInfo::add_mesh(const MeshInfo &mesh_info)
@@ -94,7 +97,7 @@ Renderer::~Renderer()
   }
 }
 
-void Renderer::submit(const SceneRenderInfo         &scene_render_info,
+void Renderer::render(const SceneRenderInfo         &scene_render_info,
                       const ViewRenderInfo          &view_render_info,
                       std::optional<GlFramebuffer *> framebuffer)
 {
@@ -130,6 +133,7 @@ void Renderer::submit(const SceneRenderInfo         &scene_render_info,
   // render the shadow map
   if (is_shadows_enabled_)
   {
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Shadow Pass");
     shadow_framebuffer_->bind();
 
     glViewport(0, 0, shadow_tex_width_, shadow_tex_height_);
@@ -187,10 +191,12 @@ void Renderer::submit(const SceneRenderInfo         &scene_render_info,
     shadow_map_transparent_shader_->unbind();
 
     shadow_framebuffer_->unbind();
+    glPopDebugGroup();
   }
 
   // render the scene
   {
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Mesh pass");
     scene_framebuffer_->bind();
     glCullFace(GL_BACK);
 
@@ -201,7 +207,8 @@ void Renderer::submit(const SceneRenderInfo         &scene_render_info,
 
     glViewport(0, 0, viewport_info.width_, viewport_info.height_);
     glClearColor(sky_color_.r, sky_color_.g, sky_color_.b, 1.0f);
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glStencilMask(0x00);
 
     const auto view_matrix = view_render_info.view_matrix();
 
@@ -288,6 +295,7 @@ void Renderer::submit(const SceneRenderInfo         &scene_render_info,
     }
 
     // iterate through all meshes
+    std::vector<MeshInfo> selected_meshes;
     for (const auto &mesh : meshes)
     {
       mesh_shader_->set_uniform("model_matrix", mesh.model_matrix_);
@@ -295,6 +303,12 @@ void Renderer::submit(const SceneRenderInfo         &scene_render_info,
       int texture_slot = global_texture_slot;
 
       const auto material = mesh.mesh_->material();
+      if (material->is_selected())
+      {
+        glStencilFunc(GL_ALWAYS, 1, 0xff);
+        glStencilMask(0xff);
+        selected_meshes.push_back(mesh);
+      }
       if (material->diffuse_texture())
       {
         const auto diffuse_texture = material->diffuse_texture();
@@ -335,14 +349,55 @@ void Renderer::submit(const SceneRenderInfo         &scene_render_info,
 
       const auto vertex_array = mesh.mesh_->vertex_array();
       draw(*vertex_array, GL_TRIANGLES);
+      if (material->is_selected())
+      {
+        // reset state
+        glStencilMask(0xff);
+        glStencilFunc(GL_ALWAYS, 0, 0xff);
+      }
     }
 
     mesh_shader_->unbind();
+
+    if (!selected_meshes.empty())
+    {
+      // render outline for selected meshes
+      glStencilFunc(GL_NOTEQUAL, 1, 0xff);
+      glStencilMask(0x00);
+      glDisable(GL_DEPTH_TEST);
+      selected_shader_->bind();
+      selected_shader_->set_uniform("projection_matrix",
+                                    view_render_info.projection_matrix());
+      selected_shader_->set_uniform("view_matrix", view_matrix);
+      selected_shader_->set_uniform("color", outline_color_);
+      for (const auto &mesh : selected_meshes)
+      {
+        auto model_matrix =
+            glm::scale(mesh.model_matrix_, glm::vec3{outline_thickness_});
+        // glm::mat4 model_matrix{1.0f};
+        // model_matrix = glm::translate(model_matrix, mesh.position_);
+        // model_matrix *= glm::toMat4(mesh.rotation_);
+        // model_matrix = glm::scale(model_matrix,
+        //                           mesh.scale_ *
+        //                           glm::vec3{outline_thickness_});
+        // model_matrix = mesh.parent_transform_matrix_ * model_matrix;
+        selected_shader_->set_uniform("model_matrix", model_matrix);
+        const auto vertex_array = mesh.mesh_->vertex_array();
+        draw(*vertex_array, GL_TRIANGLES);
+      }
+      selected_shader_->unbind();
+      glStencilMask(0xff);
+      glStencilFunc(GL_ALWAYS, 0, 0xff);
+      glEnable(GL_DEPTH_TEST);
+    }
+
     scene_framebuffer_->unbind();
+    glPopDebugGroup();
   }
 
   // perform hdr to sdr conversation
   {
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Resolve HDR");
     if (framebuffer.has_value())
     {
       // render in the user submitted framebuffer
@@ -376,6 +431,7 @@ void Renderer::submit(const SceneRenderInfo         &scene_render_info,
 
     // bind default framebuffer in any case
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glPopDebugGroup();
   }
 }
 
@@ -399,6 +455,9 @@ void Renderer::load_shaders()
 
   hdr_shader_ = std::make_shared<GlShader>();
   hdr_shader_->init("shaders/quad.vert", "shaders/hdr.frag");
+
+  selected_shader_ = std::make_shared<GlShader>();
+  selected_shader_->init("shaders/selected.vert", "shaders/selected.frag");
 }
 
 void Renderer::recreate_shadow_tex_framebuffer()
@@ -438,16 +497,16 @@ void Renderer::recreate_scene_framebuffer(int width, int height)
   color_config.width_           = scene_framebuffer_width_;
   color_config.height_          = scene_framebuffer_height_;
 
-  FramebufferAttachmentCreateConfig depth_config{};
-  depth_config.type_            = AttachmentType::Renderbuffer;
-  depth_config.format_          = GL_DEPTH_COMPONENT;
-  depth_config.internal_format_ = GL_DEPTH_COMPONENT32F;
-  depth_config.width_           = scene_framebuffer_width_;
-  depth_config.height_          = scene_framebuffer_height_;
+  FramebufferAttachmentCreateConfig depth_stencil_config{};
+  depth_stencil_config.type_            = AttachmentType::Renderbuffer;
+  depth_stencil_config.format_          = GL_DEPTH_STENCIL;
+  depth_stencil_config.internal_format_ = GL_DEPTH32F_STENCIL8;
+  depth_stencil_config.width_           = scene_framebuffer_width_;
+  depth_stencil_config.height_          = scene_framebuffer_height_;
 
   FramebufferConfig config{};
   config.color_attachments_.push_back(color_config);
-  config.depth_attachment_ = depth_config;
+  config.depth_stencil_attachment_ = depth_stencil_config;
 
   scene_framebuffer_ = std::make_shared<GlFramebuffer>();
   scene_framebuffer_->attach(config);

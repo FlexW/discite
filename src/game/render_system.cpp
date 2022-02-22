@@ -45,7 +45,12 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
       for (const auto &mesh : model->meshes())
       {
         MeshInfo mesh_info{};
-        mesh_info.mesh_         = mesh;
+        mesh_info.mesh_             = mesh;
+        mesh_info.position_         = transform_component.position();
+        mesh_info.rotation_         = transform_component.rotation();
+        mesh_info.scale_            = transform_component.scale();
+        mesh_info.parent_transform_matrix_ =
+            transform_component.parent_transform_matrix();
         mesh_info.model_matrix_ = transform_component.transform_matrix();
         scene_render_info.add_mesh(mesh_info);
       }

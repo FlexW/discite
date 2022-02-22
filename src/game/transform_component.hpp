@@ -17,7 +17,8 @@ struct TransformComponent
   void      set_scale(const glm::vec3 &value);
   glm::vec3 scale() const;
 
-  void set_parent_transform_matrix(const glm::mat4 &value);
+  void      set_parent_transform_matrix(const glm::mat4 &value);
+  glm::mat4 parent_transform_matrix() const;
 
   glm::mat4 transform_matrix() const;
   glm::mat4 local_transform_matrix() const;

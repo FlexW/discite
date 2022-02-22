@@ -158,15 +158,15 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
   }
 
   // Attach the stencil attachment
-  if (config.stencil_attachment_.has_value())
+  if (config.depth_stencil_attachment_.has_value())
   {
-    const auto &attachment_config = config.depth_attachment_.value();
+    const auto &attachment_config = config.depth_stencil_attachment_.value();
     if (std::holds_alternative<FramebufferAttachmentCreateConfig>(
             attachment_config))
     {
-      const auto &stencil_attachment =
+      const auto &depth_stencil_attachment =
           std::get<FramebufferAttachmentCreateConfig>(attachment_config);
-      switch (stencil_attachment.type_)
+      switch (depth_stencil_attachment.type_)
       {
       case AttachmentType::Texture:
       {
@@ -177,16 +177,16 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
       {
         auto renderbuffer = std::make_shared<GlRenderbuffer>();
 
-        renderbuffer->set_storage(stencil_attachment.internal_format_,
-                                  stencil_attachment.width_,
-                                  stencil_attachment.height_);
+        renderbuffer->set_storage(depth_stencil_attachment.internal_format_,
+                                  depth_stencil_attachment.width_,
+                                  depth_stencil_attachment.height_);
 
         glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                                  GL_STENCIL_ATTACHMENT,
+                                  GL_DEPTH_STENCIL_ATTACHMENT,
                                   GL_RENDERBUFFER,
                                   renderbuffer->id());
 
-        stencil_attachment_ = std::move(renderbuffer);
+        depth_stencil_attachment_ = std::move(renderbuffer);
         break;
       }
       }
@@ -254,7 +254,7 @@ Attachment GlFramebuffer::color_attachment(std::size_t index) const
 
 Attachment GlFramebuffer::depth_attachment() const { return depth_attachment_; }
 
-Attachment GlFramebuffer::stencil_attachment() const
+Attachment GlFramebuffer::depth_stencil_attachment() const
 {
-  return stencil_attachment_;
+  return depth_stencil_attachment_;
 }

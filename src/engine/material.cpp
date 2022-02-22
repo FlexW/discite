@@ -34,3 +34,7 @@ std::shared_ptr<GlTexture> Material::normal_texture() const
 void Material::set_transparent(bool value) { is_transparent_ = value; }
 
 bool Material::is_transparent() const { return is_transparent_; }
+
+void Material::set_selected(bool value) { is_selected_ = value; }
+
+bool Material::is_selected() const { return is_selected_; }

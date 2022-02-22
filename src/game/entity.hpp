@@ -39,7 +39,7 @@ public:
     }
   }
 
-  template <typename TComponent> bool has_component()
+  template <typename TComponent> bool has_component() const
   {
     if (const auto scene = scene_.lock())
     {

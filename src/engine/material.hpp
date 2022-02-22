@@ -23,6 +23,9 @@ public:
   void set_transparent(bool value);
   bool is_transparent() const;
 
+  void set_selected(bool value);
+  bool is_selected() const;
+
 private:
   float specular_power_{200.0f};
 
@@ -33,4 +36,5 @@ private:
   std::shared_ptr<GlTexture> normal_texture_{};
 
   bool is_transparent_{false};
+  bool is_selected_{false};
 };

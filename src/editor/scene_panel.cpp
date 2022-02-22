@@ -5,6 +5,7 @@
 #include "event.hpp"
 #include "imgui.h"
 #include "imgui_panel.hpp"
+#include "model_component.hpp"
 #include "name_component.hpp"
 #include "relationship_component.hpp"
 #include "scene.hpp"
@@ -12,6 +13,23 @@
 #include <limits>
 #include <memory>
 #include <string>
+
+namespace
+{
+
+void set_mesh_selected(Entity entity, bool value)
+{
+  if (entity.has_component<ModelComponent>())
+  {
+    auto &model_component = entity.component<ModelComponent>();
+    for (auto &mesh : model_component.model_->meshes())
+    {
+      mesh->material()->set_selected(value);
+    }
+  }
+}
+
+} // namespace
 
 EventId EntitySelectedEvent::id = 0x5832c140;
 
@@ -48,40 +66,6 @@ void ScenePanel::on_render()
       }
     }
   }
-
-  // const auto float_min = std::numeric_limits<float>::min();
-  // if (ImGui::BeginListBox("Entities", {-float_min, -float_min}))
-  // {
-  //   const auto scene = scene_.lock();
-  //   if (scene)
-  //   {
-  //     const auto &registry = scene->registry();
-  //     const auto  view     = registry.view<NameComponent>();
-
-  //     for (const auto &entity_handle : view)
-  //     {
-  //       Entity entity{entity_handle, scene_};
-
-  //       const auto is_selected =
-  //           selected_entity_.entity_handle() == entity_handle;
-
-  //       const auto text = entity.name();
-  //       if (ImGui::Selectable(text.c_str(), is_selected))
-  //       {
-  //         selected_entity_ = entity;
-  //         const auto event =
-  //             std::make_shared<EntitySelectedEvent>(selected_entity_);
-  //         Engine::instance()->event_manager()->publish(event);
-  //       }
-
-  //       if (is_selected)
-  //       {
-  //         ImGui::SetItemDefaultFocus();
-  //       }
-  //     }
-  //   }
-  //   ImGui::EndListBox();
-  // }
 }
 
 bool ScenePanel::on_event(const Event &event)
@@ -123,9 +107,15 @@ void ScenePanel::draw_entity_node(Entity entity)
 
   if (ImGui::IsItemClicked())
   {
+    // remove outline from previous selected entity
+    set_mesh_selected(selected_entity_, false);
+
     selected_entity_ = entity;
     const auto event = std::make_shared<EntitySelectedEvent>(selected_entity_);
     Engine::instance()->event_manager()->publish(event);
+
+    // draw outline around new mesh
+    set_mesh_selected(selected_entity_, true);
   }
 
   if (opened)

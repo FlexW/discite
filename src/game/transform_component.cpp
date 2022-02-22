@@ -71,6 +71,11 @@ void TransformComponent::set_parent_transform_matrix(const glm::mat4 &value)
   recalculate_transform_matrix();
 }
 
+glm::mat4 TransformComponent::parent_transform_matrix() const
+{
+  return parent_transform_matrix_;
+}
+
 glm::mat4 TransformComponent::local_transform_matrix() const
 {
   return calculate_transform_matrix(position_, rotation_, scale_);

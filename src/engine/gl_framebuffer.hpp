@@ -35,7 +35,7 @@ struct FramebufferConfig
 {
   std::vector<FramebufferAttachmentConfig>   color_attachments_;
   std::optional<FramebufferAttachmentConfig> depth_attachment_;
-  std::optional<FramebufferAttachmentConfig> stencil_attachment_;
+  std::optional<FramebufferAttachmentConfig> depth_stencil_attachment_;
 };
 
 using TextureArrayAttachment = std::shared_ptr<GlTextureArray>;
@@ -57,14 +57,14 @@ public:
 
   Attachment color_attachment(std::size_t index) const;
   Attachment depth_attachment() const;
-  Attachment stencil_attachment() const;
+  Attachment depth_stencil_attachment() const;
 
 private:
   GLuint id_{};
 
   std::vector<Attachment> color_attachments_;
   Attachment              depth_attachment_;
-  Attachment              stencil_attachment_;
+  Attachment              depth_stencil_attachment_;
 
   GlFramebuffer(const GlFramebuffer &other) = delete;
   void operator=(const GlFramebuffer &other) = delete;

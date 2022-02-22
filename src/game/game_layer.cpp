@@ -80,7 +80,7 @@ void GameLayer::render()
   const auto window = Engine::instance()->window();
   view_render_info.set_viewport_info({0, 0, window->width(), window->height()});
 
-  renderer_->submit(scene_render_info, view_render_info);
+  renderer_->render(scene_render_info, view_render_info);
 }
 
 std::shared_ptr<Renderer> GameLayer::renderer() const { return renderer_; }
