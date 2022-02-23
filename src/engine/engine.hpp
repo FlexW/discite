@@ -15,7 +15,7 @@ class Engine
 public:
   static Engine *instance();
 
-  int run();
+  int run(bool show_window = true);
 
   void push_layer(std::unique_ptr<Layer> layer);
 
@@ -43,7 +43,7 @@ private:
   Engine &operator=(const Engine &) = delete;
   Engine &operator=(Engine &&) = delete;
 
-  void init();
+  void init(bool show_window);
   void main_loop();
   void shutdown();
   void init_imgui();

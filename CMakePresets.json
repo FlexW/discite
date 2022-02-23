@@ -15,11 +15,26 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/clang_release",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": { "type": "STRING", "value": "clang" },
-        "CMAKE_CXX_COMPILER": { "type": "STRING", "value": "clang++" },
-        "CMAKE_EXPORT_COMPILE_COMMANDS": { "type": "BOOL", "value": "ON" },
-        "CMAKE_BUILD_TYPE": { "type": "STRING", "value": "RelWithDebInfo" },
-        "WERROR": { "type": "BOOL", "value": "ON" }
+        "CMAKE_C_COMPILER": {
+          "type": "STRING",
+          "value": "clang"
+        },
+        "CMAKE_CXX_COMPILER": {
+          "type": "STRING",
+          "value": "clang++"
+        },
+        "CMAKE_EXPORT_COMPILE_COMMANDS": {
+          "type": "BOOL",
+          "value": "ON"
+        },
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "RelWithDebInfo"
+        },
+        "WERROR": {
+          "type": "BOOL",
+          "value": "ON"
+        }
       },
       "warnings": {
         "uninitialized": true
@@ -33,11 +48,26 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/gcc_release",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": { "type": "STRING", "value": "gcc" },
-        "CMAKE_CXX_COMPILER": { "type": "STRING", "value": "g++" },
-        "CMAKE_EXPORT_COMPILE_COMMANDS": { "type": "BOOL", "value": "ON" },
-        "CMAKE_BUILD_TYPE": { "type": "STRING", "value": "RelWithDebInfo" },
-        "WERROR": { "type": "BOOL", "value": "ON" }
+        "CMAKE_C_COMPILER": {
+          "type": "STRING",
+          "value": "gcc"
+        },
+        "CMAKE_CXX_COMPILER": {
+          "type": "STRING",
+          "value": "g++"
+        },
+        "CMAKE_EXPORT_COMPILE_COMMANDS": {
+          "type": "BOOL",
+          "value": "ON"
+        },
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "RelWithDebInfo"
+        },
+        "WERROR": {
+          "type": "BOOL",
+          "value": "ON"
+        }
       },
       "warnings": {
         "uninitialized": true
@@ -51,7 +81,10 @@
       "inherits": "clang_release",
       "binaryDir": "${sourceDir}/build/clang_debug",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": { "type": "STRING", "value": "Debug" }
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "Debug"
+        }
       }
     },
 
@@ -62,7 +95,10 @@
       "inherits": "gcc_release",
       "binaryDir": "${sourceDir}/build/gcc_debug",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": { "type": "STRING", "value": "Debug" }
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "Debug"
+        }
       }
     },
 
@@ -73,7 +109,10 @@
       "inherits": "clang_release",
       "binaryDir": "${sourceDir}/build/clang_asan",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": { "type": "STRING", "value": "Debug" },
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "Debug"
+        },
         "CMAKE_CXX_FLAGS": {
           "type": "STRING",
           "value": "-g -O1 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
@@ -92,7 +131,10 @@
       "inherits": "gcc_release",
       "binaryDir": "${sourceDir}/build/gcc_asan",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": { "type": "STRING", "value": "Debug" },
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "Debug"
+        },
         "CMAKE_CXX_FLAGS": {
           "type": "STRING",
           "value": "-g -O1 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
@@ -100,6 +142,26 @@
         "CMAKE_C_FLAGS": {
           "type": "STRING",
           "value": "-g -O1 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+        }
+      }
+    },
+
+    {
+      "name": "windows",
+      "displayName": "Windows",
+      "description": "Windows config",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/windows",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
         }
       }
     }

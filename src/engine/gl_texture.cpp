@@ -1,32 +1,79 @@
 #include "gl_texture.hpp"
 #include "image.hpp"
 
+#include <cstdint>
+#include <gli/load_ktx.hpp>
+
 #include <cassert>
 #include <stdexcept>
 #include <string>
 
-GlTexture::GlTexture() { glGenTextures(1, &texture_id_); }
+int calc_mipmap_levels_2d(int width, int height)
+{
+  int levels{1};
+  while ((width | height) >> levels)
+  {
+    levels += 1;
+  }
+  return levels;
+}
 
-GlTexture::~GlTexture() { glDeleteTextures(1, &texture_id_); }
+GlTexture::GlTexture() { glGenTextures(1, &id_); }
 
-GLuint GlTexture::id() const { return texture_id_; }
+GlTexture::~GlTexture() { glDeleteTextures(1, &id_); }
+
+GLuint GlTexture::id() const { return id_; }
 
 void GlTexture::load_from_file(const std::filesystem::path &file_path,
                                bool                         generate_mipmap)
 {
-  const Image image{file_path};
-  set_data(image.data(),
-           image.width(),
-           image.height(),
-           image.channels_count(),
-           generate_mipmap);
+  if (file_path.extension() == ".ktx")
+  {
+    const auto            texture_ktx = gli::load_ktx(file_path.string());
+    const gli::gl         gl{gli::gl::PROFILE_KTX};
+    const gli::gl::format format{
+        gl.translate(texture_ktx.format(), texture_ktx.swizzles())};
+    glm::tvec3<GLsizei> extent{texture_ktx.extent(0)};
+    const auto          width  = extent.x;
+    const auto          height        = extent.y;
+    const auto          mipmap_levels = calc_mipmap_levels_2d(width, height);
+
+    bind();
+
+    glTextureParameteri(id_, GL_TEXTURE_MAX_LEVEL, 0);
+    glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTextureStorage2D(id_, mipmap_levels, format.Internal, width, height);
+    glTextureSubImage2D(id_,
+                        0,
+                        0,
+                        0,
+                        width,
+                        height,
+                        format.External,
+                        format.Type,
+                        texture_ktx.data(0, 0, 0));
+    format_ = format.External;
+
+    unbind();
+  }
+  else
+  {
+    const Image image{file_path};
+    set_data(image.data(),
+             image.width(),
+             image.height(),
+             image.channels_count(),
+             generate_mipmap);
+  }
 }
 
-void GlTexture::set_data(unsigned char *data,
-                         int            width,
-                         int            height,
-                         int            channels_count,
-                         bool           generate_mipmap)
+void GlTexture::set_data(const std::uint8_t *data,
+                         int                 width,
+                         int                 height,
+                         int                 channels_count,
+                         bool                generate_mipmap)
 {
   bind();
 
@@ -89,7 +136,7 @@ void GlTexture::set_data(unsigned char *data,
   unbind();
 }
 
-void GlTexture::bind() { glBindTexture(GL_TEXTURE_2D, texture_id_); }
+void GlTexture::bind() { glBindTexture(GL_TEXTURE_2D, id_); }
 
 void GlTexture::unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
 

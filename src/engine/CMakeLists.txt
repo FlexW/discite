@@ -36,6 +36,8 @@ target_sources(engine PRIVATE
   directional_light.cpp
   point_light.cpp
   layer_stack.cpp
+  gl_shader_storage_buffer.cpp
+  gl_cube_texture.cpp
   )
 
 target_link_libraries(engine PUBLIC
@@ -46,6 +48,7 @@ target_link_libraries(engine PUBLIC
   glad
   glfw
   assimp
+  gli
   )
 
 target_compile_features(engine PUBLIC cxx_std_17)

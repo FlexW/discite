@@ -5,6 +5,7 @@
 #include "engine.hpp"
 #include "entity.hpp"
 #include "model_component.hpp"
+#include "point_light_component.hpp"
 #include "render_system.hpp"
 #include "renderer.hpp"
 #include "scene.hpp"
@@ -16,16 +17,35 @@
 void GameLayer::init()
 {
   renderer_ = std::make_unique<Renderer>();
+  scene_    = Scene::create();
 
   TextureCache texture_cache;
   texture_cache.set_import_path(
       "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF");
-
-  // load_scene
-  // scene_                        = Scene::create();
-  scene_ = Scene::load_from_file(
+  scene_->load_from_file(
       "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
       texture_cache);
+
+  auto point_light = scene_->create_entity("Point light");
+  point_light.add_component<PointLightComponent>();
+  point_light.set_position(glm::vec3{8.98f, 1.05f, -3.57f});
+
+  // TextureCache texture_cache;
+  // texture_cache.set_import_path(
+  //     "external/deps/src/glTF-Sample-Models/2.0/DamagedHelmet/glTF");
+  // scene_->load_from_file("external/deps/src/glTF-Sample-Models/2.0/"
+  //                        "DamagedHelmet/glTF/DamagedHelmet.gltf",
+  //                        texture_cache);
+
+  // TextureCache texture_cache;
+  // texture_cache.set_import_path("external/deps/src/bistro/Exterior");
+  // scene_ = Scene::create();
+  // scene_->load_from_file("external/deps/src/bistro/Exterior/exterior.obj",
+  //                        texture_cache);
+  // texture_cache.set_import_path("external/deps/src/bistro/Interior");
+  // scene_->load_from_file("external/deps/src/bistro/Interior/interior.obj",
+  //                       texture_cache);
+
   const auto scene_loaded_event = std::make_shared<SceneLoadedEvent>(scene_);
   Engine::instance()->event_manager()->publish(scene_loaded_event);
 
@@ -33,24 +53,14 @@ void GameLayer::init()
   scene_->create_system<CameraSystem>(scene_);
   scene_->create_system<RenderSystem>(scene_);
 
-  // create dummy scene
-  // auto sponza_model = std::make_shared<Model>();
-  // sponza_model->load_from_file(
-  //     "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
-  //     texture_cache);
-
-  // auto  sponza_entity    = scene_->create_entity("Sponza");
-  // auto &model_component  = sponza_entity.add_component<ModelComponent>();
-  // model_component.model_ = sponza_model;
-
   auto sun_entity = scene_->create_entity("Sun");
   sun_entity.add_component<DirectionalLightComponent>();
-  auto &sun_transform_component = sun_entity.component<TransformComponent>();
-  sun_transform_component.set_rotation(
-      glm::vec3{glm::radians(-90.0f), 0.0f, 0.0f});
+  // auto &sun_transform_component = sun_entity.component<TransformComponent>();
+  // sun_transform_component.set_rotation(
+  //     glm::vec3{glm::radians(-90.0f), 0.0f, 0.0f});
 
   const auto window        = Engine::instance()->window();
-  auto camera_entity = scene_->create_entity("Camera");
+  auto       camera_entity = scene_->create_entity("Camera");
   camera_entity.add_component<CameraComponent>(
       0.1f,
       600.0f,

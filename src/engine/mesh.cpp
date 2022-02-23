@@ -71,20 +71,27 @@ std::unique_ptr<Material> import_material(const aiScene *ai_scene,
 {
   const auto ai_material = ai_scene->mMaterials[ai_mesh->mMaterialIndex];
 
-  auto diffuse_texture =
-      import_texture(ai_material, aiTextureType_DIFFUSE, texture_cache);
-  if (!diffuse_texture)
-  {
-    diffuse_texture =
-        import_texture(ai_material, aiTextureType_BASE_COLOR, texture_cache);
-  }
+  const auto albedo_texture =
+      import_texture(ai_material, aiTextureType_BASE_COLOR, texture_cache);
+
+  const auto emissive_texture =
+      import_texture(ai_material, aiTextureType_EMISSIVE, texture_cache);
+
+  const auto roughness_texture =
+      import_texture(ai_material, aiTextureType_UNKNOWN, texture_cache);
+
+  const auto ao_texture =
+      import_texture(ai_material, aiTextureType_LIGHTMAP, texture_cache);
   const auto normal_texture =
       import_texture(ai_material, aiTextureType_NORMALS, texture_cache);
 
   const std::string material_name(ai_material->GetName().C_Str());
   auto              material = std::make_unique<Material>();
 
-  material->set_diffuse_texture(diffuse_texture);
+  material->set_albedo_texture(albedo_texture);
+  material->set_emissive_texture(emissive_texture);
+  material->set_roughness_texture(roughness_texture);
+  material->set_ambient_occlusion_texture(ao_texture);
   material->set_normal_texture(normal_texture);
 
   return material;

@@ -1,6 +1,7 @@
 #include "render_system.hpp"
 #include "directional_light.hpp"
 #include "directional_light_component.hpp"
+#include "entity.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include "log.hpp"
 #include "model_component.hpp"
@@ -63,9 +64,7 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
       PointLight point_light{};
       point_light.set_position(transform_component.position());
 
-      point_light.set_ambient_color(point_light_component.ambient_color_);
-      point_light.set_diffuse_color(point_light_component.diffuse_color_);
-      point_light.set_specular_color(point_light_component.specular_color_);
+      point_light.set_color(point_light_component.color_);
 
       point_light.set_constant(point_light_component.constant_);
       point_light.set_linear(point_light_component.linear_);
@@ -85,20 +84,15 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
       const auto &directional_light_component =
           view.get<DirectionalLightComponent>(entity);
 
-      DirectionalLight directional_light{};
-      // const auto       rotation_matrix =
-      //     glm::toMat4(transform_component.rotation_quat());
-      // const auto direction =
-      //     rotation_matrix * glm::vec4{glm::vec3{0.0f, 0.0f, 1.0f}, 0.0f};
-      const glm::vec3 direction{0.1f, -1.0f, -0.1f};
-      directional_light.set_direction(direction);
+      Entity     e{entity, scene};
+      const auto rotation_matrix =
+          glm::toMat4(e.component<TransformComponent>().rotation_quat());
+      const glm::vec3 rotation{rotation_matrix *
+                               glm::vec4{0.0f, -1.0f, 0.0f, 0.0f}};
 
-      directional_light.set_ambient_color(
-          directional_light_component.ambient_color_);
-      directional_light.set_diffuse_color(
-          directional_light_component.diffuse_color_);
-      directional_light.set_specular_color(
-          directional_light_component.specular_color_);
+      DirectionalLight directional_light{};
+      directional_light.set_direction(rotation);
+      directional_light.set_color(directional_light_component.color_);
 
       scene_render_info.set_directional_light(directional_light);
 

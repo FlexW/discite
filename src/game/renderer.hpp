@@ -1,8 +1,10 @@
 #pragma once
 
 #include "directional_light.hpp"
+#include "gl_cube_texture.hpp"
 #include "gl_framebuffer.hpp"
 #include "gl_shader.hpp"
+#include "gl_texture.hpp"
 #include "gl_texture_array.hpp"
 #include "math.hpp"
 #include "mesh.hpp"
@@ -132,6 +134,10 @@ private:
 
   std::vector<MeshInfo> transparent_meshes_;
   std::vector<MeshInfo> solid_meshes_;
+
+  std::shared_ptr<GlTexture>     brdf_lut_texture_{};
+  std::shared_ptr<GlCubeTexture> env_texture_{};
+  std::shared_ptr<GlCubeTexture> env_irradiance_texture_{};
 
   void load_shaders();
 

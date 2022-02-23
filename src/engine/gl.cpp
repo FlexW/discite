@@ -18,3 +18,8 @@ void draw(const GlVertexArray &vertex_array, GLenum mode)
 
   vertex_array.unbind();
 }
+
+void compute(std::uint32_t x_size, std::uint32_t y_size, std::uint32_t z_size)
+{
+  glDispatchCompute(x_size, y_size, z_size);
+}

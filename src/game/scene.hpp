@@ -42,9 +42,8 @@ class Scene : public std::enable_shared_from_this<Scene>
 public:
   static std::shared_ptr<Scene> create();
 
-  static std::shared_ptr<Scene>
-  load_from_file(const std::filesystem::path &file_path,
-                 TextureCache                &texture_cache);
+  void load_from_file(const std::filesystem::path &file_path,
+                      TextureCache                &texture_cache);
 
   void init();
   void update(float delta_time);

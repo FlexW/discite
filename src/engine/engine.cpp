@@ -8,21 +8,17 @@
 #include <memory>
 #include <stdexcept>
 
-// #include <imgui.h>
-// #include <imgui_impl_glfw.h>
-// #include <imgui_impl_opengl3.h>
-
 Engine *Engine::instance()
 {
   static auto unique = std::unique_ptr<Engine>(new Engine);
   return unique.get();
 }
 
-int Engine::run()
+int Engine::run(bool show_window)
 {
   try
   {
-    init();
+    init(show_window);
     main_loop();
     shutdown();
   }
@@ -80,12 +76,11 @@ void Engine::set_log_level()
   }
 }
 
-void Engine::init()
+void Engine::init(bool show_window)
 {
   load_config();
   set_log_level();
-  window_ = std::make_shared<Window>();
-  // init_imgui();
+  window_ = std::make_shared<Window>(show_window);
   layer_stack_.init();
 }
 

@@ -23,7 +23,6 @@ void EntityPanel::on_render()
 
   {
     // name
-
     auto name = entity_.name();
     if (imgui_input("Name", name))
     {
@@ -76,12 +75,17 @@ void EntityPanel::on_render()
   {
     ImGui::Separator();
     ImGui::Text("Directional light");
+    auto &directional_light_component =
+        entity_.component<DirectionalLightComponent>();
+    imgui_input("Color", directional_light_component.color_);
   }
 
   if (entity_.has_component<PointLightComponent>())
   {
     ImGui::Separator();
     ImGui::Text("Point light");
+    auto &point_light_component = entity_.component<PointLightComponent>();
+    imgui_input("Color", point_light_component.color_);
   }
 }
 

@@ -15,6 +15,14 @@ class GlShader
 {
 public:
   GlShader() = default;
+  GlShader(const std::filesystem::path &vertex_shader_file_path,
+           const std::filesystem::path &fragment_shader_file_path);
+
+  GlShader(const std::filesystem::path &vertex_shader_file_path,
+           const std::filesystem::path &geometry_shader_file_path,
+           const std::filesystem::path &fragment_shader_file_path);
+
+  GlShader(const std::filesystem::path &compute_shader_file_path);
   ~GlShader();
 
   void init(const std::filesystem::path &vertex_shader_file_path,
@@ -23,6 +31,8 @@ public:
   void init(const std::filesystem::path &vertex_shader_file_path,
             const std::filesystem::path &geometry_shader_file_path,
             const std::filesystem::path &fragment_shader_file_path);
+
+  void init(const std::filesystem::path &compute_shader_file_path);
 
   void bind();
   void unbind();

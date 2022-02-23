@@ -49,9 +49,8 @@ std::shared_ptr<Scene> Scene::create()
   return std::shared_ptr<Scene>(new Scene);
 }
 
-std::shared_ptr<Scene>
-Scene::load_from_file(const std::filesystem::path &file_path,
-                      TextureCache                &texture_cache)
+void Scene::load_from_file(const std::filesystem::path &file_path,
+                           TextureCache                &texture_cache)
 {
   LOG_INFO() << "Import scene from file " << file_path.string().c_str();
 
@@ -69,9 +68,7 @@ Scene::load_from_file(const std::filesystem::path &file_path,
                              importer.GetErrorString());
   }
 
-  auto scene = create();
-  scene->load_scene(ai_scene, texture_cache);
-  return scene;
+  load_scene(ai_scene, texture_cache);
 }
 
 void Scene::load_mesh(const aiScene *ai_scene,

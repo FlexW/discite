@@ -9,6 +9,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace
 {
@@ -62,6 +63,26 @@ void check_for_program_link_errors(GLuint program_id)
 
 } // namespace
 
+GlShader::GlShader(const std::filesystem::path &vertex_shader_file_path,
+                   const std::filesystem::path &fragment_shader_file_path)
+{
+  init(vertex_shader_file_path, fragment_shader_file_path);
+}
+
+GlShader::GlShader(const std::filesystem::path &vertex_shader_file_path,
+                   const std::filesystem::path &geometry_shader_file_path,
+                   const std::filesystem::path &fragment_shader_file_path)
+{
+  init(vertex_shader_file_path,
+       geometry_shader_file_path,
+       fragment_shader_file_path);
+}
+
+GlShader::GlShader(const std::filesystem::path &compute_shader_file_path)
+{
+  init(compute_shader_file_path);
+}
+
 GlShader::~GlShader()
 {
   if (program_id_)
@@ -88,11 +109,15 @@ GLuint GlShader::compile_shader(const std::filesystem::path &file_path)
   {
     shader_id = compile_shader(shader_code, GL_FRAGMENT_SHADER);
   }
+  else if (extension == ".comp")
+  {
+    shader_id = compile_shader(shader_code, GL_COMPUTE_SHADER);
+  }
   else
   {
     assert(0 && "Can not compile shader type");
   }
-  check_for_shader_compile_errors(file_path, shader_id);
+  check_for_shader_compile_errors(file_path.string(), shader_id);
 
   return shader_id;
 }
@@ -227,6 +252,17 @@ void GlShader::init(const std::filesystem::path &vertex_shader_file_path,
                                    fragment_shader_id});
 
   dump_shader_info();
+}
+
+void GlShader::init(const std::filesystem::path &compute_shader_file_path)
+{
+  LOG_INFO() << "Load compute shader " << compute_shader_file_path.string();
+
+  // compile shaders
+  const auto compute_shader_id = compile_shader(compute_shader_file_path);
+  defer(glDeleteShader(compute_shader_id));
+
+  link_shaders(std::vector<GLuint>{compute_shader_id});
 }
 
 void GlShader::bind() { glUseProgram(program_id_); }

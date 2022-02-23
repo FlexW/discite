@@ -71,6 +71,7 @@ add_subdirectory(deps/src/assimp)
 # ImGui
 add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
 add_library(imgui STATIC)
+target_link_libraries(imgui PUBLIC glfw)
 target_sources(imgui PRIVATE
   deps/src/imgui/imgui.cpp
   deps/src/imgui/imgui_demo.cpp
@@ -92,3 +93,6 @@ target_include_directories(imguizmo PUBLIC deps/src/imgui deps/src/imguizmo)
 
 # EnTT
 add_subdirectory(deps/src/entt)
+
+# gli
+add_subdirectory(deps/src/gli)

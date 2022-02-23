@@ -648,7 +648,7 @@ Monitor::Monitor(GLFWmonitor *handle) : handle_{handle} {}
 
 GLFWmonitor *Monitor::handle() { return handle_; }
 
-Window::Window()
+Window::Window(bool show_window)
 {
   if (!glfwInit())
   {
@@ -675,6 +675,8 @@ Window::Window()
   window_height_ = config->config_value_int("window", "height", window_height_);
   const auto window_title =
       config->config_value_string("Window", "title", "Engine");
+
+  glfwWindowHint(GLFW_VISIBLE, show_window ? GLFW_TRUE : GLFW_FALSE);
 
   window_ = glfwCreateWindow(window_width_,
                              window_height_,
@@ -712,9 +714,6 @@ Window::Window()
     LOG_ERROR() << "GLAD could not load OpenGL";
     return;
   }
-
-  glEnable(GL_SAMPLES);
-  glfwWindowHint(GLFW_SAMPLES, 0);
 
   if (is_opengl_debug)
   {

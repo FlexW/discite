@@ -1,5 +1,6 @@
 #pragma once
 
+#include "glm/ext/scalar_constants.hpp"
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/quaternion_trigonometric.hpp>
 #include <glm/glm.hpp>
@@ -15,8 +16,11 @@
 namespace math
 {
 
+constexpr auto pi  = glm::pi<float>();
+constexpr auto tau = glm::pi<float>() * 2;
+
 bool decompose_transform(const glm::mat4 &transform,
                          glm::vec3       &translation,
                          glm::vec3       &rotation,
                          glm::vec3       &scale);
-}
+} // namespace math

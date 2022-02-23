@@ -1,8 +1,12 @@
 #include "renderer.hpp"
 #include "defer.hpp"
 #include "directional_light.hpp"
+#include "gl_cube_texture.hpp"
 #include "gl_framebuffer.hpp"
+#include "gl_texture.hpp"
+#include "log.hpp"
 
+#include <memory>
 #include <optional>
 
 void SceneRenderInfo::add_mesh(const MeshInfo &mesh_info)
@@ -79,6 +83,13 @@ Renderer::Renderer()
   recreate_shadow_tex_framebuffer();
 
   glGenVertexArrays(1, &quad_vertex_array_);
+
+  brdf_lut_texture_ = std::make_shared<GlTexture>();
+  brdf_lut_texture_->load_from_file("data/brdf_lut.ktx", true);
+
+  env_texture_ = std::make_shared<GlCubeTexture>("data/piazza_bologni_1k.hdr");
+  env_irradiance_texture_ =
+      std::make_shared<GlCubeTexture>("data/piazza_bologni_1k_irradiance.hdr");
 
   // dummy/placeholder texture
   white_texture_ = std::make_shared<GlTexture>();
@@ -169,7 +180,7 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
     // iterate through all transparent meshes
     for (const auto &mesh_info : transparent_meshes_)
     {
-      const auto diffuse_tex = mesh_info.mesh_->material()->diffuse_texture();
+      const auto diffuse_tex = mesh_info.mesh_->material()->albedo_texture();
       if (!diffuse_tex)
       {
         continue;
@@ -194,7 +205,7 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
     scene_framebuffer_->bind();
     glCullFace(GL_BACK);
 
-    int global_texture_slot = 0;
+    int global_texture_slot{0};
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -210,6 +221,21 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
     mesh_shader_->set_uniform("projection_matrix",
                               view_render_info.projection_matrix());
 
+    glActiveTexture(GL_TEXTURE0 + global_texture_slot);
+    brdf_lut_texture_->bind();
+    mesh_shader_->set_uniform("brdf_lut_tex", global_texture_slot);
+    ++global_texture_slot;
+
+    glActiveTexture(GL_TEXTURE0 + global_texture_slot);
+    env_texture_->bind();
+    mesh_shader_->set_uniform("env_tex", global_texture_slot);
+    ++global_texture_slot;
+
+    glActiveTexture(GL_TEXTURE0 + global_texture_slot);
+    env_irradiance_texture_->bind();
+    mesh_shader_->set_uniform("env_irradiance_tex", global_texture_slot);
+    ++global_texture_slot;
+
     const int   max_point_light_count{5};
     const auto &point_lights      = scene_render_info.point_lights();
     const auto  point_light_count = point_lights.size() <= max_point_light_count
@@ -218,15 +244,8 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
     mesh_shader_->set_uniform("point_light_count", point_light_count);
     for (int i = 0; i < point_light_count; ++i)
     {
-      mesh_shader_->set_uniform("point_lights[" + std::to_string(i) +
-                                    "].ambient_color",
-                                point_lights[i].ambient_color());
-      mesh_shader_->set_uniform("point_lights[" + std::to_string(i) +
-                                    "].diffuse_color",
-                                point_lights[i].diffuse_color());
-      mesh_shader_->set_uniform("point_lights[" + std::to_string(i) +
-                                    "].specular_color",
-                                point_lights[i].specular_color());
+      mesh_shader_->set_uniform("point_lights[" + std::to_string(i) + "].color",
+                                point_lights[i].color());
       mesh_shader_->set_uniform(
           "point_lights[" + std::to_string(i) + "].position",
           glm::vec3(view_matrix * glm::vec4(point_lights[i].position(), 1.0f)));
@@ -241,25 +260,17 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
                                 point_lights[i].quadratic());
     }
 
-    mesh_shader_->set_uniform("spot_light_count", 0);
-
     const auto &directional_light = scene_render_info.directional_light();
     mesh_shader_->set_uniform("smooth_shadows", smooth_shadows_);
     mesh_shader_->set_uniform("shadow_bias_min", shadow_bias_min_);
     mesh_shader_->set_uniform("light_size", light_size_);
     mesh_shader_->set_uniform("directional_light_enabled", true);
-    mesh_shader_->set_uniform("directional_light.direction_ws",
-                              directional_light.direction());
     mesh_shader_->set_uniform(
         "directional_light.direction",
         glm::vec3{view_matrix *
                   glm::vec4{directional_light.direction(), 0.0f}});
-    mesh_shader_->set_uniform("directional_light.ambient_color",
-                              directional_light.ambient_color());
-    mesh_shader_->set_uniform("directional_light.diffuse_color",
-                              directional_light.diffuse_color());
-    mesh_shader_->set_uniform("directional_light.specular_color",
-                              directional_light.specular_color());
+    mesh_shader_->set_uniform("directional_light.color",
+                              directional_light.color());
 
     mesh_shader_->set_uniform("directional_light_shadow_enabled",
                               is_shadows_enabled_);
@@ -295,23 +306,74 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
       int texture_slot = global_texture_slot;
 
       const auto material = mesh.mesh_->material();
-      if (material->diffuse_texture())
+      if (material->albedo_texture())
       {
-        const auto diffuse_texture = material->diffuse_texture();
+        const auto albedo_texture = material->albedo_texture();
         glActiveTexture(GL_TEXTURE0 + texture_slot);
-        diffuse_texture->bind();
-        mesh_shader_->set_uniform("in_diffuse_tex", texture_slot);
-        mesh_shader_->set_uniform("diffuse_tex_enabled", true);
+        albedo_texture->bind();
+        mesh_shader_->set_uniform("in_albedo_tex", texture_slot);
+        mesh_shader_->set_uniform("albedo_tex_enabled", true);
         ++texture_slot;
       }
       else
       {
         glActiveTexture(GL_TEXTURE0 + texture_slot);
         white_texture_->bind();
-        mesh_shader_->set_uniform("in_diffuse_tex", texture_slot);
-        mesh_shader_->set_uniform("in_diffuse_color",
-                                  material->diffuse_color());
-        mesh_shader_->set_uniform("diffuse_tex_enabled", false);
+        mesh_shader_->set_uniform("in_albedo_tex", texture_slot);
+        mesh_shader_->set_uniform("in_albedo_color", material->albedo_color());
+        mesh_shader_->set_uniform("albedo_tex_enabled", false);
+      }
+
+      if (material->roughness_texture())
+      {
+        const auto roughness_texture = material->roughness_texture();
+        glActiveTexture(GL_TEXTURE0 + texture_slot);
+        roughness_texture->bind();
+        mesh_shader_->set_uniform("in_roughness_tex", texture_slot);
+        mesh_shader_->set_uniform("roughness_tex_enabled", true);
+        ++texture_slot;
+      }
+      else
+      {
+        glActiveTexture(GL_TEXTURE0 + texture_slot);
+        white_texture_->bind();
+        mesh_shader_->set_uniform("in_roughness_tex", texture_slot);
+        mesh_shader_->set_uniform("in_roughness", material->roughness());
+        mesh_shader_->set_uniform("roughness_tex_enabled", false);
+      }
+
+      if (material->ambient_occlusion_texture())
+      {
+        const auto ao_texture = material->ambient_occlusion_texture();
+        glActiveTexture(GL_TEXTURE0 + texture_slot);
+        ao_texture->bind();
+        mesh_shader_->set_uniform("in_ao_tex", texture_slot);
+        mesh_shader_->set_uniform("ao_tex_enabled", true);
+        ++texture_slot;
+      }
+      else
+      {
+        glActiveTexture(GL_TEXTURE0 + texture_slot);
+        white_texture_->bind();
+        mesh_shader_->set_uniform("in_ao_tex", texture_slot);
+        mesh_shader_->set_uniform("ao_tex_enabled", false);
+      }
+
+      if (material->emissive_texture())
+      {
+        const auto emissive_texture = material->emissive_texture();
+        glActiveTexture(GL_TEXTURE0 + texture_slot);
+        emissive_texture->bind();
+        mesh_shader_->set_uniform("in_emissive_tex", texture_slot);
+        mesh_shader_->set_uniform("emissive_tex_enabled", true);
+        ++texture_slot;
+      }
+      else
+      {
+        glActiveTexture(GL_TEXTURE0 + texture_slot);
+        white_texture_->bind();
+        mesh_shader_->set_uniform("in_emissive_tex", texture_slot);
+        mesh_shader_->set_uniform("emissive_tex_enabled", false);
       }
 
       if (material->normal_texture())
@@ -330,8 +392,6 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
         mesh_shader_->set_uniform("in_normal_tex", texture_slot);
         mesh_shader_->set_uniform("normal_tex_enabled", false);
       }
-
-      mesh_shader_->set_uniform("specular_power", material->specular_power());
 
       const auto vertex_array = mesh.mesh_->vertex_array();
       draw(*vertex_array, GL_TRIANGLES);
@@ -382,7 +442,7 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
 void Renderer::load_shaders()
 {
   mesh_shader_ = std::make_shared<GlShader>();
-  mesh_shader_->init("shaders/blinn_phong.vert", "shaders/blinn_phong.frag");
+  mesh_shader_->init("shaders/pbr.vert", "shaders/pbr.frag");
 
   shadow_map_shader_ = std::make_shared<GlShader>();
   shadow_map_shader_->init("shaders/shadow_map.vert",
@@ -503,9 +563,13 @@ Renderer::calc_light_space_matrix(const DirectionalLight &directional_light,
   }
   center /= frustum_corners.size();
 
-  const auto light_view = glm::lookAt(center - directional_light.direction(),
-                                      center,
-                                      glm::vec3{0.0f, 1.0f, 0.0f});
+  const auto      light_direction = directional_light.direction();
+  glm::vec3       up{0.0f, 1.0f, 0.0f};
+  if (glm::abs(glm::abs(glm::dot(up, light_direction)) - 1.0f) < 0.0001f)
+  {
+    up = glm::vec3{0.0f, 0.0f, 1.0f};
+  }
+  const auto light_view = glm::lookAt(center - light_direction, center, up);
 
   auto min_x = std::numeric_limits<float>::max();
   auto max_x = std::numeric_limits<float>::min();

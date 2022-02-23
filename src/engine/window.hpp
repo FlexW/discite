@@ -222,7 +222,7 @@ int to_glfw(MouseButtonAction action);
 class Window
 {
 public:
-  Window();
+  Window(bool show_window = true);
 
   bool is_close();
 
