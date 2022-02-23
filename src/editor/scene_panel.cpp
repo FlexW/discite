@@ -48,40 +48,6 @@ void ScenePanel::on_render()
       }
     }
   }
-
-  // const auto float_min = std::numeric_limits<float>::min();
-  // if (ImGui::BeginListBox("Entities", {-float_min, -float_min}))
-  // {
-  //   const auto scene = scene_.lock();
-  //   if (scene)
-  //   {
-  //     const auto &registry = scene->registry();
-  //     const auto  view     = registry.view<NameComponent>();
-
-  //     for (const auto &entity_handle : view)
-  //     {
-  //       Entity entity{entity_handle, scene_};
-
-  //       const auto is_selected =
-  //           selected_entity_.entity_handle() == entity_handle;
-
-  //       const auto text = entity.name();
-  //       if (ImGui::Selectable(text.c_str(), is_selected))
-  //       {
-  //         selected_entity_ = entity;
-  //         const auto event =
-  //             std::make_shared<EntitySelectedEvent>(selected_entity_);
-  //         Engine::instance()->event_manager()->publish(event);
-  //       }
-
-  //       if (is_selected)
-  //       {
-  //         ImGui::SetItemDefaultFocus();
-  //       }
-  //     }
-  //   }
-  //   ImGui::EndListBox();
-  // }
 }
 
 bool ScenePanel::on_event(const Event &event)

@@ -94,7 +94,7 @@ Renderer::~Renderer()
   }
 }
 
-void Renderer::submit(const SceneRenderInfo         &scene_render_info,
+void Renderer::render(const SceneRenderInfo         &scene_render_info,
                       const ViewRenderInfo          &view_render_info,
                       std::optional<GlFramebuffer *> framebuffer)
 {

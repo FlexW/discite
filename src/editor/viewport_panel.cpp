@@ -40,7 +40,7 @@ void ViewportPanel::on_render()
     view_render_info.set_view_matrix(editor_camera_.view_matrix());
     view_render_info.set_viewport_info({0, 0, scene_width_, scene_height_});
 
-    renderer->submit(scene_render_info,
+    renderer->render(scene_render_info,
                      view_render_info,
                      scene_framebuffer_.get());
   }
