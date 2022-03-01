@@ -9,6 +9,7 @@
 #include "render_system.hpp"
 #include "renderer.hpp"
 #include "scene.hpp"
+#include "sky_component.hpp"
 #include "texture_cache.hpp"
 #include "transform_component.hpp"
 
@@ -55,9 +56,8 @@ void GameLayer::init()
 
   auto sun_entity = scene_->create_entity("Sun");
   sun_entity.add_component<DirectionalLightComponent>();
-  // auto &sun_transform_component = sun_entity.component<TransformComponent>();
-  // sun_transform_component.set_rotation(
-  //     glm::vec3{glm::radians(-90.0f), 0.0f, 0.0f});
+  auto &sky = sun_entity.add_component<SkyComponent>();
+  sky.sky_  = Sky{"data/piazza_bologni_1k.hdr"};
 
   const auto window        = Engine::instance()->window();
   auto       camera_entity = scene_->create_entity("Camera");

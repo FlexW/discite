@@ -12,6 +12,7 @@ target_sources(game PRIVATE
   renderer.cpp
   entity.cpp
   transform_component.cpp
+  sky.cpp
   )
 
 target_link_libraries(game PUBLIC

@@ -37,6 +37,10 @@ DirectionalLight SceneRenderInfo::directional_light() const
   return directional_light_;
 }
 
+void SceneRenderInfo::set_sky(const Sky &sky) { sky_ = sky; }
+
+Sky SceneRenderInfo::sky() const { return sky_; }
+
 void ViewRenderInfo::set_view_matrix(const glm::mat4 &value)
 {
   view_matrix_ = value;
@@ -86,10 +90,6 @@ Renderer::Renderer()
 
   brdf_lut_texture_ = std::make_shared<GlTexture>();
   brdf_lut_texture_->load_from_file("data/brdf_lut.ktx", true);
-
-  env_texture_ = std::make_shared<GlCubeTexture>("data/piazza_bologni_1k.hdr");
-  env_irradiance_texture_ =
-      std::make_shared<GlCubeTexture>("data/piazza_bologni_1k_irradiance.hdr");
 
   // dummy/placeholder texture
   white_texture_ = std::make_shared<GlTexture>();
@@ -211,7 +211,7 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glViewport(0, 0, viewport_info.width_, viewport_info.height_);
-    glClearColor(sky_color_.r, sky_color_.g, sky_color_.b, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     const auto view_matrix = view_render_info.view_matrix();
@@ -226,13 +226,14 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
     mesh_shader_->set_uniform("brdf_lut_tex", global_texture_slot);
     ++global_texture_slot;
 
+    const auto &sky = scene_render_info.sky();
     glActiveTexture(GL_TEXTURE0 + global_texture_slot);
-    env_texture_->bind();
+    sky.env_texture()->bind();
     mesh_shader_->set_uniform("env_tex", global_texture_slot);
     ++global_texture_slot;
 
     glActiveTexture(GL_TEXTURE0 + global_texture_slot);
-    env_irradiance_texture_->bind();
+    sky.env_irradiance_texture()->bind();
     mesh_shader_->set_uniform("env_irradiance_tex", global_texture_slot);
     ++global_texture_slot;
 

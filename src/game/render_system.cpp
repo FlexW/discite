@@ -8,6 +8,7 @@
 #include "point_light.hpp"
 #include "point_light_component.hpp"
 #include "renderer.hpp"
+#include "sky_component.hpp"
 #include "transform_component.hpp"
 
 #include <memory>
@@ -74,13 +75,32 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
     }
   }
 
+  // add sky
+  {
+    auto view = registry.view<SkyComponent>();
+    bool found{false};
+    for (const auto &entity : view)
+    {
+      const auto &sky_component = view.get<SkyComponent>(entity);
+
+      Entity     e{entity, scene};
+      scene_render_info.set_sky(sky_component.sky_);
+
+      if (found)
+      {
+        LOG_WARN() << "More than one sky is not supported";
+        break;
+      }
+      found = true;
+    }
+  }
+
   // add directional light
   {
     auto view = registry.view<TransformComponent, DirectionalLightComponent>();
     bool found{false};
     for (const auto &entity : view)
     {
-      // const auto &transform_component = view.get<TransformComponent>(entity);
       const auto &directional_light_component =
           view.get<DirectionalLightComponent>(entity);
 
@@ -98,7 +118,7 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
 
       if (found)
       {
-        LOG_WARN() << "More then one directional light is not supported";
+        LOG_WARN() << "More than one directional light is not supported";
         break;
       }
       found = true;

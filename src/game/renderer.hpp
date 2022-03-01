@@ -9,6 +9,7 @@
 #include "math.hpp"
 #include "mesh.hpp"
 #include "point_light.hpp"
+#include "sky.hpp"
 
 #include <memory>
 
@@ -30,10 +31,14 @@ public:
   void set_directional_light(const DirectionalLight &directional_light);
   DirectionalLight directional_light() const;
 
+  void set_sky(const Sky &sky);
+  Sky  sky() const;
+
 private:
   std::vector<MeshInfo>   meshes_;
   std::vector<PointLight> point_lights_;
   DirectionalLight        directional_light_;
+  Sky                     sky_;
 };
 
 struct ViewportInfo
@@ -98,8 +103,6 @@ private:
     float far{};
   };
 
-  glm::vec3 sky_color_{30.0f, 81.0f, 92.0f};
-
   std::shared_ptr<GlShader> mesh_shader_;
 
   std::shared_ptr<GlTexture> white_texture_{};
@@ -135,9 +138,7 @@ private:
   std::vector<MeshInfo> transparent_meshes_;
   std::vector<MeshInfo> solid_meshes_;
 
-  std::shared_ptr<GlTexture>     brdf_lut_texture_{};
-  std::shared_ptr<GlCubeTexture> env_texture_{};
-  std::shared_ptr<GlCubeTexture> env_irradiance_texture_{};
+  std::shared_ptr<GlTexture> brdf_lut_texture_{};
 
   void load_shaders();
 

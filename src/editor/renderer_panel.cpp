@@ -31,18 +31,6 @@ void RendererPanel::render_general()
   {
     return;
   }
-
-  {
-    ImGui::Text("Sky");
-    imgui_input("Color", renderer->sky_color_);
-  }
-
-  ImGui::Separator();
-
-  {
-    ImGui::Text("HDR");
-    imgui_input("Exposure", renderer->exposure_);
-  }
 }
 
 void RendererPanel::render_shadows()
