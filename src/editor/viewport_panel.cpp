@@ -37,6 +37,7 @@ void ViewportPanel::on_render()
     view_render_info.set_near_plane(editor_camera_.near_plane());
     view_render_info.set_far_plane(editor_camera_.far_plane());
     view_render_info.set_aspect_ratio(editor_camera_.aspect_ratio());
+    view_render_info.set_fov(editor_camera_.zoom());
     view_render_info.set_view_matrix(editor_camera_.view_matrix());
     view_render_info.set_viewport_info({0, 0, scene_width_, scene_height_});
 
@@ -224,18 +225,6 @@ bool ViewportPanel::on_scene_loaded(const SceneLoadedEvent &event)
 
 bool ViewportPanel::on_key(const KeyEvent &event)
 {
-
-  if (event.key_ == Key::LeftControl && event.key_action_ == KeyAction::Press &&
-      is_hovered())
-  {
-    start_move_editor_camera();
-  }
-  else if (event.key_ == Key::LeftControl &&
-           event.key_action_ == KeyAction::Release)
-  {
-    stop_move_editor_camera();
-  }
-
   if (is_move_editor_camara_)
   {
     // make sure key events do not propagate to other layers (imgui)
@@ -283,8 +272,19 @@ bool ViewportPanel::on_mouse_movement(const MouseMovementEvent &event)
   return false;
 }
 
-bool ViewportPanel::on_mouse_button(const MouseButtonEvent & /*event*/)
+bool ViewportPanel::on_mouse_button(const MouseButtonEvent &event)
 {
+  if (event.mouse_button_ == MouseButton::Right &&
+      event.mouse_button_action_ == MouseButtonAction::Press && is_hovered())
+  {
+    start_move_editor_camera();
+  }
+  else if (event.mouse_button_ == MouseButton::Right &&
+           event.mouse_button_action_ == MouseButtonAction::Release)
+  {
+    stop_move_editor_camera();
+  }
+
   if (is_move_editor_camara_)
   {
     // make sure mouse button events do not propagate to other layers (imgui)

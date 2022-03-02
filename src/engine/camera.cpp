@@ -1,4 +1,5 @@
 #include "camera.hpp"
+#include "serialization.hpp"
 
 Camera::Camera()
 {
@@ -153,3 +154,43 @@ void Camera::recalculate_projection_matrix()
 }
 
 glm::mat4 Camera::projection_matrix() const { return projection_matrix_; }
+
+void Camera::save(FILE *file) const
+{
+    write_value(file, position_);
+    write_value(file, front_);
+    write_value(file, front_movement_);
+    write_value(file, world_up_);
+    write_value(file, up_);
+    write_value(file, right_);
+    write_value(file, yaw_);
+    write_value(file, pitch_);
+    write_value(file, movement_speed_);
+    write_value(file, mouse_sensitivity_);
+    write_value(file, zoom_);
+    write_value(file, free_fly_);
+    write_value(file, near_plane_);
+    write_value(file, far_plane_);
+    write_value(file, aspect_ratio_);
+    write_value(file, projection_matrix_);
+}
+
+void Camera::read(FILE *file)
+{
+  read_value(file, position_);
+  read_value(file, front_);
+  read_value(file, front_movement_);
+  read_value(file, world_up_);
+  read_value(file, up_);
+  read_value(file, right_);
+  read_value(file, yaw_);
+  read_value(file, pitch_);
+  read_value(file, movement_speed_);
+  read_value(file, mouse_sensitivity_);
+  read_value(file, zoom_);
+  read_value(file, free_fly_);
+  read_value(file, near_plane_);
+  read_value(file, far_plane_);
+  read_value(file, aspect_ratio_);
+  read_value(file, projection_matrix_);
+}

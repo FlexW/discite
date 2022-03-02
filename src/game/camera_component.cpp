@@ -8,3 +8,7 @@ CameraComponent::CameraComponent(float near_plane,
   camera_.set_far_plane(far_plane);
   camera_.set_aspect_ratio(aspect_ratio);
 }
+
+void CameraComponent::save(FILE *file) const { camera_.save(file); }
+
+void CameraComponent::read(FILE *file) { camera_.read(file); }

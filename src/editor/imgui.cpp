@@ -5,14 +5,16 @@
 #include <array>
 #include <cstring>
 
-bool imgui_input(const std::string &name, std::string &value)
+bool imgui_input(const std::string  &name,
+                 std::string        &value,
+                 ImGuiInputTextFlags flags)
 {
   std::array<char, 256> input{};
 
   const auto size = std::min(input.size(), value.size());
   std::memcpy(input.data(), value.data(), size);
 
-  if (ImGui::InputText(name.c_str(), input.data(), input.size()))
+  if (ImGui::InputText(name.c_str(), input.data(), input.size(), flags))
   {
     value = input.data();
     return true;

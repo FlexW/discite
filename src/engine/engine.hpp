@@ -1,5 +1,7 @@
 #pragma once
 
+#include "asset_cache.hpp"
+#include "asset_importer_manager.hpp"
 #include "config.hpp"
 #include "event_manager.hpp"
 #include "gl.hpp"
@@ -15,7 +17,7 @@ class Engine
 public:
   static Engine *instance();
 
-  int run(bool show_window = true);
+  int run(int argc, char *argv[], bool show_window = true);
 
   void push_layer(std::unique_ptr<Layer> layer);
 
@@ -26,6 +28,10 @@ public:
   EventManager *event_manager() const;
   LayerStack   *layer_stack();
 
+  AssetCache           *asset_cache() const;
+  AssetImporterManager *asset_importer_manager() const;
+  std::filesystem::path base_directory() const;
+
 private:
   std::filesystem::path project_path_ = std::filesystem::current_path();
 
@@ -34,6 +40,11 @@ private:
   std::shared_ptr<Window>       window_;
   std::unique_ptr<EventManager> event_manager_{
       std::make_unique<EventManager>()};
+  std::unique_ptr<AssetCache> asset_cache_{std::make_unique<AssetCache>()};
+  std::unique_ptr<AssetImporterManager> asset_importer_manager_{
+      std::make_unique<AssetImporterManager>()};
+
+  std::filesystem::path base_directory_{"data"};
 
   bool is_close_{false};
 
@@ -43,12 +54,12 @@ private:
   Engine &operator=(const Engine &) = delete;
   Engine &operator=(Engine &&) = delete;
 
-  void init(bool show_window);
+  void init(int argc, char *argv[], bool show_window);
   void main_loop();
   void shutdown();
-  void init_imgui();
-  void shutdown_imgui();
 
   void load_config();
   void set_log_level();
+
+  void register_asset_loaders();
 };

@@ -21,8 +21,7 @@ void CameraSystem::update(float delta_time)
     return;
   }
 
-  auto &registry = scene->registry();
-  auto  view     = registry.view<CameraComponent>();
+  auto view = scene->all_entities_with<CameraComponent>();
   for (const auto &entity : view)
   {
     auto &camera_component = view.get<CameraComponent>(entity);
@@ -63,8 +62,7 @@ void CameraSystem::render(SceneRenderInfo & /*scene_render_info*/,
     return;
   }
 
-  auto &registry = scene->registry();
-  auto  view     = registry.view<CameraComponent>();
+  auto  view = scene->all_entities_with<CameraComponent>();
   bool  found{false};
   for (const auto &entity : view)
   {
@@ -100,8 +98,7 @@ bool CameraSystem::on_mouse_movement(const MouseMovementEvent &event)
     return false;
   }
 
-  auto &registry = scene->registry();
-  auto  view     = registry.view<CameraComponent>();
+  auto view = scene->all_entities_with<CameraComponent>();
   for (const auto &entity : view)
   {
     auto &camera_component = view.get<CameraComponent>(entity);
@@ -126,8 +123,7 @@ bool CameraSystem::on_window_resize(const WindowResizeEvent &event)
     return false;
   }
 
-  auto &registry = scene->registry();
-  auto  view     = registry.view<CameraComponent>();
+  auto view = scene->all_entities_with<CameraComponent>();
   for (const auto &entity : view)
   {
     auto &camera_component = view.get<CameraComponent>(entity);

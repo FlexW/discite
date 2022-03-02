@@ -13,6 +13,16 @@ target_sources(game PRIVATE
   entity.cpp
   transform_component.cpp
   sky.cpp
+  scene_asset_importer.cpp
+  model_component.cpp
+  guid_component.cpp
+  name_component.cpp
+  relationship_component.cpp
+  point_light_component.cpp
+  directional_light_component.cpp
+  sky_component.cpp
+  scene_asset.cpp
+  guid_component.cpp
   )
 
 target_link_libraries(game PUBLIC

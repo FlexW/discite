@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cmd_args_parser.hpp"
 #include "layer.hpp"
 
 #include <cassert>
@@ -12,6 +13,11 @@ public:
   virtual ~LayerStack() = default;
 
   void push_layer(std::unique_ptr<Layer> layer);
+
+  void add_cmd_line_args(ArgsParser &args_parser);
+  void eval_cmd_line_args(ArgsParser &args_parser);
+
+  void register_asset_loaders();
 
   void init();
   void shutdown();

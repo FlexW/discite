@@ -1,4 +1,5 @@
 #include "entity.hpp"
+#include "guid_component.hpp"
 #include "math.hpp"
 #include "name_component.hpp"
 #include "relationship_component.hpp"
@@ -36,6 +37,24 @@ Entity::Entity(entt::entity entity_handle, std::weak_ptr<Scene> scene)
 {
 }
 
+void Entity::set_id(Uuid uuid)
+{
+  if (valid())
+  {
+    auto &uuid_component = component<GuidComponent>();
+    uuid_component.id_   = uuid;
+  }
+}
+
+std::uint64_t Entity::id() const
+{
+  if (valid())
+  {
+    return component<GuidComponent>().id_;
+  }
+  return 0;
+}
+
 std::string Entity::name() const
 {
   const auto scene = scene_.lock();
@@ -45,7 +64,7 @@ std::string Entity::name() const
   }
 
   const auto name_component =
-      scene->registry().get<NameComponent>(entity_handle_);
+      scene->registry_.get<NameComponent>(entity_handle_);
 
   return name_component.name_;
 }
@@ -58,7 +77,7 @@ void Entity::set_name(const std::string &name)
     return;
   }
 
-  auto &name_component = scene->registry().get<NameComponent>(entity_handle_);
+  auto &name_component = scene->registry_.get<NameComponent>(entity_handle_);
   name_component.name_ = name;
 }
 
@@ -73,7 +92,7 @@ glm::mat4 Entity::transform_matrix() const
   }
 
   const auto &transform_component =
-      scene->registry().get<TransformComponent>(entity_handle_);
+      scene->registry_.get<TransformComponent>(entity_handle_);
   return transform_component.transform_matrix();
 }
 
@@ -86,7 +105,7 @@ glm::mat4 Entity::local_transform_matrix() const
   }
 
   const auto &transform_component =
-      scene->registry().get<TransformComponent>(entity_handle_);
+      scene->registry_.get<TransformComponent>(entity_handle_);
   return transform_component.local_transform_matrix();
 }
 
@@ -104,7 +123,7 @@ void Entity::set_local_transform_matrix(const glm::mat4 &transform)
   if (math::decompose_transform(transform, positon, rotation, scale))
   {
     auto &transform_component =
-        scene->registry().get<TransformComponent>(entity_handle_);
+        scene->registry_.get<TransformComponent>(entity_handle_);
     const auto original_rotation = transform_component.rotation();
     const auto delta_rotation    = rotation - original_rotation;
     set_position(positon);
@@ -122,11 +141,11 @@ void Entity::set_position(const glm::vec3 &positon)
   }
 
   auto &transform_component =
-      scene->registry().get<TransformComponent>(entity_handle_);
+      scene->registry_.get<TransformComponent>(entity_handle_);
   transform_component.set_position(positon);
 
   auto &relationship_component =
-      scene->registry().get<RelationshipComponent>(entity_handle_);
+      scene->registry_.get<RelationshipComponent>(entity_handle_);
   update_transform_matrix(relationship_component.first_child_,
                           transform_component.transform_matrix());
 }
@@ -139,7 +158,7 @@ glm::vec3 Entity::position() const
     return {};
   }
   auto &transform_component =
-      scene->registry().get<TransformComponent>(entity_handle_);
+      scene->registry_.get<TransformComponent>(entity_handle_);
   return transform_component.position();
 }
 
@@ -152,11 +171,11 @@ void Entity::set_rotation(const glm::vec3 &rotation)
   }
 
   auto &transform_component =
-      scene->registry().get<TransformComponent>(entity_handle_);
+      scene->registry_.get<TransformComponent>(entity_handle_);
   transform_component.set_rotation(rotation);
 
   auto &relationship_component =
-      scene->registry().get<RelationshipComponent>(entity_handle_);
+      scene->registry_.get<RelationshipComponent>(entity_handle_);
   update_transform_matrix(relationship_component.first_child_,
                           transform_component.transform_matrix());
 }
@@ -169,7 +188,7 @@ glm::vec3 Entity::rotation() const
     return {};
   }
   auto &transform_component =
-      scene->registry().get<TransformComponent>(entity_handle_);
+      scene->registry_.get<TransformComponent>(entity_handle_);
   return transform_component.rotation();
 }
 
@@ -182,11 +201,11 @@ void Entity::set_scale(const glm::vec3 &scale)
   }
 
   auto &transform_component =
-      scene->registry().get<TransformComponent>(entity_handle_);
+      scene->registry_.get<TransformComponent>(entity_handle_);
   transform_component.set_scale(scale);
 
   auto &relationship_component =
-      scene->registry().get<RelationshipComponent>(entity_handle_);
+      scene->registry_.get<RelationshipComponent>(entity_handle_);
   update_transform_matrix(relationship_component.first_child_,
                           transform_component.transform_matrix());
 }
@@ -199,7 +218,7 @@ glm::vec3 Entity::scale() const
     return {};
   }
   auto &transform_component =
-      scene->registry().get<TransformComponent>(entity_handle_);
+      scene->registry_.get<TransformComponent>(entity_handle_);
   return transform_component.scale();
 }
 
@@ -320,3 +339,5 @@ bool Entity::has_childs() const
 }
 
 bool Entity::operator!=(const Entity &other) const { return !(*this == other); }
+
+bool Entity::valid() const { return entity_handle_ != entt::null; }

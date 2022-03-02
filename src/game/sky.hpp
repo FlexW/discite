@@ -1,19 +1,19 @@
-#pragma once
+// #pragma once
 
-#include "gl_cube_texture.hpp"
+// #include <filesystem>
+// #include <memory>
 
-#include <filesystem>
+// class Sky
+// {
+// public:
+//   Sky() = default;
+//   Sky(std::shared_ptr<EnvionmentMap> environment_map);
 
-class Sky
-{
-public:
-  Sky() = default;
-  Sky(const std::filesystem::path &file_path);
+//   std::shared_ptr<EnvionmentMap> environment_map() const;
 
-  std::shared_ptr<GlCubeTexture> env_texture() const;
-  std::shared_ptr<GlCubeTexture> env_irradiance_texture() const;
+//   void save(FILE *file) const;
+//   void read(FILE *file);
 
-private:
-  std::shared_ptr<GlCubeTexture> env_texture_{};
-  std::shared_ptr<GlCubeTexture> env_irradiance_texture_{};
-};
+// private:
+//   std::shared_ptr<EnvionmentMap> environment_map_{};
+// };

@@ -8,6 +8,14 @@
     }
   },
   {
+    "name": "rapidjson",
+    "source": {
+      "type": "git",
+      "url": "https://github.com/Tencent/rapidjson.git",
+      "revision": "e4bde977440d4a00f820b6586899e48a972d2493"
+    }
+  },
+  {
     "name": "glm",
     "source": {
       "type": "git",

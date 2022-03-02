@@ -1,8 +1,11 @@
 #pragma once
 
-#include "mesh.hpp"
+#include "mesh_asset.hpp"
 
 struct ModelComponent
 {
-  std::shared_ptr<Model> model_{};
+  std::shared_ptr<MeshAssetHandle> model_{};
+
+  void save(FILE *file) const;
+  void read(FILE *file);
 };

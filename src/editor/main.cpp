@@ -4,10 +4,10 @@
 
 #include <memory>
 
-int main()
+int main(int argc, char *argv[])
 {
   const auto engine = Engine::instance();
   engine->push_layer(std::make_unique<EditorLayer>());
   engine->push_layer(std::make_unique<ImGuiLayer>());
-  return engine->run();
+  return engine->run(argc, argv);
 }

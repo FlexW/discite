@@ -96,3 +96,13 @@ add_subdirectory(deps/src/entt)
 
 # gli
 add_subdirectory(deps/src/gli)
+
+# RapidJSON
+set(RAPIDJSON_BUILD_DOC "OFF" CACHE STRING "")
+set(RAPIDJSON_BUILD_EXAMPLES "OFF" CACHE STRING "")
+set(RAPIDJSON_BUILD_TESTS "OFF" CACHE STRING "")
+set(RAPIDJSON_BUILD_CXX11 "OFF" CACHE STRING "")
+set(RAPIDJSON_BUILD_CXX17 "ON" CACHE STRING "")
+add_library(rapidjson INTERFACE)
+set_property(TARGET rapidjson PROPERTY
+    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/deps/src/rapidjson/include)

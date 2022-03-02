@@ -3,9 +3,9 @@
 
 #include <memory>
 
-int main()
+int main(int argc, char *argv[])
 {
   const auto engine = Engine::instance();
   engine->push_layer(std::make_unique<GameLayer>());
-  return engine->run();
+  return engine->run(argc, argv);
 }

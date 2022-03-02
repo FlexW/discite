@@ -44,11 +44,11 @@ uniform float cascades_plane_distances[CASCADES_COUNT];
 uniform bool show_shadow_cascades = false;
 
 uniform sampler2D in_albedo_tex;
-uniform vec3 in_albedo_color = vec3(0.6);
+uniform vec4 in_albedo_color;
 uniform bool albedo_tex_enabled = false;
 
 uniform sampler2D in_roughness_tex;
-uniform float in_roughness = 0.6;
+uniform vec4 in_roughness;
 uniform bool roughness_tex_enabled = false;
 
 uniform sampler2D in_ao_tex;
@@ -56,6 +56,7 @@ uniform bool ao_tex_enabled = false;
 
 uniform sampler2D in_emissive_tex;
 uniform bool emissive_tex_enabled = false;
+uniform vec4 in_emissive_color;
 
 uniform sampler2D in_normal_tex;
 uniform bool normal_tex_enabled = false;
@@ -401,8 +402,12 @@ vec3 calc_ibl_contribution(PbrInfo pbr_info, vec3 n, vec3 reflection)
 	float lod = pbr_info.perceptual_roughness * mip_count;
 
 	// retrieve a scale and bias to F0. See [1], Figure 3
-	vec2 brdf_sample_point = vec2(pbr_info.n_dot_v,
-                                  1.0 - pbr_info.perceptual_roughness);
+	vec2 brdf_sample_point = clamp(vec2(pbr_info.n_dot_v,
+                                        1.0 - pbr_info.perceptual_roughness),
+                                   vec2(0.01),
+                                   vec2(0.09));
+	// vec2 brdf_sample_point = vec2(pbr_info.n_dot_v,
+    //                               1.0 - pbr_info.perceptual_roughness);
 	vec3 brdf = textureLod(brdf_lut_tex, brdf_sample_point, 0).rgb;
 	vec3 cm = vec3(1.0, 1.0, 1.0);
 	// HDR envmaps are already linear
@@ -618,7 +623,7 @@ vec4 calc_albedo_color()
         }
         return albedo_texture;
     }
-    return vec4(in_albedo_color, 1.0);
+    return in_albedo_color;
 }
 
 vec4 calc_roughness()
@@ -628,7 +633,7 @@ vec4 calc_roughness()
         vec4 roughness_texture = texture(in_roughness_tex, fs_in.tex_coord);
         return roughness_texture;
     }
-    return vec4(in_roughness);
+    return in_roughness;
 }
 
 vec4 calc_emissive()
@@ -638,7 +643,7 @@ vec4 calc_emissive()
         vec4 emissive_texture = texture(in_emissive_tex, fs_in.tex_coord);
         return emissive_texture;
     }
-    return vec4(0.0);
+    return in_emissive_color;
 }
 
 vec4 calc_ao()
@@ -681,30 +686,6 @@ void main()
         // color = pow(emissive.rgb + color, vec3(1.0 / 2.2));
         color += emissive.rgb;
     }
-
-    // for (int i = 0; i < point_light_count; ++i)
-    // {
-    //   color += blinn_phong_point_light(point_lights[i],
-    //                                    ambient_color,
-    //                                    diffuse_color,
-    //                                    specular_color,
-    //                                    normal);
-    // }
-    // for (int i = 0; i < spot_light_count; ++i)
-    // {
-    //   color += blinn_phong_spot_light(spot_lights[i],
-    //                                   ambient_color,
-    //                                   diffuse_color,
-    //                                   specular_color,
-    //                                   normal);
-    // }
-    // if (directional_light_enabled)
-    // {
-    //   color += blinn_phong_directional_light(ambient_color,
-    //                                          diffuse_color,
-    //                                          specular_color,
-    //                                          normal);
-    // }
 
     if (show_shadow_cascades)
     {

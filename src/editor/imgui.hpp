@@ -4,7 +4,9 @@
 
 #include <imgui.h>
 
-bool imgui_input(const std::string &name, std::string &value);
+bool imgui_input(const std::string  &name,
+                 std::string        &value,
+                 ImGuiInputTextFlags flags = ImGuiInputTextFlags_None);
 
 bool imgui_input(const std::string &name, glm::vec3 &value);
 

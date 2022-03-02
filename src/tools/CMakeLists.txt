@@ -1,2 +1,4 @@
 add_subdirectory(brdf_lut)
-add_subdirectory(irr_map)
+add_subdirectory(env_map_importer)
+add_subdirectory(mesh_importer)
+add_subdirectory(scene_importer)

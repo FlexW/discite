@@ -69,6 +69,7 @@ enum class KeyAction
   Undefined,
   Press,
   Release,
+  Repeat,
 };
 
 enum class MouseButton : int
@@ -83,6 +84,7 @@ enum class MouseButtonAction
   Undefined,
   Press,
   Release,
+  Repeat,
 };
 
 enum class Cursor
@@ -121,6 +123,13 @@ public:
   Key       key_;
   KeyAction key_action_;
   int       scancode_;
+
+  bool ctrl_pressed_{false};
+  bool alt_pressed_{false};
+  bool shift_pressed_{false};
+  bool super_pressed_{false};
+  bool caps_lock_pressed_{false};
+  bool num_lock_pressed_{false};
 
   KeyEvent(Key key, KeyAction key_action, int scancode);
 };

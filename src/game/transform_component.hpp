@@ -2,6 +2,8 @@
 
 #include "math.hpp"
 
+#include <bits/types/FILE.h>
+
 struct TransformComponent
 {
 
@@ -21,6 +23,9 @@ struct TransformComponent
 
   glm::mat4 transform_matrix() const;
   glm::mat4 local_transform_matrix() const;
+
+  void save(FILE *file) const;
+  void read(FILE *file);
 
 private:
   glm::vec3 position_{0.0f};

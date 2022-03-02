@@ -4,7 +4,9 @@
 #include "entity_panel.hpp"
 #include "imgui_layer.hpp"
 #include "renderer_panel.hpp"
+#include "scene_asset.hpp"
 #include "scene_panel.hpp"
+#include "serialization.hpp"
 #include "viewport_panel.hpp"
 #include "window.hpp"
 
@@ -47,6 +49,11 @@ void EditorLayer::setup_game()
   assert(!game_layer_);
 
   game_layer_ = std::make_unique<GameLayer>();
+  game_layer_->register_asset_loaders();
+  // TODO: Set a default scene
+  game_layer_->set_scene(std::dynamic_pointer_cast<SceneAssetHandle>(
+      Engine::instance()->asset_cache()->load_asset(
+          Asset{"scenes/sponza.dcscn"})));
   game_layer_->init();
 }
 
@@ -69,9 +76,13 @@ bool EditorLayer::on_event(const Event &event)
 
 bool EditorLayer::on_key_event(const KeyEvent &event)
 {
-  if (event.key_ == Key::Escape)
+  if (event.key_ == Key::S && event.ctrl_pressed_)
   {
-    Engine::instance()->set_close(true);
+    const auto scene = game_layer_->scene();
+    if (scene && scene->is_ready())
+    {
+      scene->save();
+    }
   }
 
   return false;

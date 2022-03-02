@@ -9,4 +9,7 @@ struct PointLightComponent
   float constant_{1.0f};
   float linear_{0.9f};
   float quadratic_{1.8f};
+
+  void save(FILE *file) const;
+  void read(FILE *file);
 };

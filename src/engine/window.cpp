@@ -311,6 +311,8 @@ KeyAction to_key_action(int key_action)
     return KeyAction::Press;
   case GLFW_RELEASE:
     return KeyAction::Release;
+  case GLFW_REPEAT:
+    return KeyAction::Repeat;
   }
 
   LOG_WARN() << "Unknown GLFW action: " << key_action;
@@ -342,6 +344,8 @@ MouseButtonAction to_mouse_button_action(int mouse_button_action)
     return MouseButtonAction::Press;
   case GLFW_RELEASE:
     return MouseButtonAction::Release;
+  case GLFW_REPEAT:
+    return MouseButtonAction::Repeat;
   }
 
   LOG_WARN() << "Unknown GLFW mouse button action: " << mouse_button_action;
@@ -524,6 +528,9 @@ int to_glfw(KeyAction action)
 
   case KeyAction::Undefined:
     return GLFW_RELEASE;
+
+  case KeyAction::Repeat:
+    return GLFW_REPEAT;
   };
   assert(0);
 }
@@ -557,6 +564,9 @@ int to_glfw(MouseButtonAction action)
 
   case MouseButtonAction::Undefined:
     return GLFW_RELEASE;
+
+  case MouseButtonAction::Repeat:
+    return GLFW_REPEAT;
   };
   assert(0);
 }
@@ -932,10 +942,34 @@ void Window::on_window_close()
   Engine::instance()->event_manager()->publish(event);
 }
 
-void Window::on_key(int key, int scancode, int action, int /*mods*/)
+void Window::on_key(int key, int scancode, int action, int mods)
 {
-  const auto event =
+  auto event =
       std::make_shared<KeyEvent>(to_key(key), to_key_action(action), scancode);
+  if (mods & GLFW_MOD_CONTROL)
+  {
+    event->ctrl_pressed_ = true;
+  }
+  if (mods & GLFW_MOD_ALT)
+  {
+    event->alt_pressed_ = true;
+  }
+  if (mods & GLFW_MOD_SUPER)
+  {
+    event->super_pressed_ = true;
+  }
+  if (mods & GLFW_MOD_SHIFT)
+  {
+    event->shift_pressed_ = true;
+  }
+  if (mods & GLFW_MOD_CAPS_LOCK)
+  {
+    event->caps_lock_pressed_ = true;
+  }
+  if (mods & GLFW_MOD_NUM_LOCK)
+  {
+    event->num_lock_pressed_ = true;
+  }
   Engine::instance()->event_manager()->publish(event);
 }
 

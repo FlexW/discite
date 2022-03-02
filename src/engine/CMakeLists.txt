@@ -38,6 +38,20 @@ target_sources(engine PRIVATE
   layer_stack.cpp
   gl_shader_storage_buffer.cpp
   gl_cube_texture.cpp
+  asset.cpp
+  mesh_asset.cpp
+  env_map_asset.cpp
+  material_asset.cpp
+  texture_asset.cpp
+  asset_handle.cpp
+  asset_cache.cpp
+  importer.cpp
+  asset_importer_manager.cpp
+  mesh_asset_importer.cpp
+  cmd_args_parser.cpp
+  serialization.cpp
+  texture_asset.cpp
+  environment_map.cpp
   )
 
 target_link_libraries(engine PUBLIC
@@ -49,6 +63,7 @@ target_link_libraries(engine PUBLIC
   glfw
   assimp
   gli
+  rapidjson
   )
 
 target_compile_features(engine PUBLIC cxx_std_17)

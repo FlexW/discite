@@ -1,12 +1,17 @@
 #pragma once
 
+#include "entt/entity/fwd.hpp"
 #include "event.hpp"
+#include "serialization.hpp"
 #include "system.hpp"
 #include "texture_cache.hpp"
+#include "uuid.hpp"
 
 #include <entt/entt.hpp>
 
+#include <filesystem>
 #include <memory>
+#include <unordered_map>
 
 class Entity;
 class Scene;
@@ -42,8 +47,8 @@ class Scene : public std::enable_shared_from_this<Scene>
 public:
   static std::shared_ptr<Scene> create();
 
-  void load_from_file(const std::filesystem::path &file_path,
-                      TextureCache                &texture_cache);
+  // void load_from_file(const std::filesystem::path &file_path,
+  //                     TextureCache                &texture_cache);
 
   void init();
   void update(float delta_time);
@@ -60,10 +65,26 @@ public:
   }
 
   Entity create_entity(const std::string &name);
+  Entity create_entity(const std::string &name, Uuid uuid);
 
-  entt::registry &registry();
+  template <typename... T> decltype(auto) all_entities_with()
+  {
+    return registry_.view<T...>();
+  }
+
+  Entity get_or_create_entity(Uuid uuid);
+  Entity entity(Uuid uuid);
+  bool   exists(Uuid uuid) const;
+
+  void             save(const std::filesystem::path &file_path,
+                        const AssetDescription      &asset_description);
+  AssetDescription read(const std::filesystem::path &file_path);
 
 private:
+  // TODO: Consider creating a proper API for entities
+  friend Entity;
+
+  std::unordered_map<Uuid, entt::entity> uuid_to_entity_map_;
   entt::registry                       registry_;
   std::vector<std::unique_ptr<System>> systems_;
 

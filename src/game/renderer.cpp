@@ -1,6 +1,7 @@
 #include "renderer.hpp"
 #include "defer.hpp"
 #include "directional_light.hpp"
+#include "environment_map.hpp"
 #include "gl_cube_texture.hpp"
 #include "gl_framebuffer.hpp"
 #include "gl_texture.hpp"
@@ -37,9 +38,12 @@ DirectionalLight SceneRenderInfo::directional_light() const
   return directional_light_;
 }
 
-void SceneRenderInfo::set_sky(const Sky &sky) { sky_ = sky; }
+void SceneRenderInfo::set_env_map(const EnvionmentMap &value)
+{
+  env_map_ = value;
+}
 
-Sky SceneRenderInfo::sky() const { return sky_; }
+EnvionmentMap SceneRenderInfo::env_map() const { return env_map_; }
 
 void ViewRenderInfo::set_view_matrix(const glm::mat4 &value)
 {
@@ -109,6 +113,11 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
                       const ViewRenderInfo          &view_render_info,
                       std::optional<GlFramebuffer *> framebuffer)
 {
+  if (!scene_render_info.env_map().env_texture() ||
+      !scene_render_info.env_map().env_irradiance_texture())
+  {
+    return;
+  }
   const auto &viewport_info = view_render_info.viewport_info();
   recreate_scene_framebuffer(viewport_info.width_, viewport_info.height_);
 
@@ -226,7 +235,7 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
     mesh_shader_->set_uniform("brdf_lut_tex", global_texture_slot);
     ++global_texture_slot;
 
-    const auto &sky = scene_render_info.sky();
+    const auto &sky = scene_render_info.env_map();
     glActiveTexture(GL_TEXTURE0 + global_texture_slot);
     sky.env_texture()->bind();
     mesh_shader_->set_uniform("env_tex", global_texture_slot);
@@ -375,6 +384,8 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
         white_texture_->bind();
         mesh_shader_->set_uniform("in_emissive_tex", texture_slot);
         mesh_shader_->set_uniform("emissive_tex_enabled", false);
+        mesh_shader_->set_uniform("in_emissive_color",
+                                  material->emissive_color());
       }
 
       if (material->normal_texture())

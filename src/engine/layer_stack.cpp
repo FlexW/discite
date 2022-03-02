@@ -5,6 +5,30 @@ void LayerStack::push_layer(std::unique_ptr<Layer> layer)
   layers_.push_back(std::move(layer));
 }
 
+void LayerStack::add_cmd_line_args(ArgsParser &args_parser)
+{
+  for (auto &layer : layers_)
+  {
+    layer->add_cmd_line_args(args_parser);
+  }
+}
+
+void LayerStack::eval_cmd_line_args(ArgsParser &args_parser)
+{
+  for (auto &layer : layers_)
+  {
+    layer->eval_cmd_line_args(args_parser);
+  }
+}
+
+void LayerStack::register_asset_loaders()
+{
+  for (const auto &layer : layers_)
+  {
+    layer->register_asset_loaders();
+  }
+}
+
 void LayerStack::init()
 {
   for (const auto &layer : layers_)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "directional_light.hpp"
+#include "environment_map.hpp"
 #include "gl_cube_texture.hpp"
 #include "gl_framebuffer.hpp"
 #include "gl_shader.hpp"
@@ -31,14 +32,14 @@ public:
   void set_directional_light(const DirectionalLight &directional_light);
   DirectionalLight directional_light() const;
 
-  void set_sky(const Sky &sky);
-  Sky  sky() const;
+  void          set_env_map(const EnvionmentMap &sky);
+  EnvionmentMap env_map() const;
 
 private:
   std::vector<MeshInfo>   meshes_;
   std::vector<PointLight> point_lights_;
   DirectionalLight        directional_light_;
-  Sky                     sky_;
+  EnvionmentMap           env_map_;
 };
 
 struct ViewportInfo

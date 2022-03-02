@@ -1,30 +1,38 @@
 #include "scene.hpp"
-#include "assimp/matrix4x4.h"
-#include "assimp/mesh.h"
+#include "camera_component.hpp"
+#include "directional_light_component.hpp"
 #include "entity.hpp"
 #include "event.hpp"
+#include "guid_component.hpp"
 #include "log.hpp"
 #include "mesh.hpp"
 #include "model_component.hpp"
 #include "name_component.hpp"
+#include "point_light_component.hpp"
 #include "relationship_component.hpp"
 #include "render_system.hpp"
+#include "serialization.hpp"
+#include "sky_component.hpp"
 #include "texture_cache.hpp"
 #include "transform_component.hpp"
+#include "uuid.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/material.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+
+#include <cstdint>
 #include <memory>
+#include <type_traits>
 
 namespace
 {
 
-glm::mat4 to_glm(const aiMatrix4x4 &matrix)
-{
-  return glm::transpose(glm::make_mat4(&matrix.a1));
-}
+// glm::mat4 to_glm(const aiMatrix4x4 &matrix)
+// {
+//   return glm::transpose(glm::make_mat4(&matrix.a1));
+// }
 
 } // namespace
 
@@ -49,159 +57,158 @@ std::shared_ptr<Scene> Scene::create()
   return std::shared_ptr<Scene>(new Scene);
 }
 
-void Scene::load_from_file(const std::filesystem::path &file_path,
-                           TextureCache                &texture_cache)
-{
-  LOG_INFO() << "Import scene from file " << file_path.string().c_str();
+// void Scene::load_from_file(const std::filesystem::path &file_path,
+//                            TextureCache                &texture_cache)
+// {
+//   LOG_INFO() << "Import scene from file " << file_path.string().c_str();
 
-  Assimp::Importer importer;
-  const auto       ai_scene =
-      importer.ReadFile(file_path.string().c_str(),
-                        aiProcess_Triangulate |
-                            /*aiProcess_FlipUVs |*/ aiProcess_GenNormals |
-                            aiProcess_CalcTangentSpace);
+//   Assimp::Importer importer;
+//   const auto       ai_scene =
+//       importer.ReadFile(file_path.string().c_str(),
+//                         aiProcess_Triangulate |
+//                             /*aiProcess_FlipUVs |*/ aiProcess_GenNormals |
+//                             aiProcess_CalcTangentSpace);
 
-  if (!ai_scene || ai_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
-      !ai_scene->mRootNode)
-  {
-    throw std::runtime_error(std::string("Assimp could not load model: ") +
-                             importer.GetErrorString());
-  }
+//   if (!ai_scene || ai_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
+//       !ai_scene->mRootNode)
+//   {
+//     throw std::runtime_error(std::string("Assimp could not load model: ") +
+//                              importer.GetErrorString());
+//   }
 
-  load_scene(ai_scene, texture_cache);
-}
+//   load_scene(ai_scene, texture_cache);
+// }
 
-void Scene::load_mesh(const aiScene *ai_scene,
-                      Entity         parent_entity,
-                      aiMesh        *ai_mesh,
-                      TextureCache  &texture_cache)
-{
-  auto entity = create_entity(ai_mesh->mName.C_Str());
-  parent_entity.add_child(entity);
+// void Scene::load_mesh(const aiScene *ai_scene,
+//                       Entity         parent_entity,
+//                       aiMesh        *ai_mesh,
+//                       TextureCache  &texture_cache)
+// {
+//   auto entity = create_entity(ai_mesh->mName.C_Str());
+//   parent_entity.add_child(entity);
 
-  // Load vertices
-  std::vector<Vertex> vertices;
-  vertices.reserve(ai_mesh->mNumVertices);
+//   // Load vertices
+//   std::vector<Vertex> vertices;
+//   vertices.reserve(ai_mesh->mNumVertices);
 
-  for (unsigned j = 0; j < ai_mesh->mNumVertices; ++j)
-  {
-    Vertex vertex{};
+//   for (unsigned j = 0; j < ai_mesh->mNumVertices; ++j)
+//   {
+//     Vertex vertex{};
 
-    const auto ai_position = ai_mesh->mVertices[j];
-    vertex.position        = to_glm(ai_position);
+//     const auto ai_position = ai_mesh->mVertices[j];
+//     vertex.position        = to_glm(ai_position);
 
-    if (ai_mesh->HasNormals())
-    {
-      const auto ai_normal = ai_mesh->mNormals[j];
-      vertex.normal        = to_glm(ai_normal);
-    }
+//     if (ai_mesh->HasNormals())
+//     {
+//       const auto ai_normal = ai_mesh->mNormals[j];
+//       vertex.normal        = to_glm(ai_normal);
+//     }
 
-    if (ai_mesh->HasTangentsAndBitangents())
-    {
-      const auto ai_tangent   = ai_mesh->mTangents[j];
-      const auto ai_bitangent = ai_mesh->mBitangents[j];
+//     if (ai_mesh->HasTangentsAndBitangents())
+//     {
+//       const auto ai_tangent   = ai_mesh->mTangents[j];
+//       const auto ai_bitangent = ai_mesh->mBitangents[j];
 
-      vertex.tangent   = to_glm(ai_tangent);
-      vertex.bitangent = to_glm(ai_bitangent);
-    }
+//       vertex.tangent   = to_glm(ai_tangent);
+//       vertex.bitangent = to_glm(ai_bitangent);
+//     }
 
-    if (ai_mesh->HasTextureCoords(0))
-    {
-      const auto ai_tex_coords = ai_mesh->mTextureCoords[0][j];
-      vertex.tex_coords        = glm::vec2{ai_tex_coords.x, ai_tex_coords.y};
-    }
-    else
-    {
-      // Generate dummy texture coords anyway
-      vertex.tex_coords = glm::vec2{0.0f, 0.0f};
-    }
+//     if (ai_mesh->HasTextureCoords(0))
+//     {
+//       const auto ai_tex_coords = ai_mesh->mTextureCoords[0][j];
+//       vertex.tex_coords        = glm::vec2{ai_tex_coords.x, ai_tex_coords.y};
+//     }
+//     else
+//     {
+//       // Generate dummy texture coords anyway
+//       vertex.tex_coords = glm::vec2{0.0f, 0.0f};
+//     }
 
-    if (ai_mesh->HasTextureCoords(1))
-    {
-      LOG_WARN()
-          << "Vertex has more than one texture coordinate. Only one texture "
-             "coordinate per vertex will be extracted.";
-    }
+//     if (ai_mesh->HasTextureCoords(1))
+//     {
+//       LOG_WARN()
+//           << "Vertex has more than one texture coordinate. Only one texture "
+//              "coordinate per vertex will be extracted.";
+//     }
 
-    vertices.push_back(vertex);
-  }
+//     vertices.push_back(vertex);
+//   }
 
-  // Load indices
+//   // Load indices
 
-  std::vector<std::uint32_t> indices;
-  indices.reserve(ai_mesh->mNumFaces * 3);
-  for (std::uint32_t j = 0; j < ai_mesh->mNumFaces; ++j)
-  {
-    const auto ai_face = ai_mesh->mFaces[j];
-    if (ai_face.mNumIndices != 3)
-    {
-      throw std::runtime_error(
-          "Face has not three indices. Only three allowed");
-    }
-    indices.push_back(ai_face.mIndices[0]);
-    indices.push_back(ai_face.mIndices[1]);
-    indices.push_back(ai_face.mIndices[2]);
-  }
+//   std::vector<std::uint32_t> indices;
+//   indices.reserve(ai_mesh->mNumFaces * 3);
+//   for (std::uint32_t j = 0; j < ai_mesh->mNumFaces; ++j)
+//   {
+//     const auto ai_face = ai_mesh->mFaces[j];
+//     if (ai_face.mNumIndices != 3)
+//     {
+//       throw std::runtime_error(
+//           "Face has not three indices. Only three allowed");
+//     }
+//     indices.push_back(ai_face.mIndices[0]);
+//     indices.push_back(ai_face.mIndices[1]);
+//     indices.push_back(ai_face.mIndices[2]);
+//   }
 
-  auto material = import_material(ai_scene, ai_mesh, texture_cache);
+//   auto material = import_material(ai_scene, ai_mesh, texture_cache);
 
-  auto vertex_array  = std::make_unique<GlVertexArray>();
-  auto vertex_buffer = std::make_shared<GlVertexBuffer>();
-  auto index_buffer  = std::make_shared<GlIndexBuffer>();
+//   auto vertex_array  = std::make_unique<GlVertexArray>();
+//   auto vertex_buffer = std::make_shared<GlVertexBuffer>();
+//   auto index_buffer  = std::make_shared<GlIndexBuffer>();
 
-  GlVertexBufferLayout layout;
-  layout.push_float(3); // position
-  layout.push_float(3); // normal
-  layout.push_float(3); // tangent
-  layout.push_float(3); // bitanget
-  layout.push_float(2); // tex coords
-  vertex_buffer->set_data(vertices, layout);
+//   GlVertexBufferLayout layout;
+//   layout.push_float(3); // position
+//   layout.push_float(3); // normal
+//   layout.push_float(3); // tangent
+//   layout.push_float(3); // bitanget
+//   layout.push_float(2); // tex coords
+//   vertex_buffer->set_data(vertices, layout);
 
-  index_buffer->set_data(indices);
+//   index_buffer->set_data(indices);
 
-  vertex_array->add_vertex_buffer(vertex_buffer);
-  vertex_array->set_index_buffer(index_buffer);
+//   vertex_array->add_vertex_buffer(vertex_buffer);
+//   vertex_array->set_index_buffer(index_buffer);
 
-  auto mesh =
-      std::make_unique<Mesh>(std::move(vertex_array), std::move(material));
-  auto                               model = std::make_shared<Model>();
-  std::vector<std::unique_ptr<Mesh>> meshes;
-  meshes.push_back(std::move(mesh));
-  model->set_meshes(std::move(meshes));
+//   auto mesh  = std::make_unique<Mesh>(std::move(vertex_array), material);
+//   auto model = std::make_shared<Model>();
+//   std::vector<std::unique_ptr<Mesh>> meshes;
+//   meshes.push_back(std::move(mesh));
+//   model->set_meshes(std::move(meshes));
 
-  entity.add_component<ModelComponent>(model);
-}
+//   entity.add_component<ModelComponent>(model);
+// }
 
-void Scene::load_node(const aiScene        *ai_scene,
-                      aiNode               *ai_node,
-                      std::optional<Entity> parent_entity,
-                      TextureCache         &texture_cache)
-{
-  auto entity = create_entity(ai_node->mName.C_Str());
-  if (parent_entity.has_value())
-  {
-    parent_entity.value().add_child(entity);
-  }
-  entity.set_local_transform_matrix(to_glm(ai_node->mTransformation));
+// void Scene::load_node(const aiScene        *ai_scene,
+//                       aiNode               *ai_node,
+//                       std::optional<Entity> parent_entity,
+//                       TextureCache         &texture_cache)
+// {
+//   auto entity = create_entity(ai_node->mName.C_Str());
+//   if (parent_entity.has_value())
+//   {
+//     parent_entity.value().add_child(entity);
+//   }
+//   entity.set_local_transform_matrix(to_glm(ai_node->mTransformation));
 
-  for (unsigned i = 0; i < ai_node->mNumMeshes; ++i)
-  {
-    load_mesh(ai_scene,
-              entity,
-              ai_scene->mMeshes[ai_node->mMeshes[i]],
-              texture_cache);
-  }
+//   for (unsigned i = 0; i < ai_node->mNumMeshes; ++i)
+//   {
+//     load_mesh(ai_scene,
+//               entity,
+//               ai_scene->mMeshes[ai_node->mMeshes[i]],
+//               texture_cache);
+//   }
 
-  for (unsigned i = 0; i < ai_node->mNumChildren; ++i)
-  {
-    load_node(ai_scene, ai_node->mChildren[i], entity, texture_cache);
-  }
-}
+//   for (unsigned i = 0; i < ai_node->mNumChildren; ++i)
+//   {
+//     load_node(ai_scene, ai_node->mChildren[i], entity, texture_cache);
+//   }
+// }
 
-void Scene::load_scene(const aiScene *ai_scene, TextureCache &texture_cache)
-{
-  load_node(ai_scene, ai_scene->mRootNode, {}, texture_cache);
-}
+// void Scene::load_scene(const aiScene *ai_scene, TextureCache &texture_cache)
+// {
+//   load_node(ai_scene, ai_scene->mRootNode, {}, texture_cache);
+// }
 
 void Scene::init_systems()
 {
@@ -245,14 +252,180 @@ bool Scene::on_event(const Event &event)
   return false;
 }
 
-entt::registry &Scene::registry() { return registry_; }
-
 Entity Scene::create_entity(const std::string &name)
+{
+  return create_entity(name, 0);
+}
+
+Entity Scene::create_entity(const std::string &name, Uuid uuid)
 {
   Entity     entity{registry_.create(), shared_from_this()};
   const auto entity_name = name.empty() ? "Entity" : name;
+  entity.add_component<GuidComponent>(uuid);
   entity.add_component<NameComponent>(name);
   entity.add_component<TransformComponent>();
   entity.add_component<RelationshipComponent>();
+
+  uuid_to_entity_map_[entity.component<GuidComponent>().id_] =
+      entity.entity_handle();
+
   return entity;
+}
+
+Entity Scene::get_or_create_entity(Uuid uuid)
+{
+  if (uuid == 0)
+  {
+    return {};
+  }
+
+  if (exists(uuid))
+  {
+    return entity(uuid);
+  }
+
+  return create_entity("", uuid);
+}
+
+Entity Scene::entity(Uuid uuid)
+{
+  assert(uuid != 0);
+  const auto iter = uuid_to_entity_map_.find(uuid);
+  assert(iter != uuid_to_entity_map_.end());
+  return Entity{iter->second, shared_from_this()};
+}
+
+bool Scene::exists(Uuid uuid) const
+{
+  if (uuid == 0)
+  {
+    return false;
+  }
+
+  const auto iter = uuid_to_entity_map_.find(uuid);
+  return iter != uuid_to_entity_map_.end();
+}
+
+void Scene::save(const std::filesystem::path &file_path,
+                 const AssetDescription      &asset_description)
+{
+  const auto file = std::fopen(file_path.string().c_str(), "wb");
+  if (!file)
+  {
+    throw std::runtime_error{"Could not open file " + file_path.string()};
+  }
+  defer(std::fclose(file));
+
+  asset_description.write(file);
+
+  const auto &view = registry_.view<GuidComponent>();
+  write_value(file, static_cast<std::uint64_t>(view.size()));
+  for (const auto &e : view)
+  {
+    Entity entity{e, shared_from_this()};
+    entity.component<GuidComponent>().save(file);
+    entity.component<NameComponent>().save(file);
+    entity.component<TransformComponent>().save(file);
+    entity.component<RelationshipComponent>().save(file);
+
+    if (entity.has_component<ModelComponent>())
+    {
+      write_string(file, "*model*");
+      entity.component<ModelComponent>().save(file);
+    }
+
+    if (entity.has_component<SkyComponent>())
+    {
+      write_string(file, "*sky*");
+      entity.component<SkyComponent>().save(file);
+    }
+
+    if (entity.has_component<PointLightComponent>())
+    {
+      write_string(file, "*pointlight*");
+      entity.component<PointLightComponent>().save(file);
+    }
+
+    if (entity.has_component<DirectionalLightComponent>())
+    {
+      write_string(file, "*directionallight*");
+      entity.component<DirectionalLightComponent>().save(file);
+    }
+
+    if (entity.has_component<CameraComponent>())
+    {
+      write_string(file, "*camera*");
+      entity.component<CameraComponent>().save(file);
+    }
+
+    write_string(file, "*end*");
+    }
+}
+
+AssetDescription Scene::read(const std::filesystem::path &file_path)
+{
+  const auto file = std::fopen(file_path.string().c_str(), "rb");
+  if (!file)
+  {
+    throw std::runtime_error{"Could not open file " + file_path.string()};
+  }
+  defer(std::fclose(file));
+
+  AssetDescription asset_description{};
+  asset_description.read(file);
+
+  std::uint64_t entity_count{};
+  read_value(file, entity_count);
+  for (std::uint64_t i{0}; i < entity_count; ++i)
+  {
+    GuidComponent uuid_component;
+    uuid_component.read(file);
+
+    auto entity = get_or_create_entity(uuid_component.id_);
+    entity.set_id(uuid_component.id_);
+
+    auto &name_component = entity.component<NameComponent>();
+    name_component.read(file);
+
+    auto &transform_component = entity.component<TransformComponent>();
+    transform_component.read(file);
+
+    auto &relationship_component = entity.component<RelationshipComponent>();
+    relationship_component.read(file, *this);
+
+    std::string marker;
+    read_string(file, marker);
+
+    while (marker != "*end*")
+    {
+      if (marker == "*model*")
+      {
+        auto &component = entity.add_component<ModelComponent>();
+        component.read(file);
+      }
+      else if (marker == "*pointlight*")
+      {
+        auto &component = entity.add_component<PointLightComponent>();
+        component.read(file);
+      }
+      else if (marker == "*directionallight*")
+      {
+        auto &component = entity.add_component<DirectionalLightComponent>();
+        component.read(file);
+      }
+      else if (marker == "*camera*")
+      {
+        auto &component = entity.add_component<CameraComponent>();
+        component.read(file);
+      }
+      else if (marker == "*sky*")
+      {
+        auto &component = entity.add_component<SkyComponent>();
+        component.read(file);
+      }
+      read_string(file, marker);
+    }
+  }
+
+  return asset_description;
 }

@@ -1,4 +1,5 @@
 #include "transform_component.hpp"
+#include "serialization.hpp"
 
 namespace
 {
@@ -74,4 +75,22 @@ void TransformComponent::set_parent_transform_matrix(const glm::mat4 &value)
 glm::mat4 TransformComponent::local_transform_matrix() const
 {
   return calculate_transform_matrix(position_, rotation_, scale_);
+}
+
+void TransformComponent::save(FILE *file) const
+{
+  write_value(file, position_);
+  write_value(file, rotation_);
+  write_value(file, scale_);
+  write_value(file, parent_transform_matrix_);
+  write_value(file, transform_matrix_);
+}
+
+void TransformComponent::read(FILE *file)
+{
+  read_value(file, position_);
+  read_value(file, rotation_);
+  read_value(file, scale_);
+  read_value(file, parent_transform_matrix_);
+  read_value(file, transform_matrix_);
 }

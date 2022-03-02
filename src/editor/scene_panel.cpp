@@ -37,8 +37,8 @@ void ScenePanel::on_render()
   const auto scene = scene_.lock();
   if (scene)
   {
-    const auto &registry = scene->registry();
-    const auto  view = registry.view<NameComponent, RelationshipComponent>();
+    const auto &view =
+        scene->all_entities_with<NameComponent, RelationshipComponent>();
     for (const auto &e : view)
     {
       Entity entity{e, scene};

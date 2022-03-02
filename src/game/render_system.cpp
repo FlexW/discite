@@ -28,23 +28,21 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
     LOG_WARN() << "Scene is not valid. Will not render meshes";
   }
 
-  auto &registry = scene->registry();
-
   // add meshes
   {
-    auto view = registry.view<TransformComponent, ModelComponent>();
+    auto view = scene->all_entities_with<TransformComponent, ModelComponent>();
     for (const auto entity : view)
     {
       const auto &transform_component = view.get<TransformComponent>(entity);
       const auto &model_component     = view.get<ModelComponent>(entity);
 
       const auto &model = model_component.model_;
-      if (!model)
+      if (!model || !model->is_ready())
       {
         continue;
       }
 
-      for (const auto &mesh : model->meshes())
+      for (const auto &mesh : model->get()->meshes())
       {
         MeshInfo mesh_info{};
         mesh_info.mesh_         = mesh;
@@ -56,7 +54,8 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
 
   // add point lights
   {
-    auto view = registry.view<TransformComponent, PointLightComponent>();
+    auto view =
+        scene->all_entities_with<TransformComponent, PointLightComponent>();
     for (const auto entity : view)
     {
       const auto &transform_component   = view.get<TransformComponent>(entity);
@@ -77,14 +76,17 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
 
   // add sky
   {
-    auto view = registry.view<SkyComponent>();
+    auto view = scene->all_entities_with<SkyComponent>();
     bool found{false};
     for (const auto &entity : view)
     {
       const auto &sky_component = view.get<SkyComponent>(entity);
 
-      Entity     e{entity, scene};
-      scene_render_info.set_sky(sky_component.sky_);
+      if (sky_component.environment_ && sky_component.environment_->is_ready())
+      {
+        Entity e{entity, scene};
+        scene_render_info.set_env_map(*sky_component.environment_->get());
+      }
 
       if (found)
       {
@@ -97,7 +99,8 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
 
   // add directional light
   {
-    auto view = registry.view<TransformComponent, DirectionalLightComponent>();
+    auto view = scene->all_entities_with<TransformComponent,
+                                         DirectionalLightComponent>();
     bool found{false};
     for (const auto &entity : view)
     {

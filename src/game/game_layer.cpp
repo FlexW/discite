@@ -9,73 +9,50 @@
 #include "render_system.hpp"
 #include "renderer.hpp"
 #include "scene.hpp"
+#include "scene_asset.hpp"
 #include "sky_component.hpp"
 #include "texture_cache.hpp"
 #include "transform_component.hpp"
 
 #include <memory>
 
+namespace
+{
+
+void scene_add_systems(std::shared_ptr<Scene> scene)
+{
+  // add systems, order matters
+  scene->create_system<CameraSystem>(scene);
+  scene->create_system<RenderSystem>(scene);
+}
+
+} // namespace
+
+void GameLayer::register_asset_loaders()
+{
+  Engine::instance()->asset_cache()->register_asset_loader(".dcscn",
+                                                           scene_asset_loader);
+}
+
 void GameLayer::init()
 {
   renderer_ = std::make_unique<Renderer>();
-  scene_    = Scene::create();
 
-  // TextureCache texture_cache;
-  // texture_cache.set_import_path(
-  //     "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF");
-  // scene_->load_from_file(
-  //     "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
-  //     texture_cache);
-
-  // auto point_light = scene_->create_entity("Point light");
-  // point_light.add_component<PointLightComponent>();
-  // point_light.set_position(glm::vec3{8.98f, 1.05f, -3.57f});
-
-  TextureCache texture_cache;
-  texture_cache.set_import_path(
-      "external/deps/src/glTF-Sample-Models/2.0/DamagedHelmet/glTF");
-  scene_->load_from_file("external/deps/src/glTF-Sample-Models/2.0/"
-                         "DamagedHelmet/glTF/DamagedHelmet.gltf",
-                         texture_cache);
-
-  // TextureCache texture_cache;
-  // texture_cache.set_import_path("external/deps/src/bistro/Exterior");
-  // scene_ = Scene::create();
-  // scene_->load_from_file("external/deps/src/bistro/Exterior/exterior.obj",
-  //                        texture_cache);
-  // texture_cache.set_import_path("external/deps/src/bistro/Interior");
-  // scene_->load_from_file("external/deps/src/bistro/Interior/interior.obj",
-  //                       texture_cache);
-
-  const auto scene_loaded_event = std::make_shared<SceneLoadedEvent>(scene_);
-  Engine::instance()->event_manager()->publish(scene_loaded_event);
-
-  // add systems, order matters
-  scene_->create_system<CameraSystem>(scene_);
-  scene_->create_system<RenderSystem>(scene_);
-
-  auto sun_entity = scene_->create_entity("Sun");
-  sun_entity.add_component<DirectionalLightComponent>();
-  auto &sky = sun_entity.add_component<SkyComponent>();
-  sky.sky_  = Sky{"data/piazza_bologni_1k.hdr"};
-
-  const auto window        = Engine::instance()->window();
-  auto       camera_entity = scene_->create_entity("Camera");
-  camera_entity.add_component<CameraComponent>(
-      0.1f,
-      600.0f,
-      static_cast<float>(window->width()) / window->height());
-
-  scene_->init();
+  is_init_ = true;
+  // TODO: Maybe load a main scene in case there is nothing loaded yet
+  if (scene_ && scene_->is_ready())
+  {
+    set_scene(scene_);
+  }
 }
 
 void GameLayer::shutdown() {}
 
 void GameLayer::update(float delta_time)
 {
-  if (scene_)
+  if (scene_ && scene_->is_ready())
   {
-    scene_->update(delta_time);
+    scene_->get()->update(delta_time);
   }
 }
 
@@ -83,9 +60,9 @@ void GameLayer::render()
 {
   SceneRenderInfo scene_render_info{};
   ViewRenderInfo  view_render_info{};
-  if (scene_)
+  if (scene_ && scene_->is_ready())
   {
-    scene_->render(scene_render_info, view_render_info);
+    scene_->get()->render(scene_render_info, view_render_info);
   }
   const auto window = Engine::instance()->window();
   view_render_info.set_viewport_info({0, 0, window->width(), window->height()});
@@ -95,4 +72,35 @@ void GameLayer::render()
 
 std::shared_ptr<Renderer> GameLayer::renderer() const { return renderer_; }
 
-bool GameLayer::on_event(const Event &event) { return scene_->on_event(event); }
+bool GameLayer::on_event(const Event &event)
+{
+  if (scene_ && scene_->is_ready())
+  {
+    return scene_->get()->on_event(event);
+  }
+  return false;
+}
+
+void GameLayer::set_scene(std::shared_ptr<SceneAssetHandle> value)
+{
+  if (!is_init_)
+  {
+    scene_ = value;
+    return;
+  }
+
+  if (scene_)
+  {
+    const auto event = std::make_shared<SceneUnloadedEvent>(scene_->get());
+    Engine::instance()->event_manager()->publish(event);
+  }
+
+  scene_ = value;
+  scene_add_systems(scene_->get());
+
+  const auto scene_loaded_event =
+      std::make_shared<SceneLoadedEvent>(scene_->get());
+  Engine::instance()->event_manager()->publish(scene_loaded_event);
+}
+
+std::shared_ptr<SceneAssetHandle> GameLayer::scene() const { return scene_; }

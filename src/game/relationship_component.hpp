@@ -1,6 +1,9 @@
 #pragma once
 
 #include "entity.hpp"
+#include "uuid.hpp"
+
+class Scene;
 
 struct RelationshipComponent
 {
@@ -9,4 +12,7 @@ struct RelationshipComponent
 
   Entity next_sibling_;
   Entity previous_sibling_;
+
+  void save(FILE *file) const;
+  void read(FILE *file, Scene &active_scene);
 };

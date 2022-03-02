@@ -1,0 +1,9 @@
+#include "directional_light_component.hpp"
+#include "serialization.hpp"
+
+void DirectionalLightComponent::save(FILE *file) const
+{
+  write_value(file, color_);
+}
+
+void DirectionalLightComponent::read(FILE *file) { read_value(file, color_); }

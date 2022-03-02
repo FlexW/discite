@@ -2,12 +2,14 @@
 
 #include "gl.hpp"
 
+#include <cstdint>
 #include <filesystem>
+#include <vector>
 
 class GlCubeTexture
 {
 public:
-  GlCubeTexture(const std::filesystem::path &file_path);
+  GlCubeTexture(const std::vector<std::uint8_t> &hdr_data);
   ~GlCubeTexture();
 
   void bind();

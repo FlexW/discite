@@ -1,7 +1,9 @@
 #pragma once
 
+#include "asset_handle.hpp"
 #include "gl_vertex_array.hpp"
 #include "material.hpp"
+#include "material_asset.hpp"
 #include "texture_cache.hpp"
 
 #include <filesystem>
@@ -12,15 +14,15 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
-glm::vec3 to_glm(const aiVector3t<float> &value);
+// glm::vec3 to_glm(const aiVector3t<float> &value);
 
-std::shared_ptr<GlTexture> import_texture(aiMaterial   *ai_material,
-                                          aiTextureType ai_texture_type,
-                                          TextureCache &texture_cache);
+// std::shared_ptr<GlTexture> import_texture(aiMaterial   *ai_material,
+//                                           aiTextureType ai_texture_type,
+//                                           TextureCache &texture_cache);
 
-std::unique_ptr<Material> import_material(const aiScene *ai_scene,
-                                          const aiMesh  *ai_mesh,
-                                          TextureCache  &texture_cache);
+// std::shared_ptr<Material> import_material(const aiScene *ai_scene,
+//                                           const aiMesh  *ai_mesh,
+//                                           TextureCache  &texture_cache);
 
 struct Vertex
 {
@@ -34,8 +36,8 @@ struct Vertex
 class Mesh
 {
 public:
-  Mesh(std::unique_ptr<GlVertexArray> vertex_array,
-       std::unique_ptr<Material>      material);
+  Mesh(std::unique_ptr<GlVertexArray>       vertex_array,
+       std::shared_ptr<MaterialAssetHandle> material);
 
   Mesh(Mesh &&other);
   void operator=(Mesh &&other);
@@ -45,7 +47,7 @@ public:
 
 private:
   std::unique_ptr<GlVertexArray> vertex_array_;
-  std::unique_ptr<Material>      material_;
+  std::shared_ptr<MaterialAssetHandle> material_;
 
   Mesh(const Mesh &) = delete;
   void operator=(const Mesh &) = delete;
@@ -58,8 +60,8 @@ public:
   Model(Model &&other);
   void operator=(Model &&other);
 
-  void load_from_file(const std::filesystem::path &file_path,
-                      TextureCache                &texture_cache);
+  // void load_from_file(const std::filesystem::path &file_path,
+  //                     TextureCache                &texture_cache);
 
   void                set_meshes(std::vector<std::unique_ptr<Mesh>> meshes);
   std::vector<Mesh *> meshes() const;

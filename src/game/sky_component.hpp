@@ -1,8 +1,12 @@
 #pragma once
 
-#include "sky.hpp"
+#include "env_map_asset.hpp"
 
 struct SkyComponent
 {
-  Sky sky_{};
+
+  std::shared_ptr<EnvMapAssetHandle> environment_{};
+
+  void save(FILE *file) const;
+  void read(FILE *file);
 };

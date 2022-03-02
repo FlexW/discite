@@ -3,12 +3,15 @@
 #include "layer.hpp"
 #include "renderer.hpp"
 #include "scene.hpp"
+#include "scene_asset.hpp"
 
 #include <memory>
 
 class GameLayer : public Layer
 {
 public:
+  void register_asset_loaders() override;
+
   void init() override;
   void shutdown() override;
   void update(float delta_time) override;
@@ -18,7 +21,12 @@ public:
 
   std::shared_ptr<Renderer> renderer() const;
 
+  void set_scene(std::shared_ptr<SceneAssetHandle> value);
+  std::shared_ptr<SceneAssetHandle> scene() const;
+
 private:
-  std::shared_ptr<Scene>    scene_;
+  bool is_init_{false};
+
+  std::shared_ptr<SceneAssetHandle> scene_{};
   std::shared_ptr<Renderer> renderer_;
 };

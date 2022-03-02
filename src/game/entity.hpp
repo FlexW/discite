@@ -3,8 +3,10 @@
 #include "entt/entity/entity.hpp"
 #include "entt/entity/fwd.hpp"
 #include "scene.hpp"
+#include "uuid.hpp"
 
 #include <cassert>
+#include <cstdint>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -16,14 +18,16 @@ public:
   Entity() = default;
   Entity(entt::entity entity_handle, std::weak_ptr<Scene> scene);
 
+  void          set_id(Uuid uuid);
+  std::uint64_t id() const;
+
   template <typename TComponent, typename... TArgs>
   decltype(auto) add_component(TArgs &&...args)
   {
     if (const auto scene = scene_.lock())
     {
-      return scene->registry().emplace<TComponent>(
-          entity_handle_,
-          std::forward<TArgs>(args)...);
+      return scene->registry_.emplace<TComponent>(entity_handle_,
+                                                  std::forward<TArgs>(args)...);
     }
 
     throw std::runtime_error("Can not add component if no scene is set");
@@ -35,7 +39,7 @@ public:
 
     if (const auto scene = scene_.lock())
     {
-      scene->registry().remove<TComponent>(entity_handle_);
+      scene->registry_.remove<TComponent>(entity_handle_);
     }
   }
 
@@ -43,7 +47,7 @@ public:
   {
     if (const auto scene = scene_.lock())
     {
-      return scene->registry().all_of<TComponent>(entity_handle_);
+      return scene->registry_.all_of<TComponent>(entity_handle_);
     }
     return false;
   }
@@ -54,7 +58,7 @@ public:
 
     if (const auto scene = scene_.lock())
     {
-      return scene->registry().get<TComponent>(entity_handle_);
+      return scene->registry_.get<TComponent>(entity_handle_);
     }
 
     throw std::runtime_error("Can not get component if no scene is set");
@@ -66,13 +70,13 @@ public:
 
     if (const auto scene = scene_.lock())
     {
-      return scene->registry().get<TComponent>(entity_handle_);
+      return scene->registry_.get<TComponent>(entity_handle_);
     }
 
     throw std::runtime_error("Can not get component if no scene is set");
   }
 
-  bool valid() { return entity_handle_ != entt::null; }
+  bool valid() const;
 
   entt::entity entity_handle() const;
 

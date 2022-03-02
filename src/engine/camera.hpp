@@ -52,6 +52,9 @@ public:
 
   glm::mat4 projection_matrix() const;
 
+  void save(FILE *file) const;
+  void read(FILE *file);
+
 private:
   glm::vec3 position_{0.0f};
   glm::vec3 front_{0.0f, 0.0f, -1.0f};
