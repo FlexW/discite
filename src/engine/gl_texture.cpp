@@ -43,6 +43,8 @@ void GlTexture::load_from_file(const std::filesystem::path &file_path,
     glTextureParameteri(id_, GL_TEXTURE_MAX_LEVEL, 0);
     glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(id_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(id_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glTextureStorage2D(id_, mipmap_levels, format.Internal, width, height);
     glTextureSubImage2D(id_,

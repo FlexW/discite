@@ -401,10 +401,8 @@ vec3 calc_ibl_contribution(PbrInfo pbr_info, vec3 n, vec3 reflection)
 	float lod = pbr_info.perceptual_roughness * mip_count;
 
 	// retrieve a scale and bias to F0. See [1], Figure 3
-	vec2 brdf_sample_point = clamp(vec2(pbr_info.n_dot_v,
-                                        1.0 - pbr_info.perceptual_roughness),
-                                 vec2(0.001, 0.001),
-                                 vec2(0.009, 0.009));
+	vec2 brdf_sample_point = vec2(pbr_info.n_dot_v,
+                                  1.0 - pbr_info.perceptual_roughness);
 	vec3 brdf = textureLod(brdf_lut_tex, brdf_sample_point, 0).rgb;
 	vec3 cm = vec3(1.0, 1.0, 1.0);
 	// HDR envmaps are already linear

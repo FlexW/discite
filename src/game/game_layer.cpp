@@ -20,23 +20,23 @@ void GameLayer::init()
   renderer_ = std::make_unique<Renderer>();
   scene_    = Scene::create();
 
-  TextureCache texture_cache;
-  texture_cache.set_import_path(
-      "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF");
-  scene_->load_from_file(
-      "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
-      texture_cache);
-
-  auto point_light = scene_->create_entity("Point light");
-  point_light.add_component<PointLightComponent>();
-  point_light.set_position(glm::vec3{8.98f, 1.05f, -3.57f});
-
   // TextureCache texture_cache;
   // texture_cache.set_import_path(
-  //     "external/deps/src/glTF-Sample-Models/2.0/DamagedHelmet/glTF");
-  // scene_->load_from_file("external/deps/src/glTF-Sample-Models/2.0/"
-  //                        "DamagedHelmet/glTF/DamagedHelmet.gltf",
-  //                        texture_cache);
+  //     "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF");
+  // scene_->load_from_file(
+  //     "external/deps/src/glTF-Sample-Models/2.0/Sponza/glTF/Sponza.gltf",
+  //     texture_cache);
+
+  // auto point_light = scene_->create_entity("Point light");
+  // point_light.add_component<PointLightComponent>();
+  // point_light.set_position(glm::vec3{8.98f, 1.05f, -3.57f});
+
+  TextureCache texture_cache;
+  texture_cache.set_import_path(
+      "external/deps/src/glTF-Sample-Models/2.0/DamagedHelmet/glTF");
+  scene_->load_from_file("external/deps/src/glTF-Sample-Models/2.0/"
+                         "DamagedHelmet/glTF/DamagedHelmet.gltf",
+                         texture_cache);
 
   // TextureCache texture_cache;
   // texture_cache.set_import_path("external/deps/src/bistro/Exterior");
