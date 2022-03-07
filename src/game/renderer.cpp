@@ -4,6 +4,7 @@
 #include "environment_map.hpp"
 #include "gl_cube_texture.hpp"
 #include "gl_framebuffer.hpp"
+#include "gl_shader.hpp"
 #include "gl_texture.hpp"
 #include "log.hpp"
 
@@ -99,6 +100,9 @@ Renderer::Renderer()
   white_texture_ = std::make_shared<GlTexture>();
   std::vector<unsigned char> white_tex_data{255};
   white_texture_->set_data(white_tex_data.data(), 1, 1, 1, false);
+
+  // for skybox
+  glDepthFunc(GL_LEQUAL);
 }
 
 Renderer::~Renderer()
@@ -106,6 +110,16 @@ Renderer::~Renderer()
   if (quad_vertex_array_)
   {
     glDeleteVertexArrays(1, &quad_vertex_array_);
+  }
+
+  if (cube_vertex_array_)
+  {
+    glDeleteVertexArrays(1, &cube_vertex_array_);
+  }
+
+  if (cube_vertex_buffer_)
+  {
+    glDeleteBuffers(1, &cube_vertex_buffer_);
   }
 }
 
@@ -410,6 +424,30 @@ void Renderer::render(const SceneRenderInfo         &scene_render_info,
     }
 
     mesh_shader_->unbind();
+
+    // render the sky box
+    {
+      sky_box_shader_->bind();
+      glActiveTexture(GL_TEXTURE0);
+      const auto &sky = scene_render_info.env_map();
+      if (is_show_irradiance_as_skybox_)
+      {
+        sky.env_irradiance_texture()->bind();
+      }
+      else
+      {
+        sky.env_texture()->bind();
+      }
+      sky_box_shader_->set_uniform("env_tex", 0);
+      sky_box_shader_->set_uniform("projection_matrix",
+                                   view_render_info.projection_matrix());
+      sky_box_shader_->set_uniform("view_matrix",
+                                   view_render_info.view_matrix());
+      glCullFace(GL_FRONT);
+      render_cube();
+      glCullFace(GL_BACK);
+    }
+
     scene_framebuffer_->unbind();
   }
 
@@ -471,6 +509,9 @@ void Renderer::load_shaders()
 
   hdr_shader_ = std::make_shared<GlShader>();
   hdr_shader_->init("shaders/quad.vert", "shaders/hdr.frag");
+
+  sky_box_shader_ = std::make_shared<GlShader>();
+  sky_box_shader_->init("shaders/sky_box.vert", "shaders/sky_box.frag");
 }
 
 void Renderer::recreate_shadow_tex_framebuffer()
@@ -692,4 +733,97 @@ void Renderer::recreate_debug_quad_framebuffer(int new_width, int new_height)
 
   debug_quad_framebuffer_ = std::make_shared<GlFramebuffer>();
   debug_quad_framebuffer_->attach(framebuffer_config);
+}
+
+void Renderer::init_cube()
+{
+  if (cube_vertex_array_ != 0)
+  {
+    return;
+  }
+  // clang-format off
+  float vertices[]{
+    // back face
+    -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+    1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+    1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right
+    1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+    -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+    -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+    // front face
+    -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+    1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+    1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+    1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+    -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+    -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+    // left face
+    -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+    -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+    -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+    -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+    -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+    -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+    // right face
+    1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+    1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+    1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right
+    1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+    1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+    1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left
+    // bottom face
+    -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+    1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+    1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+    1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+    -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+    -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+    // top face
+    -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+    1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+    1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right
+    1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+    -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+    -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left
+  };
+  // clang-format on
+  glGenVertexArrays(1, &cube_vertex_array_);
+  glGenBuffers(1, &cube_vertex_buffer_);
+  // fill buffer
+  glBindBuffer(GL_ARRAY_BUFFER, cube_vertex_buffer_);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  // link vertex attributes
+  glBindVertexArray(cube_vertex_array_);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0,
+                        3,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        8 * sizeof(float),
+                        reinterpret_cast<void *>(0));
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1,
+                        3,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        8 * sizeof(float),
+                        reinterpret_cast<void *>(3 * sizeof(float)));
+  glEnableVertexAttribArray(2);
+  glVertexAttribPointer(2,
+                        2,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        8 * sizeof(float),
+                        reinterpret_cast<void *>(6 * sizeof(float)));
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
+}
+
+void Renderer::render_cube()
+{
+  init_cube();
+
+  glBindVertexArray(cube_vertex_array_);
+  glDrawArrays(GL_TRIANGLES, 0, 36);
+  glBindVertexArray(0);
 }

@@ -31,6 +31,8 @@ void RendererPanel::render_general()
   {
     return;
   }
+
+  imgui_input("Irradiance sky box", renderer->is_show_irradiance_as_skybox_);
 }
 
 void RendererPanel::render_shadows()

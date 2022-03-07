@@ -123,12 +123,18 @@ private:
 
   std::shared_ptr<GlFramebuffer> shadow_framebuffer_{};
 
-  GLuint                         quad_vertex_array_{};
+  GLuint                         quad_vertex_array_{0};
   std::shared_ptr<GlShader>      depth_debug_shader_{};
   std::shared_ptr<GlFramebuffer> debug_quad_framebuffer_{};
   int                            debug_quad_height_{0};
   int                            debug_quad_width_{0};
   std::size_t                    debug_selected_cascade_{0};
+
+  GLuint cube_vertex_array_{0};
+  GLuint cube_vertex_buffer_{0};
+
+  std::shared_ptr<GlShader> sky_box_shader_{};
+  bool                      is_show_irradiance_as_skybox_{true};
 
   int                            scene_framebuffer_width_{0};
   int                            scene_framebuffer_height_{0};
@@ -164,4 +170,7 @@ private:
 
   void recreate_scene_framebuffer(int width, int height);
   void recreate_debug_quad_framebuffer(int new_width, int new_height);
+
+  void init_cube();
+  void render_cube();
 };
