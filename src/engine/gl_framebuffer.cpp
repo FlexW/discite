@@ -1,9 +1,9 @@
 #include "gl_framebuffer.hpp"
+#include "assert.hpp"
 #include "gl_renderbuffer.hpp"
 #include "gl_texture.hpp"
 #include "gl_texture_array.hpp"
 
-#include <cassert>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -25,7 +25,8 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
   bind();
 
   // Attach the color attachments
-  assert(config.color_attachments_.size() <= GL_MAX_COLOR_ATTACHMENTS);
+  DC_ASSERT(config.color_attachments_.size() <= GL_MAX_COLOR_ATTACHMENTS,
+            "Too much color attachments");
   std::vector<GLuint> color_attachment_targets;
   for (std::size_t i = 0;
        i < config.color_attachments_.size() && i < GL_MAX_COLOR_ATTACHMENTS;
@@ -86,7 +87,7 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
     }
     else
     {
-      assert(0 && "Not implemented");
+      DC_FAIL("Not implemented");
     }
   }
 
@@ -156,7 +157,7 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
     }
     else
     {
-      assert(0 && "Not implemented");
+      DC_FAIL("Not implemented");
     }
   }
 
@@ -173,7 +174,7 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
       {
       case AttachmentType::Texture:
       {
-        assert(0 && "Not implemented");
+        DC_FAIL("Not implemented");
         break;
       }
       case AttachmentType::Renderbuffer:
@@ -196,7 +197,7 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
     }
     else
     {
-      assert(0 && "Not implemented");
+      DC_FAIL("Not implemented");
     }
   }
 

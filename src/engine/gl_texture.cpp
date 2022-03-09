@@ -3,7 +3,7 @@
 
 #include <gli/load_ktx.hpp>
 
-#include <cassert>
+
 #include <cstdint>
 #include <stdexcept>
 #include <string>

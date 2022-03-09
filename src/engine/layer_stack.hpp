@@ -1,9 +1,9 @@
 #pragma once
 
+#include "assert.hpp"
 #include "cmd_args_parser.hpp"
 #include "layer.hpp"
 
-#include <cassert>
 #include <memory>
 #include <vector>
 
@@ -41,7 +41,7 @@ public:
       }
     }
     // that's for sure a programming mistake
-    assert(0);
+    DC_FAIL("No layer of that type");
     return nullptr;
   }
 

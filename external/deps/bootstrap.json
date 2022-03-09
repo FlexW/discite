@@ -8,6 +8,14 @@
     }
   },
   {
+    "name": "fmt",
+    "source": {
+      "type": "git",
+      "url": "https://github.com/fmtlib/fmt.git",
+      "revision": "8.1.1"
+    }
+  },
+  {
     "name": "rapidjson",
     "source": {
       "type": "git",

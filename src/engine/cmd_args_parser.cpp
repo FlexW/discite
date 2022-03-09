@@ -1,7 +1,7 @@
 #include "cmd_args_parser.hpp"
+#include "assert.hpp"
 
 #include <algorithm>
-#include <cassert>
 #include <cstdlib>
 #include <stdexcept>
 
@@ -31,7 +31,7 @@ void ArgsParser::add_option(const Option &option)
 
   if (allowed_options.find(option_name_with_prefix) != allowed_options.end())
   {
-    assert(0 && "Option already added");
+    DC_FAIL("Option already added");
   }
 
   allowed_options[option_name_with_prefix] = option;

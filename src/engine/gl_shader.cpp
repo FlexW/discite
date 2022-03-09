@@ -3,7 +3,7 @@
 #include "log.hpp"
 
 #include <array>
-#include <cassert>
+
 #include <fstream>
 #include <iostream>
 #include <sstream>

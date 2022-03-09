@@ -1,6 +1,6 @@
 #include "log.hpp"
+#include "assert.hpp"
 
-#include <cassert>
 #include <cstdio>
 #include <iostream>
 #include <sstream>
@@ -20,7 +20,7 @@ std::string to_string(dc::LogLevel level)
   case dc::LogLevel::Error:
     return "ERROR";
   }
-  assert(0);
+  DC_FAIL("No such log level");
   return "DEBUG";
 }
 

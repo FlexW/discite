@@ -1,6 +1,6 @@
 #include "gl_vertex_buffer.hpp"
 
-#include <cassert>
+
 
 namespace dc
 {

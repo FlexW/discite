@@ -64,6 +64,11 @@ target_link_libraries(engine PUBLIC
   assimp
   gli
   rapidjson
+  fmt
   )
 
 target_compile_features(engine PUBLIC cxx_std_17)
+
+if(NOT CMAKE_BUILD_TYPE MATCHES RELEASE)
+  target_compile_definitions(engine PUBLIC DC_ENABLE_ASSERT)
+endif()

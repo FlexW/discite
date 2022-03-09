@@ -1,6 +1,5 @@
 #include "gl_vertex_array.hpp"
-
-#include <cassert>
+#include "assert.hpp"
 
 namespace dc
 {
@@ -47,7 +46,7 @@ void GlVertexArray::add_vertex_buffer(
       break;
 
     default:
-      assert(0 && "Can not handle Glsl type");
+      DC_FAIL("Can not handle Glsl type");
     }
 
     offset += layout_element.size;

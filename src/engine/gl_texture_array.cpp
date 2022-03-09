@@ -1,7 +1,7 @@
 #include "gl_texture_array.hpp"
 #include "math.hpp"
 
-#include <cassert>
+
 
 namespace dc
 {

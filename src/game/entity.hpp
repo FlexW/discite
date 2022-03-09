@@ -3,7 +3,7 @@
 #include "scene.hpp"
 #include "uuid.hpp"
 
-#include <cassert>
+
 #include <cstdint>
 #include <memory>
 #include <stdexcept>

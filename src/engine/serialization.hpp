@@ -4,7 +4,7 @@
 #include "mesh.hpp"
 
 #include <bits/types/FILE.h>
-#include <cassert>
+
 #include <filesystem>
 #include <stdexcept>
 #include <unordered_map>

@@ -106,3 +106,6 @@ set(RAPIDJSON_BUILD_CXX17 "ON" CACHE STRING "")
 add_library(rapidjson INTERFACE)
 set_property(TARGET rapidjson PROPERTY
     INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/deps/src/rapidjson/include)
+
+# Fmt
+add_subdirectory(deps/src/fmt)

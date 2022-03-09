@@ -1,4 +1,5 @@
 #include "window.hpp"
+#include "assert.hpp"
 #include "engine.hpp"
 #include "event.hpp"
 #include "gl.hpp"
@@ -6,7 +7,6 @@
 
 #include <GLFW/glfw3.h>
 
-#include <cassert>
 #include <memory>
 #include <stdexcept>
 
@@ -333,7 +333,7 @@ MouseButton to_mouse_button(int mouse_button)
   }
 
   DC_LOG_WARN() << "Unknown GLFW mouse button: " << mouse_button;
-  assert(0);
+  DC_FAIL("Unknown GLFW mouse button: {}", mouse_button);
 
   return MouseButton::Undefined;
 }
@@ -537,7 +537,7 @@ int to_glfw(KeyAction action)
   case KeyAction::Repeat:
     return GLFW_REPEAT;
   };
-  assert(0);
+  DC_FAIL("No such key action");
 }
 
 int to_glfw(MouseButton button)
@@ -554,7 +554,7 @@ int to_glfw(MouseButton button)
     return GLFW_MOUSE_BUTTON_LEFT;
   }
 
-  assert(0);
+  DC_FAIL("No such mouse button");
 }
 
 int to_glfw(MouseButtonAction action)
@@ -573,7 +573,7 @@ int to_glfw(MouseButtonAction action)
   case MouseButtonAction::Repeat:
     return GLFW_REPEAT;
   };
-  assert(0);
+  DC_FAIL("No such mouse button action");
 }
 
 EventId WindowResizeEvent::id = 0xc5f4032c;
@@ -832,14 +832,14 @@ void Window::window_framebuffer_size_callback(GLFWwindow *w,
                                               int         height)
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
-  assert(window);
+  DC_ASSERT(window, "Window is nullptr");
   window->on_window_framebuffer_size(width, height);
 }
 
 void Window::window_close_callback(GLFWwindow *w)
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
-  assert(window);
+  DC_ASSERT(window, "Window is nullptr");
   window->on_window_close();
 }
 
@@ -850,7 +850,7 @@ void Window::key_callback(GLFWwindow *w,
                           int         mods)
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
-  assert(window);
+  DC_ASSERT(window, "Window is nullptr");
   window->on_key(key, scancode, action, mods);
 }
 
@@ -860,14 +860,14 @@ void Window::mouse_button_callback(GLFWwindow *w,
                                    int         mods)
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
-  assert(window);
+  DC_ASSERT(window, "Window is nullptr");
   window->on_mouse_button(button, action, mods);
 }
 
 void Window::mouse_movement_callback(GLFWwindow *w, double x, double y)
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
-  assert(window);
+  DC_ASSERT(window, "Window is nullptr");
   window->on_mouse_movement(x, y);
 }
 
@@ -881,28 +881,28 @@ void Window::monitor_callback(GLFWmonitor *m, int event)
 void Window::char_callback(GLFWwindow *w, unsigned int character)
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
-  assert(window);
+  DC_ASSERT(window, "Window is nullptr");
   window->on_char(character);
 }
 
 void Window::scroll_callback(GLFWwindow *w, double xoffset, double yoffset)
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
-  assert(window);
+  DC_ASSERT(window, "Window is nullptr");
   window->on_scroll(xoffset, yoffset);
 }
 
 void Window::cursor_enter_callback(GLFWwindow *w, int entered)
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
-  assert(window);
+  DC_ASSERT(window, "Window is nullptr");
   window->on_cursor_enter(entered);
 }
 
 void Window::window_focus_callback(GLFWwindow *w, int focused)
 {
   auto window = static_cast<Window *>(glfwGetWindowUserPointer(w));
-  assert(window);
+  DC_ASSERT(window, "Window is nullptr");
   window->on_window_focus(focused);
 }
 

@@ -9,7 +9,7 @@
 #include "time.hpp"
 #include "window.hpp"
 
-#include <cassert>
+
 #include <cstdlib>
 #include <memory>
 #include <stdexcept>

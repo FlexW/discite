@@ -10,7 +10,7 @@
 #include "viewport_panel.hpp"
 #include "window.hpp"
 
-#include <cassert>
+
 #include <memory>
 
 namespace dc

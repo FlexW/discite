@@ -1,8 +1,7 @@
 #include "asset_cache.hpp"
+#include "assert.hpp"
 #include "engine.hpp"
 #include "log.hpp"
-
-#include <cassert>
 
 namespace dc
 {
@@ -13,7 +12,7 @@ void AssetCache::register_asset_loader(std::string        asset_type,
   const auto iter = asset_loaders_.find(asset_type);
   if (iter != asset_loaders_.end())
   {
-    assert(0 && "Asset loader already registered");
+    DC_FAIL("Asset loader already registered");
     return;
   }
   asset_loaders_[asset_type] = asset_loader;

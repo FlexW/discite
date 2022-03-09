@@ -16,7 +16,7 @@
 #include <assimp/scene.h>
 
 #include <algorithm>
-#include <cassert>
+
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
