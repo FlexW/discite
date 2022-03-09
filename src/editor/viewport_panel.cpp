@@ -1,10 +1,7 @@
 #include "viewport_panel.hpp"
-#include "ImGuizmo.h"
 #include "engine.hpp"
 #include "gl_framebuffer.hpp"
 #include "gl_texture.hpp"
-#include "glm/ext/quaternion_common.hpp"
-#include "glm/gtc/type_ptr.hpp"
 #include "imgui.h"
 #include "imgui_panel.hpp"
 #include "relationship_component.hpp"
@@ -12,6 +9,8 @@
 #include "scene.hpp"
 #include "scene_panel.hpp"
 #include "window.hpp"
+
+#include <ImGuizmo.h>
 
 #include <memory>
 
@@ -44,9 +43,8 @@ void ViewportPanel::on_render()
     view_render_info.set_view_matrix(editor_camera_.view_matrix());
     view_render_info.set_viewport_info({0, 0, scene_width_, scene_height_});
 
-    renderer->render(scene_render_info,
-                     view_render_info,
-                     scene_framebuffer_.get());
+    view_render_info.set_framebuffer(scene_framebuffer_.get());
+    renderer->render(scene_render_info, view_render_info);
   }
   else
   {

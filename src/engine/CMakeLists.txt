@@ -56,6 +56,11 @@ target_sources(engine PRIVATE
   texture_asset.cpp
   environment_map.cpp
   uuid.cpp
+  frame_data.cpp
+  shadow_pass.cpp
+  forward_pass.cpp
+  skybox_pass.cpp
+  hdr_pass.cpp
   )
 
 target_link_libraries(engine PUBLIC
