@@ -5,6 +5,9 @@
 #include <string>
 #include <unordered_map>
 
+namespace dc
+{
+
 using AssetImporter =
     std::function<void(const std::filesystem::path &file_path)>;
 
@@ -19,3 +22,5 @@ public:
 private:
   std::unordered_map<std::string, AssetImporter> asset_importer_cache_;
 };
+
+} // namespace

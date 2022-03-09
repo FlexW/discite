@@ -1,6 +1,9 @@
 #include "point_light_component.hpp"
 #include "serialization.hpp"
 
+namespace dc
+{
+
 void PointLightComponent::save(FILE *file) const
 {
   write_value(file, color_);
@@ -16,3 +19,5 @@ void PointLightComponent::read(FILE *file)
   read_value(file, linear_);
   read_value(file, quadratic_);
 }
+
+} // namespace dc

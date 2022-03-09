@@ -3,6 +3,9 @@
 #include "cmd_args_parser.hpp"
 #include "event.hpp"
 
+namespace dc
+{
+
 class Layer
 {
 public:
@@ -20,3 +23,5 @@ public:
 
   virtual bool on_event(const Event &event) = 0;
 };
+
+} // namespace dc

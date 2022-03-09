@@ -1,5 +1,8 @@
 #include "environment_map.hpp"
 
+namespace dc
+{
+
 EnvionmentMap::EnvionmentMap(
     std::shared_ptr<GlCubeTexture> env_texture,
     std::shared_ptr<GlCubeTexture> env_irradiance_texture)
@@ -17,3 +20,5 @@ std::shared_ptr<GlCubeTexture> EnvionmentMap::env_irradiance_texture() const
 {
   return env_irradiance_texture_;
 }
+
+} // namespace dc

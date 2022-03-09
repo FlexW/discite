@@ -12,6 +12,9 @@
 #include <filesystem>
 #include <memory>
 
+namespace dc
+{
+
 class Engine
 {
 public:
@@ -63,3 +66,5 @@ private:
 
   void register_asset_loaders();
 };
+
+} // namespace dc

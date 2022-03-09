@@ -1,5 +1,8 @@
 #include "point_light.hpp"
 
+namespace dc
+{
+
 void PointLight::set_position(const glm::vec3 &value) { position_ = value; }
 
 glm::vec3 PointLight::position() const { return position_; }
@@ -19,3 +22,5 @@ float PointLight::linear() const { return linear_; }
 void PointLight::set_quadratic(float value) { quadratic_ = value; }
 
 float PointLight::quadratic() const { return quadratic_; }
+
+} // namespace dc

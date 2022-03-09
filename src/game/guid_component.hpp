@@ -5,6 +5,9 @@
 #include <cstdint>
 #include <stdio.h>
 
+namespace dc
+{
+
 struct GuidComponent
 {
   GuidComponent();
@@ -15,3 +18,5 @@ struct GuidComponent
   void save(FILE *file) const;
   void read(FILE *file);
 };
+
+} // namespace dc

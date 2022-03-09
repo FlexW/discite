@@ -12,7 +12,6 @@ target_sources(game PRIVATE
   renderer.cpp
   entity.cpp
   transform_component.cpp
-  sky.cpp
   scene_asset_importer.cpp
   model_component.cpp
   guid_component.cpp

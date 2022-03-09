@@ -3,6 +3,9 @@
 #include "entity.hpp"
 #include "uuid.hpp"
 
+namespace dc
+{
+
 class Scene;
 
 struct RelationshipComponent
@@ -16,3 +19,5 @@ struct RelationshipComponent
   void save(FILE *file) const;
   void read(FILE *file, Scene &active_scene);
 };
+
+} // namespace dc

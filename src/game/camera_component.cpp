@@ -1,5 +1,8 @@
 #include "camera_component.hpp"
 
+namespace dc
+{
+
 CameraComponent::CameraComponent(float near_plane,
                                  float far_plane,
                                  float aspect_ratio)
@@ -12,3 +15,5 @@ CameraComponent::CameraComponent(float near_plane,
 void CameraComponent::save(FILE *file) const { camera_.save(file); }
 
 void CameraComponent::read(FILE *file) { camera_.read(file); }
+
+} // namespace dc

@@ -6,6 +6,9 @@
 
 #include <memory>
 
+namespace dc
+{
+
 class RenderSystem : public System
 {
 public:
@@ -19,3 +22,5 @@ public:
 private:
   std::weak_ptr<Scene> scene_{};
 };
+
+} // namespace dc

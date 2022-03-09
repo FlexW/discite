@@ -1,5 +1,8 @@
 #include "gl_renderbuffer.hpp"
 
+namespace dc
+{
+
 GlRenderbuffer::GlRenderbuffer() { glGenRenderbuffers(1, &id_); }
 
 GlRenderbuffer::~GlRenderbuffer() { glDeleteRenderbuffers(1, &id_); }
@@ -28,3 +31,5 @@ void GlRenderbuffer::set_storage_multisample(GLenum  internal_format,
 }
 
 GLuint GlRenderbuffer::id() const { return id_; }
+
+} // namespace dc

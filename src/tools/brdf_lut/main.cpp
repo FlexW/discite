@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[])
 {
-  const auto engine = Engine::instance();
-  engine->push_layer(std::make_unique<BrdfLutLayer>());
+  const auto engine = dc::Engine::instance();
+  engine->push_layer(std::make_unique<dc::BrdfLutLayer>());
   return engine->run(argc, argv, false);
 }

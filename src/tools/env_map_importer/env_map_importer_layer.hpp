@@ -5,6 +5,9 @@
 #include <array>
 #include <filesystem>
 
+namespace dc
+{
+
 class EnvMapImporter : public Layer
 {
 public:
@@ -22,3 +25,5 @@ private:
   std::string           name_;
   std::filesystem::path file_path_;
 };
+
+} // namespace dc

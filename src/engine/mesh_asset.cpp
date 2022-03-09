@@ -12,6 +12,9 @@
 #include <memory>
 #include <stdexcept>
 
+namespace dc
+{
+
 MeshAssetHandle::MeshAssetHandle(const std::filesystem::path &file_path,
                                  const Asset                 &asset)
     : AssetHandle(asset)
@@ -53,7 +56,7 @@ MeshAssetHandle::MeshAssetHandle(const std::filesystem::path &file_path,
   }
   catch (const std::runtime_error &error)
   {
-    LOG_WARN() << "Could not load mesh asset " << file_path.string() << ": "
+    DC_LOG_WARN() << "Could not load mesh asset " << file_path.string() << ": "
                << error.what();
   }
 }
@@ -67,3 +70,5 @@ mesh_asset_loader(const std::filesystem::path &file_path, const Asset &asset)
 {
   return std::make_shared<MeshAssetHandle>(file_path, asset);
 }
+
+} // namespace dc

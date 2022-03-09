@@ -1,5 +1,8 @@
 #include "gl_index_buffer.hpp"
 
+namespace dc
+{
+
 GlIndexBuffer::GlIndexBuffer() { glGenBuffers(1, &index_buffer_id_); }
 
 GlIndexBuffer::~GlIndexBuffer()
@@ -34,3 +37,5 @@ void GlIndexBuffer::set_data(const std::vector<unsigned> &indices)
 }
 
 GLsizei GlIndexBuffer::count() const { return count_; }
+
+} // namespace dc

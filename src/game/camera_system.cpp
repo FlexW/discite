@@ -5,6 +5,9 @@
 #include "transform_component.hpp"
 #include "window.hpp"
 
+namespace dc
+{
+
 CameraSystem::CameraSystem(std::weak_ptr<Scene> scene) : scene_{scene} {}
 
 CameraSystem::~CameraSystem() { shutdown(); }
@@ -83,7 +86,7 @@ void CameraSystem::render(SceneRenderInfo & /*scene_render_info*/,
 
     if (found)
     {
-      LOG_WARN() << "More than one camera is active";
+      DC_LOG_WARN() << "More than one camera is active";
       break;
     }
     found = true;
@@ -155,3 +158,5 @@ bool CameraSystem::on_event(const Event &event)
 
   return false;
 }
+
+} // namespace dc

@@ -9,6 +9,9 @@
 #include <memory>
 #include <stdexcept>
 
+namespace dc
+{
+
 EnvMapAssetHandle::EnvMapAssetHandle(const std::filesystem::path &file_path,
                                      const Asset                 &asset)
     : AssetHandle(asset)
@@ -34,7 +37,7 @@ EnvMapAssetHandle::EnvMapAssetHandle(const std::filesystem::path &file_path,
   }
   catch (const std::runtime_error &error)
   {
-    LOG_WARN() << "Could not load env map asset " << file_path.string() << ": "
+    DC_LOG_WARN() << "Could not load env map asset " << file_path.string() << ": "
                << error.what();
   }
 }
@@ -51,3 +54,5 @@ env_map_asset_loader(const std::filesystem::path &file_path, const Asset &asset)
 {
   return std::make_shared<EnvMapAssetHandle>(file_path, asset);
 }
+
+} // namespace dc

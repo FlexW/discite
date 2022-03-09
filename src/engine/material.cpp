@@ -1,6 +1,9 @@
 #include "material.hpp"
 #include "texture_asset.hpp"
 
+namespace dc
+{
+
 void Material::set_albedo_texture(std::shared_ptr<TextureAssetHandle> value)
 {
   albedo_texture_ = value;
@@ -92,3 +95,5 @@ void Material::set_emissive_color(const glm::vec4 &value)
   emissive_color_ = value;
 }
 glm::vec4 Material::emissive_color() const { return emissive_color_; }
+
+} // namespace dc

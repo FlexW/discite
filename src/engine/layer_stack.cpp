@@ -1,5 +1,8 @@
 #include "layer_stack.hpp"
 
+namespace dc
+{
+
 void LayerStack::push_layer(std::unique_ptr<Layer> layer)
 {
   layers_.push_back(std::move(layer));
@@ -66,3 +69,5 @@ bool LayerStack::on_event(const Event &event)
   }
   return false;
 }
+
+} // namespace dc

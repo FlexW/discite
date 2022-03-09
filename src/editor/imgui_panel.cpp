@@ -2,6 +2,9 @@
 #include "imgui.h"
 #include "imgui.hpp"
 
+namespace dc
+{
+
 ImGuiPanel::ImGuiPanel(const std::string &name) : name_{name} {}
 
 void ImGuiPanel::update(float /*delta_time*/) {}
@@ -27,3 +30,5 @@ ImGuiWindowFlags ImGuiPanel::on_before_render()
 }
 
 void ImGuiPanel::on_after_render() {}
+
+} // namespace dc

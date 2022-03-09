@@ -13,6 +13,9 @@
 
 #include <memory>
 
+namespace dc
+{
+
 RenderSystem::RenderSystem(std::weak_ptr<Scene> scene) : scene_{scene} {}
 
 void RenderSystem::init() {}
@@ -25,7 +28,7 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
   const auto scene = scene_.lock();
   if (!scene)
   {
-    LOG_WARN() << "Scene is not valid. Will not render meshes";
+    DC_LOG_WARN() << "Scene is not valid. Will not render meshes";
   }
 
   // add meshes
@@ -90,7 +93,7 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
 
       if (found)
       {
-        LOG_WARN() << "More than one sky is not supported";
+        DC_LOG_WARN() << "More than one sky is not supported";
         break;
       }
       found = true;
@@ -121,10 +124,12 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
 
       if (found)
       {
-        LOG_WARN() << "More than one directional light is not supported";
+        DC_LOG_WARN() << "More than one directional light is not supported";
         break;
       }
       found = true;
     }
   }
 }
+
+} // namespace dc

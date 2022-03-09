@@ -6,6 +6,9 @@
 #include <filesystem>
 #include <vector>
 
+namespace dc
+{
+
 class GlCubeTexture
 {
 public:
@@ -18,3 +21,5 @@ public:
 private:
   GLuint id_{};
 };
+
+} // namespace dc

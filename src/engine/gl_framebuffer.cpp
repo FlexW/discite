@@ -9,6 +9,9 @@
 #include <stdexcept>
 #include <variant>
 
+namespace dc
+{
+
 GlFramebuffer::GlFramebuffer() { glGenFramebuffers(1, &id_); }
 
 GlFramebuffer::~GlFramebuffer() { glDeleteFramebuffers(1, &id_); }
@@ -258,3 +261,5 @@ Attachment GlFramebuffer::stencil_attachment() const
 {
   return stencil_attachment_;
 }
+
+} // namespace dc

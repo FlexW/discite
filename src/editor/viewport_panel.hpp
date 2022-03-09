@@ -14,6 +14,9 @@
 
 #include <memory>
 
+namespace dc
+{
+
 class ViewportPanel : public ImGuiPanel
 {
 public:
@@ -64,3 +67,5 @@ private:
   void move_editor_camera(float delta_time);
   void rotate_editor_camera(double offset_x, double offset_y);
 };
+
+} // namespace dc

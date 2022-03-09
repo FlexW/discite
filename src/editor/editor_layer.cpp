@@ -13,6 +13,9 @@
 #include <cassert>
 #include <memory>
 
+namespace dc
+{
+
 void EditorLayer::init()
 {
   setup_game();
@@ -87,3 +90,5 @@ bool EditorLayer::on_key_event(const KeyEvent &event)
 
   return false;
 }
+
+} // namespace dc

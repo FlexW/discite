@@ -3,6 +3,9 @@
 #include "event.hpp"
 #include "renderer.hpp"
 
+namespace dc
+{
+
 class System
 {
 public:
@@ -16,3 +19,5 @@ public:
 
   virtual bool on_event(const Event & /*event*/) { return false; }
 };
+
+} // namespace dc

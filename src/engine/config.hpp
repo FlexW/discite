@@ -3,6 +3,9 @@
 #include <filesystem>
 #include <unordered_map>
 
+namespace dc
+{
+
 class Config
 {
 public:
@@ -28,3 +31,5 @@ private:
   using KeyValueMap = std::unordered_map<std::string, std::string>;
   std::unordered_map<std::string, KeyValueMap> ini_;
 };
+
+} // namespace dc

@@ -4,6 +4,9 @@
 #include <cassert>
 #include <stdexcept>
 
+namespace dc
+{
+
 void AssetImporterManager::register_asset_importer(
     const std::string   &file_extension,
     const AssetImporter &asset_importer)
@@ -23,7 +26,7 @@ void AssetImporterManager::register_asset_importer(
 void AssetImporterManager::import_asset(
     const std::filesystem::path &asset_file_path)
 {
-  LOG_DEBUG() << "Trying to import asset " << asset_file_path;
+  DC_LOG_DEBUG() << "Trying to import asset " << asset_file_path;
 
   // search for asset importer
   const auto file_extension = asset_file_path.extension().string();
@@ -37,3 +40,5 @@ void AssetImporterManager::import_asset(
   // import asset
   iter->second(asset_file_path);
 }
+
+} // namespace dc

@@ -2,6 +2,9 @@
 
 #include "env_map_asset.hpp"
 
+namespace dc
+{
+
 struct SkyComponent
 {
 
@@ -10,3 +13,5 @@ struct SkyComponent
   void save(FILE *file) const;
   void read(FILE *file);
 };
+
+} // namespace dc

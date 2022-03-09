@@ -1,7 +1,9 @@
 #pragma once
 
-#include "glm/geometric.hpp"
 #include "math.hpp"
+
+namespace dc
+{
 
 class DirectionalLight
 {
@@ -16,3 +18,5 @@ private:
   glm::vec3 direction_{glm::normalize(glm::vec3{0.1f, -1.0f, -0.1f})};
   glm::vec3 color_{1.0f};
 };
+
+} // namespace dc

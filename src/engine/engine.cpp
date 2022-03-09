@@ -14,6 +14,9 @@
 #include <memory>
 #include <stdexcept>
 
+namespace dc
+{
+
 Engine *Engine::instance()
 {
   static auto unique = std::unique_ptr<Engine>(new Engine);
@@ -30,7 +33,7 @@ int Engine::run(int argc, char *argv[], bool show_window)
   }
   catch (const std::runtime_error &error)
   {
-    LOG_ERROR() << "Unhandled exception: " << error.what();
+    DC_LOG_ERROR() << "Unhandled exception: " << error.what();
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
@@ -50,7 +53,7 @@ void Engine::load_config()
   }
   catch (const std::runtime_error &error)
   {
-    LOG_WARN() << "Could not load config from " << config_file_path.string();
+    DC_LOG_WARN() << "Could not load config from " << config_file_path.string();
   }
 }
 
@@ -77,7 +80,7 @@ void Engine::set_log_level()
   }
   else
   {
-    LOG_WARN() << "Unknown log level: " << debug_level;
+    DC_LOG_WARN() << "Unknown log level: " << debug_level;
     Log::set_reporting_level(LogLevel::Debug);
   }
 }
@@ -130,17 +133,6 @@ void Engine::main_loop()
     layer_stack_.update(delta_time);
     layer_stack_.render();
 
-    // // render imgui
-    // {
-    //   // start imgui frame
-    //   ImGui_ImplOpenGL3_NewFrame();
-    //   ImGui_ImplGlfw_NewFrame();
-    //   ImGui::NewFrame();
-    //   // finish imgui frame
-    //   ImGui::Render();
-    //   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    // }
-
     window_->swap_buffers();
   }
 }
@@ -151,7 +143,6 @@ void Engine::shutdown()
   layer_stack_.shutdown();
 
   // stop the window
-  // shutdown_imgui();
   window_ = nullptr;
 
   // shutdown other systems
@@ -185,3 +176,5 @@ void Engine::register_asset_loaders()
   asset_cache_->register_asset_loader(".dcmesh", mesh_asset_loader);
   asset_cache_->register_asset_loader(".dcenv", env_map_asset_loader);
 }
+
+} // namespace dc

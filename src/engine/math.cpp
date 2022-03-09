@@ -1,11 +1,6 @@
 #include "math.hpp"
-#include "glm/ext/scalar_constants.hpp"
-#include "glm/gtc/epsilon.hpp"
-#include "glm/trigonometric.hpp"
 
-#include <glm/gtx/matrix_decompose.hpp>
-
-namespace math
+namespace dc::math
 {
 
 bool decompose_transform(const glm::mat4 &transform,
@@ -74,4 +69,76 @@ bool decompose_transform(const glm::mat4 &transform,
 
   return true;
 }
+
+BoundingBox::BoundingBox(const glm::vec3 &min, const glm::vec3 &max)
+    : min_(glm::min(min, max)),
+      max_(glm::max(min, max))
+{
+}
+
+BoundingBox::BoundingBox(const glm::vec3 *points, size_t numPoints)
+{
+  glm::vec3 vmin(std::numeric_limits<float>::max());
+  glm::vec3 vmax(std::numeric_limits<float>::lowest());
+
+  for (size_t i = 0; i != numPoints; i++)
+  {
+    vmin = glm::min(vmin, points[i]);
+    vmax = glm::max(vmax, points[i]);
+  }
+  min_ = vmin;
+  max_ = vmax;
+}
+
+glm::vec3 BoundingBox::size() const
+{
+  return glm::vec3(max_[0] - min_[0], max_[1] - min_[1], max_[2] - min_[2]);
+}
+
+glm::vec3 BoundingBox::center() const
+{
+  return 0.5f *
+         glm::vec3(max_[0] + min_[0], max_[1] + min_[1], max_[2] + min_[2]);
+}
+
+void BoundingBox::transform(const glm::mat4 &t)
+{
+  glm::vec3 corners[] = {
+      glm::vec3(min_.x, min_.y, min_.z),
+      glm::vec3(min_.x, max_.y, min_.z),
+      glm::vec3(min_.x, min_.y, max_.z),
+      glm::vec3(min_.x, max_.y, max_.z),
+      glm::vec3(max_.x, min_.y, min_.z),
+      glm::vec3(max_.x, max_.y, min_.z),
+      glm::vec3(max_.x, min_.y, max_.z),
+      glm::vec3(max_.x, max_.y, max_.z),
+  };
+  for (auto &v : corners)
+    v = glm::vec3(t * glm::vec4(v, 1.0f));
+  *this = BoundingBox(corners, 8);
+}
+
+BoundingBox BoundingBox::transformed(const glm::mat4 &t) const
+{
+  BoundingBox b = *this;
+  b.transform(t);
+  return b;
+}
+
+void BoundingBox::combine_point(const glm::vec3 &p)
+{
+  min_ = glm::min(min_, p);
+  max_ = glm::max(max_, p);
+}
+
+int calc_mipmap_levels_2d(int width, int height)
+{
+  int levels{1};
+  while ((width | height) >> levels)
+  {
+    levels += 1;
+  }
+  return levels;
+}
+
 } // namespace math

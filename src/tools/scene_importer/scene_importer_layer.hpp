@@ -2,6 +2,9 @@
 
 #include "layer.hpp"
 
+namespace dc
+{
+
 class SceneImporterLayer : public Layer
 {
 public:
@@ -19,3 +22,5 @@ private:
   std::string file_path_;
   std::string name_;
 };
+
+} // namespace dc

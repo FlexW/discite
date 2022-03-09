@@ -4,7 +4,6 @@
 #include "event.hpp"
 #include "serialization.hpp"
 #include "system.hpp"
-#include "texture_cache.hpp"
 #include "uuid.hpp"
 
 #include <entt/entt.hpp>
@@ -12,6 +11,9 @@
 #include <filesystem>
 #include <memory>
 #include <unordered_map>
+
+namespace dc
+{
 
 class Entity;
 class Scene;
@@ -46,9 +48,6 @@ class Scene : public std::enable_shared_from_this<Scene>
 {
 public:
   static std::shared_ptr<Scene> create();
-
-  // void load_from_file(const std::filesystem::path &file_path,
-  //                     TextureCache                &texture_cache);
 
   void init();
   void update(float delta_time);
@@ -91,14 +90,6 @@ private:
   Scene() = default;
 
   void init_systems();
-
-  void load_scene(const aiScene *ai_scene, TextureCache &texture_cache);
-  void load_node(const aiScene        *ai_scene,
-                 aiNode               *ai_node,
-                 std::optional<Entity> parent_entity,
-                 TextureCache         &texture_cache);
-  void load_mesh(const aiScene *ai_scene,
-                 Entity         parent_entity,
-                 aiMesh        *ai_mesh,
-                 TextureCache  &texture_cache);
 };
+
+} // namespace dc

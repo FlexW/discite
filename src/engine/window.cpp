@@ -12,12 +12,14 @@
 
 namespace
 {
+using namespace dc;
+
 constexpr auto opengl_version_major = 4;
 constexpr auto opengl_version_minor = 6;
 
 void glfw_error_callback(int error_code, const char *description)
 {
-  LOG_ERROR() << "GLFW Error code: " << error_code
+  DC_LOG_ERROR() << "GLFW Error code: " << error_code
               << " Description: " << description;
 }
 
@@ -91,23 +93,23 @@ void APIENTRY gl_debug_callback(GLenum source,
   switch (severity)
   {
   case GL_DEBUG_SEVERITY_HIGH:
-    LOG_ERROR() << source_str << " Type: " << type_str << " Id: " << id
+    DC_LOG_ERROR() << source_str << " Type: " << type_str << " Id: " << id
                 << " Message: " << msg;
     break;
   case GL_DEBUG_SEVERITY_MEDIUM:
-    LOG_WARN() << source_str << " Type: " << type_str << " Id: " << id
+    DC_LOG_WARN() << source_str << " Type: " << type_str << " Id: " << id
                << " Message: " << msg;
     break;
   case GL_DEBUG_SEVERITY_LOW:
-    LOG_WARN() << source_str << " Type: " << type_str << " Id: " << id
+    DC_LOG_WARN() << source_str << " Type: " << type_str << " Id: " << id
                << " Message: " << msg;
     break;
   case GL_DEBUG_SEVERITY_NOTIFICATION:
-    LOG_DEBUG() << source_str << " Type: " << type_str << " Id: " << id
+    DC_LOG_DEBUG() << source_str << " Type: " << type_str << " Id: " << id
                 << " Message: " << msg;
     break;
   default:
-    LOG_WARN() << source_str << " Type: " << type_str << " Id: " << id
+    DC_LOG_WARN() << source_str << " Type: " << type_str << " Id: " << id
                << " Message: " << msg;
   }
 }
@@ -128,12 +130,12 @@ void gl_dump_info()
   GLint extensions_count = 0;
   glGetIntegerv(GL_NUM_EXTENSIONS, &extensions_count);
 
-  LOG_INFO() << "GL Vendor: " << vendor;
-  LOG_INFO() << "GL Renderer: " << renderer;
-  LOG_INFO() << "GL Version: " << version;
-  LOG_INFO() << "GLSL Version: " << glsl_version;
-  LOG_INFO() << "MSAA samples: " << samples;
-  LOG_INFO() << "MSAA buffers: " << sampleBuffers;
+  DC_LOG_INFO() << "GL Vendor: " << vendor;
+  DC_LOG_INFO() << "GL Renderer: " << renderer;
+  DC_LOG_INFO() << "GL Version: " << version;
+  DC_LOG_INFO() << "GLSL Version: " << glsl_version;
+  DC_LOG_INFO() << "MSAA samples: " << samples;
+  DC_LOG_INFO() << "MSAA buffers: " << sampleBuffers;
 
   std::string extensions;
   for (GLint i = 0; i < extensions_count; ++i)
@@ -149,7 +151,7 @@ void gl_dump_info()
           std::string(", ") + reinterpret_cast<const char *>(extension);
     }
   }
-  LOG_DEBUG() << "GL Extensions: " << extensions;
+  DC_LOG_DEBUG() << "GL Extensions: " << extensions;
 }
 
 Key to_key(int key)
@@ -298,7 +300,7 @@ Key to_key(int key)
     return Key::Escape;
   }
 
-  LOG_WARN() << "Unknown GLFW key: " << key;
+  DC_LOG_WARN() << "Unknown GLFW key: " << key;
 
   return Key::Undefined;
 }
@@ -315,7 +317,7 @@ KeyAction to_key_action(int key_action)
     return KeyAction::Repeat;
   }
 
-  LOG_WARN() << "Unknown GLFW action: " << key_action;
+  DC_LOG_WARN() << "Unknown GLFW action: " << key_action;
 
   return KeyAction::Undefined;
 }
@@ -330,7 +332,7 @@ MouseButton to_mouse_button(int mouse_button)
     return MouseButton::Right;
   }
 
-  LOG_WARN() << "Unknown GLFW mouse button: " << mouse_button;
+  DC_LOG_WARN() << "Unknown GLFW mouse button: " << mouse_button;
   assert(0);
 
   return MouseButton::Undefined;
@@ -348,12 +350,15 @@ MouseButtonAction to_mouse_button_action(int mouse_button_action)
     return MouseButtonAction::Repeat;
   }
 
-  LOG_WARN() << "Unknown GLFW mouse button action: " << mouse_button_action;
+  DC_LOG_WARN() << "Unknown GLFW mouse button action: " << mouse_button_action;
 
   return MouseButtonAction::Undefined;
 }
 
 } // namespace
+
+namespace dc
+{
 
 int to_glfw(Key key)
 {
@@ -721,7 +726,7 @@ Window::Window(bool show_window)
 
   if (!gladLoadGL())
   {
-    LOG_ERROR() << "GLAD could not load OpenGL";
+    DC_LOG_ERROR() << "GLAD could not load OpenGL";
     return;
   }
 
@@ -1020,3 +1025,5 @@ bool Window::focused() const
 {
   return glfwGetWindowAttrib(window_, GLFW_FOCUSED) != 0;
 }
+
+} // namespace dc

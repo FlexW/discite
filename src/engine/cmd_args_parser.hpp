@@ -8,6 +8,9 @@
 #include <unordered_map>
 #include <vector>
 
+namespace dc
+{
+
 class ArgsParser
 {
 public:
@@ -74,3 +77,5 @@ private:
 void parse_and_show_help_on_error(ArgsParser &args_parser,
                                   int         argc,
                                   char       *argv[]);
+
+} // namespace dc

@@ -2,6 +2,9 @@
 
 #include <cassert>
 
+namespace dc
+{
+
 void GlVertexBufferLayout::push_float(unsigned count)
 {
   GlVertexBufferLayoutElement element{};
@@ -53,3 +56,5 @@ void GlVertexBuffer::bind()
 }
 
 void GlVertexBuffer::unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
+
+} // namespace dc

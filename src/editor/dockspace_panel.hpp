@@ -2,6 +2,9 @@
 
 #include "imgui_panel.hpp"
 
+namespace dc
+{
+
 class DockspacePanel : public ImGuiPanel
 {
 public:
@@ -11,3 +14,5 @@ private:
   ImGuiWindowFlags on_before_render() override;
   void on_render() override;
 };
+
+} // namespace dc

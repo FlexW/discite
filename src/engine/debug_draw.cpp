@@ -5,6 +5,9 @@
 
 #include <memory>
 
+namespace dc
+{
+
 DebugDraw::DebugDraw()
 {
   lines_vertex_buffer_  = std::make_shared<GlVertexBuffer>();
@@ -69,3 +72,5 @@ void DebugDraw::submit(const glm::mat4 &view_matrix,
   lines_.clear();
   colors_.clear();
 }
+
+} // namespace dc

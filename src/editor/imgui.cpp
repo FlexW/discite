@@ -1,9 +1,10 @@
 #include "imgui.hpp"
-#include "glm/gtc/type_ptr.hpp"
-#include "imgui.h"
 
 #include <array>
 #include <cstring>
+
+namespace dc
+{
 
 bool imgui_input(const std::string  &name,
                  std::string        &value,
@@ -37,3 +38,5 @@ bool imgui_input(const std::string &name, bool &value)
 {
   return ImGui::Checkbox(name.c_str(), &value);
 }
+
+} // namespace dc

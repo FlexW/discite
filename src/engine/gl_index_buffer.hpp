@@ -1,8 +1,11 @@
 #pragma once
 
-#include <glad/glad.h>
+#include "gl.hpp"
 
 #include <vector>
+
+namespace dc
+{
 
 class GlIndexBuffer
 {
@@ -28,3 +31,5 @@ private:
   GlIndexBuffer(GlIndexBuffer &&)       = delete;
   void operator=(GlIndexBuffer &&) = delete;
 };
+
+} // namespace dc

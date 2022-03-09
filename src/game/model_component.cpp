@@ -5,6 +5,9 @@
 
 #include <memory>
 
+namespace dc
+{
+
 void ModelComponent::save(FILE *file) const
 {
   std::string mesh_asset_name;
@@ -29,3 +32,5 @@ void ModelComponent::read(FILE *file)
     model_ = nullptr;
   }
 }
+
+} // namespace dc

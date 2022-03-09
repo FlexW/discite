@@ -1,5 +1,8 @@
 #include "gl_shader_storage_buffer.hpp"
 
+namespace dc
+{
+
 GlShaderStorageBuffer::GlShaderStorageBuffer() { glGenBuffers(1, &id_); }
 
 GlShaderStorageBuffer::~GlShaderStorageBuffer() { glDeleteBuffers(1, &id_); }
@@ -32,3 +35,5 @@ void GlShaderStorageBuffer::unmap()
   glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
   unbind();
 }
+
+} // namespace dc

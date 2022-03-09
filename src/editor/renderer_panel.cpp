@@ -2,6 +2,9 @@
 #include "imgui.hpp"
 #include "imgui_panel.hpp"
 
+namespace dc
+{
+
 RendererPanel::RendererPanel() : ImGuiPanel{"Renderer"} {}
 
 void RendererPanel::on_render()
@@ -113,3 +116,5 @@ void RendererPanel::set_renderer(std::shared_ptr<Renderer> renderer)
 {
   renderer_ = renderer;
 }
+
+} // namespace dc

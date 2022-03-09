@@ -7,6 +7,10 @@
 #include <utility>
 
 struct GLFWwindow;
+
+namespace dc
+{
+
 class Monitor;
 
 enum class Key : int
@@ -294,3 +298,5 @@ private:
   void on_cursor_enter(int entered);
   void on_window_focus(int focused);
 };
+
+} // namespace dc

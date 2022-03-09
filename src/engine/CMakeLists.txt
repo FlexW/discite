@@ -30,7 +30,6 @@ target_sources(engine PRIVATE
   string.cpp
   time.cpp
   material.cpp
-  texture_cache.cpp
   mesh.cpp
   engine.cpp
   directional_light.cpp
@@ -52,6 +51,7 @@ target_sources(engine PRIVATE
   serialization.cpp
   texture_asset.cpp
   environment_map.cpp
+  uuid.cpp
   )
 
 target_link_libraries(engine PUBLIC

@@ -8,6 +8,9 @@
 #include <filesystem>
 #include <memory>
 
+namespace dc
+{
+
 class SceneAssetHandle : public AssetHandle
 {
 public:
@@ -27,3 +30,5 @@ private:
 
 std::shared_ptr<AssetHandle>
 scene_asset_loader(const std::filesystem::path &file_path, const Asset &asset);
+
+} // namespace dc

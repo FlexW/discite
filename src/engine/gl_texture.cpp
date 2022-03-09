@@ -1,22 +1,15 @@
 #include "gl_texture.hpp"
 #include "image.hpp"
 
-#include <cstdint>
 #include <gli/load_ktx.hpp>
 
 #include <cassert>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 
-int calc_mipmap_levels_2d(int width, int height)
+namespace dc
 {
-  int levels{1};
-  while ((width | height) >> levels)
-  {
-    levels += 1;
-  }
-  return levels;
-}
 
 GlTexture::GlTexture() { glGenTextures(1, &id_); }
 
@@ -36,7 +29,7 @@ void GlTexture::load_from_file(const std::filesystem::path &file_path,
     glm::tvec3<GLsizei> extent{texture_ktx.extent(0)};
     const auto          width  = extent.x;
     const auto          height        = extent.y;
-    const auto          mipmap_levels = calc_mipmap_levels_2d(width, height);
+    const auto mipmap_levels = math::calc_mipmap_levels_2d(width, height);
 
     bind();
 
@@ -168,3 +161,5 @@ void GlTexture::set_storage(GLsizei width,
 }
 
 GLenum GlTexture::format() const { return format_; }
+
+} // namespace dc

@@ -7,6 +7,9 @@
 
 #include <memory>
 
+namespace dc
+{
+
 class Material
 {
 public:
@@ -53,3 +56,5 @@ private:
 
   bool is_transparent_{false};
 };
+
+} // namespace dc

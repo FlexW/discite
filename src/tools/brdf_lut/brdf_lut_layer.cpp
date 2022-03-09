@@ -26,7 +26,7 @@ gli::texture convert_lut_to_texture(const std::array<T, TSize> &lut_data,
       const std::uint32_t ofs{y * brdf_width + x};
       const gli::vec2     value{lut_data[ofs * 2 + 0], lut_data[ofs * 2 + 1]};
       const gli::texture::extent_type uv{x, y, 0};
-      // LOG_DEBUG() << "Value: " << value;
+      // DC_LOG_DEBUG() << "Value: " << value;
       lut_texture.store<std::uint32_t>(uv, 0, gli::packHalf2x16(value));
     }
   }
@@ -35,6 +35,9 @@ gli::texture convert_lut_to_texture(const std::array<T, TSize> &lut_data,
 }
 
 } // namespace
+
+namespace dc
+{
 
 void BrdfLutLayer::init() {}
 
@@ -69,3 +72,5 @@ void BrdfLutLayer::render()
 }
 
 bool BrdfLutLayer::on_event(const Event & /*event*/) { return false; }
+
+} // namespace dc

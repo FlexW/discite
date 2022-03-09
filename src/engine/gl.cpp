@@ -2,6 +2,9 @@
 #include "gl.hpp"
 #include "gl_vertex_array.hpp"
 
+namespace dc
+{
+
 void draw(const GlVertexArray &vertex_array, GLenum mode)
 {
   vertex_array.bind();
@@ -23,3 +26,5 @@ void compute(std::uint32_t x_size, std::uint32_t y_size, std::uint32_t z_size)
 {
   glDispatchCompute(x_size, y_size, z_size);
 }
+
+} // namespace dc

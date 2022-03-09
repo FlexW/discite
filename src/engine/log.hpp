@@ -2,6 +2,9 @@
 
 #include <sstream>
 
+namespace dc
+{
+
 enum class LogLevel
 {
   Debug   = 0,
@@ -31,7 +34,9 @@ private:
   void operator=(const Log &) = delete;
 };
 
-#define LOG_DEBUG() Log().get(LogLevel::Debug)
-#define LOG_INFO()  Log().get(LogLevel::Info)
-#define LOG_WARN()  Log().get(LogLevel::Warning)
-#define LOG_ERROR() Log().get(LogLevel::Error)
+} // namespace dc
+
+#define DC_LOG_DEBUG() dc::Log().get(dc::LogLevel::Debug)
+#define DC_LOG_INFO()  dc::Log().get(dc::LogLevel::Info)
+#define DC_LOG_WARN()  dc::Log().get(dc::LogLevel::Warning)
+#define DC_LOG_ERROR() dc::Log().get(dc::LogLevel::Error)

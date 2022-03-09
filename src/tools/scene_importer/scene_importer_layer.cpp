@@ -6,6 +6,9 @@
 #include <filesystem>
 #include <stdexcept>
 
+namespace dc
+{
+
 void SceneImporterLayer::add_cmd_line_args(ArgsParser &args_parser)
 {
   ArgsParser::Option file_path_option;
@@ -37,7 +40,7 @@ void SceneImporterLayer::init()
   }
   catch (const std::runtime_error &error)
   {
-    LOG_ERROR() << "Error while importing scene " << error.what();
+    DC_LOG_ERROR() << "Error while importing scene " << error.what();
   }
 }
 
@@ -51,3 +54,5 @@ void SceneImporterLayer::update(float /*delta_time*/)
 void SceneImporterLayer::render() {}
 
 bool SceneImporterLayer::on_event(const Event & /*event*/) { return false; }
+
+} // namespace dc

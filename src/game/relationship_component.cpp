@@ -1,6 +1,9 @@
 #include "relationship_component.hpp"
 #include "scene.hpp"
 
+namespace dc
+{
+
 void RelationshipComponent::save(FILE *file) const
 {
   write_value(file, parent_.id());
@@ -27,3 +30,5 @@ void RelationshipComponent::read(FILE *file, Scene &active_scene)
   read_value(file, previous_sibling_id);
   previous_sibling_ = active_scene.get_or_create_entity(previous_sibling_id);
 }
+
+} // namespace dc

@@ -22,12 +22,12 @@
 namespace
 {
 
+using namespace dc;
+
 glm::mat4 to_glm(const aiMatrix4x4 &matrix)
 {
   return glm::transpose(glm::make_mat4(&matrix.a1));
 }
-
-} // namespace
 
 struct SceneImportData
 {
@@ -119,11 +119,15 @@ void import_scene(const aiScene *ai_scene, SceneImportData &import_data)
                                scene_file_path,
                            asset_description);
 }
+} // namespace
+
+namespace dc
+{
 
 void import_scene_asset(const std::filesystem::path &file_path,
                         const std::string           &name)
 {
-  LOG_DEBUG() << "Import scene from file " << file_path.string().c_str();
+  DC_LOG_DEBUG() << "Import scene from file " << file_path.string().c_str();
 
   Assimp::Importer importer;
   const auto       ai_scene = importer.ReadFile(
@@ -156,3 +160,5 @@ void import_scene_asset(const std::filesystem::path &file_path,
   import_data.base_path_ = file_path.parent_path();
   import_scene(ai_scene, import_data);
 }
+
+} // namespace dc

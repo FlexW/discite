@@ -2,6 +2,9 @@
 
 #include "math.hpp"
 
+namespace dc
+{
+
 enum class CameraMovement
 {
   Forward,
@@ -80,3 +83,5 @@ private:
   void update_camera_vectors();
   void recalculate_projection_matrix();
 };
+
+} // namespace dc

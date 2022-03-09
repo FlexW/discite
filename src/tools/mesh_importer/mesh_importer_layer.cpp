@@ -6,6 +6,9 @@
 #include <filesystem>
 #include <stdexcept>
 
+namespace dc
+{
+
 void MeshImporterLayer::add_cmd_line_args(ArgsParser &args_parser)
 {
   ArgsParser::Option file_path_option;
@@ -37,7 +40,7 @@ void MeshImporterLayer::init()
   }
   catch (const std::runtime_error &error)
   {
-    LOG_ERROR() << "Error while importing mesh " << error.what();
+    DC_LOG_ERROR() << "Error while importing mesh " << error.what();
   }
 }
 
@@ -51,3 +54,5 @@ void MeshImporterLayer::update(float /*delta_time*/)
 void MeshImporterLayer::render() {}
 
 bool MeshImporterLayer::on_event(const Event & /*event*/) { return false; }
+
+} // namespace dc

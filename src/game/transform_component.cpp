@@ -19,6 +19,9 @@ glm::mat4 calculate_transform_matrix(const glm::vec3 &position,
 
 } // namespace
 
+namespace dc
+{
+
 void TransformComponent::set_position(const glm::vec3 &value)
 {
   position_ = value;
@@ -94,3 +97,5 @@ void TransformComponent::read(FILE *file)
   read_value(file, parent_transform_matrix_);
   read_value(file, transform_matrix_);
 }
+
+} // namespace dc

@@ -8,6 +8,9 @@ namespace
 const std::string whitespace = " \n\r\t\f\v";
 }
 
+namespace dc
+{
+
 std::string string_trim_left(const std::string &str)
 {
   const auto start = str.find_first_not_of(whitespace);
@@ -47,3 +50,5 @@ std::vector<std::string> string_split(const std::string &str,
 
   return tokens;
 }
+
+} // namespace dc

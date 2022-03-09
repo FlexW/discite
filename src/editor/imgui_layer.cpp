@@ -9,6 +9,9 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+namespace dc
+{
+
 void ImGuiLayer::init()
 {
   IMGUI_CHECKVERSION();
@@ -195,3 +198,5 @@ void ImGuiLayer::render_panels()
     panel->render();
   }
 }
+
+} // namespace dc

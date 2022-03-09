@@ -14,7 +14,11 @@
 #include "scene_panel.hpp"
 #include "sky_component.hpp"
 #include "transform_component.hpp"
+
 #include <memory>
+
+namespace dc
+{
 
 EntityPanel::EntityPanel() : ImGuiPanel{"Entity"} {}
 
@@ -196,3 +200,5 @@ bool EntityPanel::on_scene_unloaded(const SceneUnloadedEvent & /*event*/)
   entity_ = {};
   return false;
 }
+
+} // namespace dc

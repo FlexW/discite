@@ -7,6 +7,9 @@
 #include <filesystem>
 #include <memory>
 
+namespace dc
+{
+
 class TextureAssetHandle : public AssetHandle
 {
 public:
@@ -24,3 +27,5 @@ private:
 std::shared_ptr<AssetHandle>
 texture_asset_loader(const std::filesystem::path &file_path,
                      const Asset                 &asset);
+
+} // namespace dc

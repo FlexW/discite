@@ -10,6 +10,9 @@
 #include <unordered_map>
 #include <vector>
 
+namespace dc
+{
+
 std::filesystem::path normalize_path(const std::filesystem::path &path);
 
 void write_string(FILE *file, const std::string &str);
@@ -124,3 +127,5 @@ struct EnvironmentMapDescription
                         const AssetDescription      &asset_description) const;
   AssetDescription read(const std::filesystem::path &file_path);
 };
+
+} // namespace dc

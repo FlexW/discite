@@ -1,10 +1,10 @@
 #include "gl_texture_array.hpp"
-
-#include <GL/gl.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/integer.hpp>
+#include "math.hpp"
 
 #include <cassert>
+
+namespace dc
+{
 
 GlTextureArray::GlTextureArray() { glGenTextures(1, &id_); }
 
@@ -101,3 +101,5 @@ void GlTextureArray::set_data(const TextureArrayData &texture_array_data)
 void GlTextureArray::bind() { glBindTexture(GL_TEXTURE_2D_ARRAY, id_); }
 
 void GlTextureArray::unbind() { glBindTexture(GL_TEXTURE_2D_ARRAY, 0); }
+
+} // namespace dc

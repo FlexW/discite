@@ -3,6 +3,9 @@
 #include <cstdint>
 #include <string>
 
+namespace dc
+{
+
 class Asset
 {
 public:
@@ -16,3 +19,5 @@ private:
   std::string id_{};
   std::string type_{};
 };
+
+} // namespace dc

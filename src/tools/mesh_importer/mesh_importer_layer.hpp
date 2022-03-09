@@ -2,6 +2,9 @@
 
 #include "layer.hpp"
 
+namespace dc
+{
+
 class MeshImporterLayer : public Layer
 {
 public:
@@ -19,3 +22,5 @@ private:
   std::string file_path_;
   std::string mesh_name_;
 };
+
+} // namespace dc

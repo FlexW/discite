@@ -1,7 +1,11 @@
 #pragma once
 
 #include "asset.hpp"
+
 #include <filesystem>
+
+namespace dc
+{
 
 class AssetHandle
 {
@@ -17,3 +21,5 @@ private:
   std::filesystem::path file_path_;
   Asset asset_;
 };
+
+} // namespace dc

@@ -7,6 +7,9 @@
 
 #include <memory>
 
+namespace dc
+{
+
 class EditorLayer : public Layer
 {
 public:
@@ -24,3 +27,5 @@ private:
   void set_capture_mouse(bool value);
   bool on_key_event(const KeyEvent &event);
 };
+
+} // namespace dc

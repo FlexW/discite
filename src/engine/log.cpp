@@ -7,17 +7,17 @@
 
 namespace
 {
-std::string to_string(LogLevel level)
+std::string to_string(dc::LogLevel level)
 {
   switch (level)
   {
-  case LogLevel::Debug:
+  case dc::LogLevel::Debug:
     return "DEBUG";
-  case LogLevel::Info:
+  case dc::LogLevel::Info:
     return "INFO";
-  case LogLevel::Warning:
+  case dc::LogLevel::Warning:
     return "WARNING";
-  case LogLevel::Error:
+  case dc::LogLevel::Error:
     return "ERROR";
   }
   assert(0);
@@ -30,6 +30,9 @@ constexpr auto ansi_blue   = "\033[0;34m";
 constexpr auto ansi_yellow = "\033[0;33m";
 constexpr auto ansi_grey   = "\033[0;90m";
 } // namespace
+
+namespace dc
+{
 
 LogLevel Log::level = LogLevel::Debug;
 
@@ -72,3 +75,5 @@ std::ostringstream &Log::get(LogLevel level)
 
   return os_;
 }
+
+} // namespace dc

@@ -2,7 +2,10 @@
 
 #include "math.hpp"
 
-#include <bits/types/FILE.h>
+#include <cstdio>
+
+namespace dc
+{
 
 struct TransformComponent
 {
@@ -37,3 +40,5 @@ private:
 
   void recalculate_transform_matrix();
 };
+
+} // namespace dc

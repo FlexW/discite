@@ -10,6 +10,9 @@
 #include <memory>
 #include <stdexcept>
 
+namespace dc
+{
+
 MaterialAssetHandle::MaterialAssetHandle(const std::filesystem::path &file_path, const Asset&asset) : AssetHandle{asset}
 {
   try
@@ -48,7 +51,7 @@ MaterialAssetHandle::MaterialAssetHandle(const std::filesystem::path &file_path,
   }
   catch (const std::runtime_error &error)
   {
-    LOG_WARN() << "Could not load material asset " << file_path.string() << ": "
+    DC_LOG_WARN() << "Could not load material asset " << file_path.string() << ": "
                << error.what();
   }
 }
@@ -63,3 +66,5 @@ material_asset_loader(const std::filesystem::path &file_path,
 {
   return std::make_shared<MaterialAssetHandle>(file_path, asset);
 }
+
+} // namespace dc

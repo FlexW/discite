@@ -2,6 +2,9 @@
 
 #include "math.hpp"
 
+namespace dc
+{
+
 class PointLight
 {
 public:
@@ -28,3 +31,5 @@ private:
   float linear_{0.9f};
   float quadratic_{1.8f};
 };
+
+} // namespace dc

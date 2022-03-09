@@ -23,6 +23,8 @@
 namespace
 {
 
+using namespace dc;
+
 constexpr auto num_points{1024};
 
 /// From Henry J. Warren's "Hacker's Delight"
@@ -152,6 +154,9 @@ std::vector<std::uint8_t> process_cubemap(const std::string &filename)
 
 } // namespace
 
+namespace dc
+{
+
 void EnvMapImporter::add_cmd_line_args(ArgsParser &args_parser)
 {
   ArgsParser::Option hdr_map_option;
@@ -219,3 +224,5 @@ void EnvMapImporter::update(float /*delta_time*/)
 void EnvMapImporter::render() {}
 
 bool EnvMapImporter::on_event(const Event & /*event*/) { return false; }
+
+} // namespace dc

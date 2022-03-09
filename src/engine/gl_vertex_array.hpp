@@ -6,6 +6,9 @@
 
 #include <memory>
 
+namespace dc
+{
+
 class GlVertexArray
 {
 public:
@@ -33,3 +36,5 @@ private:
   GlVertexArray(GlVertexArray &&) = delete;
   void operator=(GlVertexArray &&) = delete;
 };
+
+} // namespace dc

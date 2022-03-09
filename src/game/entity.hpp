@@ -1,7 +1,5 @@
 #pragma once
 
-#include "entt/entity/entity.hpp"
-#include "entt/entity/fwd.hpp"
 #include "scene.hpp"
 #include "uuid.hpp"
 
@@ -11,6 +9,9 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+
+namespace dc
+{
 
 class Entity
 {
@@ -112,3 +113,5 @@ private:
   entt::entity         entity_handle_{entt::null};
   std::weak_ptr<Scene> scene_;
 };
+
+} // namespace dc

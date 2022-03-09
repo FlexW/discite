@@ -6,6 +6,9 @@
 #include <filesystem>
 #include <memory>
 
+namespace dc
+{
+
 class MaterialAssetHandle : public AssetHandle
 {
 public:
@@ -23,3 +26,5 @@ private:
 std::shared_ptr<AssetHandle>
 material_asset_loader(const std::filesystem::path &file_path,
                       const Asset                 &asset);
+
+} // namespace dc

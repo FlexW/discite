@@ -4,7 +4,6 @@
 #include "gl_vertex_array.hpp"
 #include "material.hpp"
 #include "material_asset.hpp"
-#include "texture_cache.hpp"
 
 #include <filesystem>
 #include <memory>
@@ -14,15 +13,8 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
-// glm::vec3 to_glm(const aiVector3t<float> &value);
-
-// std::shared_ptr<GlTexture> import_texture(aiMaterial   *ai_material,
-//                                           aiTextureType ai_texture_type,
-//                                           TextureCache &texture_cache);
-
-// std::shared_ptr<Material> import_material(const aiScene *ai_scene,
-//                                           const aiMesh  *ai_mesh,
-//                                           TextureCache  &texture_cache);
+namespace dc
+{
 
 struct Vertex
 {
@@ -60,12 +52,11 @@ public:
   Model(Model &&other);
   void operator=(Model &&other);
 
-  // void load_from_file(const std::filesystem::path &file_path,
-  //                     TextureCache                &texture_cache);
-
   void                set_meshes(std::vector<std::unique_ptr<Mesh>> meshes);
   std::vector<Mesh *> meshes() const;
 
 private:
   std::vector<std::unique_ptr<Mesh>> meshes_;
 };
+
+} // namespace dc

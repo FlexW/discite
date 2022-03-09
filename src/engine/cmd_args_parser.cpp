@@ -7,6 +7,8 @@
 
 namespace
 {
+using namespace dc;
+
 constexpr auto spacer = "  ";
 
 void show_usage(const ArgsParser &args_parser, const char *program_name)
@@ -18,7 +20,10 @@ void show_usage(const ArgsParser &args_parser, const char *program_name)
                "https://github.com/FlexW/discite\n";
   std::cout << "© 2022 Felix Weilbach" << std::endl;
 }
-}
+} // namespace
+
+namespace dc
+{
 
 void ArgsParser::add_option(const Option &option)
 {
@@ -281,3 +286,5 @@ void parse_and_show_help_on_error(ArgsParser &args_parser,
     std::exit(EXIT_FAILURE);
   }
 }
+
+} // namespace dc

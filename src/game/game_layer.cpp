@@ -11,7 +11,6 @@
 #include "scene.hpp"
 #include "scene_asset.hpp"
 #include "sky_component.hpp"
-#include "texture_cache.hpp"
 #include "transform_component.hpp"
 
 #include <memory>
@@ -19,14 +18,17 @@
 namespace
 {
 
-void scene_add_systems(std::shared_ptr<Scene> scene)
+void scene_add_systems(std::shared_ptr<dc::Scene> scene)
 {
   // add systems, order matters
-  scene->create_system<CameraSystem>(scene);
-  scene->create_system<RenderSystem>(scene);
+  scene->create_system<dc::CameraSystem>(scene);
+  scene->create_system<dc::RenderSystem>(scene);
 }
 
 } // namespace
+
+namespace dc
+{
 
 void GameLayer::register_asset_loaders()
 {
@@ -104,3 +106,5 @@ void GameLayer::set_scene(std::shared_ptr<SceneAssetHandle> value)
 }
 
 std::shared_ptr<SceneAssetHandle> GameLayer::scene() const { return scene_; }
+
+} // namespace dc

@@ -8,6 +8,9 @@ namespace
 constexpr ImGuiDockNodeFlags dockspace_flags{ImGuiDockNodeFlags_None};
 }
 
+namespace dc
+{
+
 DockspacePanel::DockspacePanel() : ImGuiPanel{"Dockspace"} {}
 
 ImGuiWindowFlags DockspacePanel::on_before_render()
@@ -62,3 +65,5 @@ void DockspacePanel::on_render()
     ImGui::EndMenuBar();
   }
 }
+
+} // namespace dc

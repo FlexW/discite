@@ -2,6 +2,9 @@
 
 #include "gl_cube_texture.hpp"
 
+namespace dc
+{
+
 class EnvionmentMap
 {
 public:
@@ -16,3 +19,5 @@ private:
   std::shared_ptr<GlCubeTexture> env_texture_{};
   std::shared_ptr<GlCubeTexture> env_irradiance_texture_{};
 };
+
+} // namespace dc

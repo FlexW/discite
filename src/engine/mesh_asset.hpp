@@ -7,6 +7,9 @@
 #include <filesystem>
 #include <memory>
 
+namespace dc
+{
+
 class MeshAssetHandle : public AssetHandle
 {
 public:
@@ -22,3 +25,5 @@ private:
 
 std::shared_ptr<AssetHandle>
 mesh_asset_loader(const std::filesystem::path &file_path, const Asset &asset);
+
+} // namespace dc

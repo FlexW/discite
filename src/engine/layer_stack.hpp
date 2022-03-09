@@ -7,6 +7,9 @@
 #include <memory>
 #include <vector>
 
+namespace dc
+{
+
 class LayerStack
 {
 public:
@@ -45,3 +48,5 @@ public:
 private:
   std::vector<std::unique_ptr<Layer>> layers_;
 };
+
+} // namespace dc

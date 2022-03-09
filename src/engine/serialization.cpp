@@ -3,6 +3,9 @@
 
 #include <cstdint>
 
+namespace dc
+{
+
 std::filesystem::path normalize_path(const std::filesystem::path &path)
 {
   // TODO: Implement so that Engine base path is removed from path
@@ -227,3 +230,5 @@ EnvironmentMapDescription::read(const std::filesystem::path &file_path)
 
   return asset_description;
 }
+
+} // namespace dc

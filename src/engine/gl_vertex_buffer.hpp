@@ -1,8 +1,11 @@
 #pragma once
 
-#include <glad/glad.h>
+#include "gl.hpp"
 
 #include <vector>
+
+namespace dc
+{
 
 struct GlVertexBufferLayoutElement
 {
@@ -66,3 +69,5 @@ private:
   GlVertexBuffer(GlVertexBuffer &&)      = delete;
   void operator=(GlVertexBuffer &&) = delete;
 };
+
+} // namespace dc

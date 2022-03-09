@@ -4,6 +4,9 @@
 
 #include <cassert>
 
+namespace dc
+{
+
 void AssetCache::register_asset_loader(std::string        asset_type,
                                        const AssetLoader &asset_loader)
 {
@@ -20,7 +23,7 @@ std::shared_ptr<AssetHandle> AssetCache::load_asset(const Asset &asset)
 {
   if (asset.type().empty())
   {
-    LOG_DEBUG() << "Trying to load an invalid asset";
+    DC_LOG_DEBUG() << "Trying to load an invalid asset";
     return nullptr;
   }
   // check if asset already loaded and if yes, load it from cache
@@ -34,7 +37,7 @@ std::shared_ptr<AssetHandle> AssetCache::load_asset(const Asset &asset)
   const auto asset_loader_iter = asset_loaders_.find(asset.type());
   if (asset_loader_iter == asset_loaders_.end())
   {
-    LOG_WARN() << "No such asset loader " + asset.type();
+    DC_LOG_WARN() << "No such asset loader " + asset.type();
     return nullptr;
   }
 
@@ -45,3 +48,5 @@ std::shared_ptr<AssetHandle> AssetCache::load_asset(const Asset &asset)
   asset_cache_[asset.id()] = asset_handle;
   return asset_handle;
 }
+
+} // namespace dc

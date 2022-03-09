@@ -10,9 +10,11 @@
 #include "math.hpp"
 #include "mesh.hpp"
 #include "point_light.hpp"
-#include "sky.hpp"
 
 #include <memory>
+
+namespace dc
+{
 
 struct MeshInfo
 {
@@ -174,3 +176,5 @@ private:
   void init_cube();
   void render_cube();
 };
+
+} // namespace dc

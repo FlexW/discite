@@ -10,6 +10,9 @@
 #include <variant>
 #include <vector>
 
+namespace dc
+{
+
 enum class AttachmentType
 {
   Texture,
@@ -71,3 +74,5 @@ private:
   GlFramebuffer(GlFramebuffer &&other)       = delete;
   void operator=(GlFramebuffer &&other) = delete;
 };
+
+} // namespace dc

@@ -7,6 +7,9 @@
 
 #include <memory>
 
+namespace dc
+{
+
 class EntityPanel : public ImGuiPanel
 {
 public:
@@ -23,3 +26,5 @@ private:
   bool on_entity_selected(const EntitySelectedEvent &event);
   bool on_scene_unloaded(const SceneUnloadedEvent &event);
 };
+
+} // namespace dc

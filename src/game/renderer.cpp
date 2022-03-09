@@ -11,6 +11,9 @@
 #include <memory>
 #include <optional>
 
+namespace dc
+{
+
 void SceneRenderInfo::add_mesh(const MeshInfo &mesh_info)
 {
   meshes_.push_back(mesh_info);
@@ -827,3 +830,5 @@ void Renderer::render_cube()
   glDrawArrays(GL_TRIANGLES, 0, 36);
   glBindVertexArray(0);
 }
+
+} // namespace dc

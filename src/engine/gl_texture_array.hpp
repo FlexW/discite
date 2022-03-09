@@ -5,6 +5,9 @@
 #include <optional>
 #include <vector>
 
+namespace dc
+{
+
 struct TextureArrayData
 {
   TextureArrayData(GLenum sized_format,
@@ -60,3 +63,5 @@ private:
   GlTextureArray(GlTextureArray &&)      = delete;
   void operator=(GlTextureArray &&) = delete;
 };
+
+} // namespace dc

@@ -5,6 +5,9 @@
 #include "system.hpp"
 #include "window.hpp"
 
+namespace dc
+{
+
 class CameraSystem : public System
 {
 public:
@@ -27,3 +30,5 @@ private:
   bool on_mouse_movement(const MouseMovementEvent &event);
   bool on_window_resize(const WindowResizeEvent &event);
 };
+
+} // namespace dc

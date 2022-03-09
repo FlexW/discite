@@ -2,6 +2,9 @@
 
 #include <cstdint>
 
+namespace dc
+{
+
 using EventId = std::uint64_t;
 
 class Event
@@ -15,3 +18,5 @@ public:
 private:
   EventId id_{};
 };
+
+} // namespace dc

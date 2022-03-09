@@ -7,6 +7,9 @@
 #include <filesystem>
 #include <memory>
 
+namespace dc
+{
+
 class EnvMapAssetHandle : public AssetHandle
 {
 public:
@@ -23,3 +26,5 @@ private:
 std::shared_ptr<AssetHandle>
 env_map_asset_loader(const std::filesystem::path &file_path,
                      const Asset                 &asset);
+
+} // namespace dc

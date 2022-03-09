@@ -7,6 +7,9 @@
 
 #include <memory>
 
+namespace dc
+{
+
 class GameLayer : public Layer
 {
 public:
@@ -30,3 +33,5 @@ private:
   std::shared_ptr<SceneAssetHandle> scene_{};
   std::shared_ptr<Renderer> renderer_;
 };
+
+} // namespace dc

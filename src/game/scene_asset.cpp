@@ -5,6 +5,9 @@
 
 #include <stdexcept>
 
+namespace dc
+{
+
 SceneAssetHandle::SceneAssetHandle(const std::filesystem::path &file_path,
                                    const Asset                 &asset)
     : AssetHandle{asset},
@@ -17,7 +20,7 @@ SceneAssetHandle::SceneAssetHandle(const std::filesystem::path &file_path,
   }
   catch (const std::runtime_error &error)
   {
-    LOG_WARN() << "Could not load scene asset " << file_path.string();
+    DC_LOG_WARN() << "Could not load scene asset " << file_path.string();
   }
 }
 
@@ -38,3 +41,5 @@ scene_asset_loader(const std::filesystem::path &file_path, const Asset &asset)
 {
   return std::make_shared<SceneAssetHandle>(file_path, asset);
 }
+
+} // namespace dc

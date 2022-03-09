@@ -9,6 +9,9 @@
 #include <memory>
 #include <vector>
 
+namespace dc
+{
+
 class DebugDraw
 {
 public:
@@ -31,3 +34,5 @@ private:
   std::shared_ptr<GlVertexBuffer>     lines_vertex_buffer_;
   std::shared_ptr<GlVertexBuffer>     colors_vertex_buffer_;
 };
+
+} // namespace dc

@@ -6,6 +6,9 @@
 #include <sys/time.h>
 #endif // WIN32
 
+namespace dc
+{
+
 std::int64_t current_time_millis()
 {
 #ifdef WIN32
@@ -18,3 +21,5 @@ std::int64_t current_time_millis()
   return ret;
 #endif // WIN32
 }
+
+} // namespace dc

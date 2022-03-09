@@ -2,6 +2,9 @@
 
 #include "camera.hpp"
 
+namespace dc
+{
+
 struct CameraComponent
 {
   bool   active_{true};
@@ -13,3 +16,5 @@ struct CameraComponent
   void save(FILE *file) const;
   void read(FILE *file);
 };
+
+} // namespace dc

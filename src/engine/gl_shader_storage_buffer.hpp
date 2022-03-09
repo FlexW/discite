@@ -5,6 +5,9 @@
 #include <cstring>
 #include <vector>
 
+namespace dc
+{
+
 class GlShaderStorageBuffer
 {
 public:
@@ -53,3 +56,5 @@ public:
 private:
   GLuint id_{};
 };
+
+} // namespace dc

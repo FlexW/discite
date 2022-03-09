@@ -1,6 +1,9 @@
 #include "camera.hpp"
 #include "serialization.hpp"
 
+namespace dc
+{
+
 Camera::Camera()
 {
   update_camera_vectors();
@@ -194,3 +197,5 @@ void Camera::read(FILE *file)
   read_value(file, aspect_ratio_);
   read_value(file, projection_matrix_);
 }
+
+} // namespace dc

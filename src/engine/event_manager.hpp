@@ -6,6 +6,9 @@
 #include <memory>
 #include <queue>
 
+namespace dc
+{
+
 class EventManager
 {
 public:
@@ -15,3 +18,5 @@ public:
 private:
   std::queue<std::shared_ptr<Event>> events_;
 };
+
+} // namespace dc

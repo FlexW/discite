@@ -2,6 +2,9 @@
 
 #include <cctype>
 
+namespace dc
+{
+
 std::filesystem::path sanitize_file_path(const std::filesystem::path &file_path)
 {
   std::string file_path_str{file_path.parent_path() / file_path.stem()};
@@ -19,3 +22,5 @@ std::filesystem::path sanitize_file_path(const std::filesystem::path &file_path)
 
   return (file_path_str + file_path.extension().string());
 }
+
+} // namespace dc

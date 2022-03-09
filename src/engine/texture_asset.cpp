@@ -9,6 +9,9 @@
 #include <filesystem>
 #include <stdexcept>
 
+namespace dc
+{
+
 TextureAssetHandle::TextureAssetHandle(const std::filesystem::path &file_path,
                                        const Asset                 &asset)
     : AssetHandle(asset)
@@ -39,7 +42,7 @@ TextureAssetHandle::TextureAssetHandle(const std::filesystem::path &file_path,
   }
   catch (const std::runtime_error &error)
   {
-    LOG_WARN() << "Could not load texture asset " << file_path.string() << ": "
+    DC_LOG_WARN() << "Could not load texture asset " << file_path.string() << ": "
                << error.what();
   }
 }
@@ -53,3 +56,5 @@ texture_asset_loader(const std::filesystem::path &file_path, const Asset &asset)
 }
 
 std::shared_ptr<GlTexture> TextureAssetHandle::get() const { return texture_; }
+
+} // namespace dc

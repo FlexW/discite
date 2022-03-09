@@ -7,6 +7,7 @@
 
 namespace
 {
+using namespace dc;
 
 void update_transform_matrix(Entity entity, const glm::mat4 &parent_transform)
 {
@@ -30,6 +31,9 @@ void update_transform_matrix(Entity entity, const glm::mat4 &parent_transform)
 }
 
 } // namespace
+
+namespace dc
+{
 
 Entity::Entity(entt::entity entity_handle, std::weak_ptr<Scene> scene)
     : entity_handle_{entity_handle},
@@ -341,3 +345,5 @@ bool Entity::has_childs() const
 bool Entity::operator!=(const Entity &other) const { return !(*this == other); }
 
 bool Entity::valid() const { return entity_handle_ != entt::null; }
+
+} // namespace dc

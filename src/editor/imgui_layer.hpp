@@ -10,6 +10,9 @@
 #include <memory>
 #include <vector>
 
+namespace dc
+{
+
 class ImGuiLayer : public Layer
 {
 public:
@@ -36,3 +39,5 @@ private:
 
   void render_panels();
 };
+
+} // namespace dc

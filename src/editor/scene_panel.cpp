@@ -13,6 +13,9 @@
 #include <memory>
 #include <string>
 
+namespace dc
+{
+
 EventId EntitySelectedEvent::id = 0x5832c140;
 
 EntitySelectedEvent::EntitySelectedEvent(Entity entity)
@@ -106,3 +109,5 @@ void ScenePanel::draw_entity_node(Entity entity)
     ImGui::TreePop();
   }
 }
+
+} // namespace dc

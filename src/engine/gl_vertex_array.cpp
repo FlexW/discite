@@ -2,6 +2,9 @@
 
 #include <cassert>
 
+namespace dc
+{
+
 GlVertexArray::GlVertexArray() { glCreateVertexArrays(1, &id_); }
 
 GlVertexArray::~GlVertexArray() { glDeleteVertexArrays(1, &id_); }
@@ -27,11 +30,6 @@ void GlVertexArray::add_vertex_buffer(
     switch (layout_element.type)
     {
     case GL_FLOAT:
-      // glVertexAttribFormat(binding_point,
-      //                      layout_element.count,
-      //                      GL_FLOAT,
-      //                      GL_FALSE,
-      //                      offset);
       glVertexAttribPointer(binding_point,
                             layout_element.count,
                             layout_element.type,
@@ -41,10 +39,6 @@ void GlVertexArray::add_vertex_buffer(
       break;
 
     case GL_INT:
-      // glVertexAttribIFormat(binding_point,
-      //                       layout_element.count,
-      //                       GL_INT,
-      //                       offset);
       glVertexAttribIPointer(binding_point,
                              layout_element.count,
                              GL_INT,
@@ -56,12 +50,6 @@ void GlVertexArray::add_vertex_buffer(
       assert(0 && "Can not handle Glsl type");
     }
 
-    //   glBindVertexBuffer(binding_point,
-    //                      vertex_buffer->id(),
-    //                      offset,
-    //                      layout.size());
-
-    //   glVertexAttribBinding(binding_point, binding_point);
     offset += layout_element.size;
   }
 
@@ -98,3 +86,5 @@ GLsizei GlVertexArray::vertex_count() const
   }
   return 0;
 }
+
+} // namespace dc

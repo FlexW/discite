@@ -8,6 +8,9 @@
 #include <memory>
 #include <unordered_map>
 
+namespace dc
+{
+
 using AssetLoader =
     std::function<std::shared_ptr<AssetHandle>(const std::filesystem::path &,
                                                const Asset &asset)>;
@@ -24,3 +27,5 @@ private:
   std::unordered_map<std::string, AssetLoader>                  asset_loaders_;
   std::unordered_map<std::string, std::shared_ptr<AssetHandle>> asset_cache_;
 };
+
+} // namespace dc

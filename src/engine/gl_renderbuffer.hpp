@@ -2,6 +2,9 @@
 
 #include "gl.hpp"
 
+namespace dc
+{
+
 class GlRenderbuffer
 {
 public:
@@ -24,3 +27,5 @@ private:
   GlRenderbuffer(GlRenderbuffer &&other)      = delete;
   void operator=(GlRenderbuffer &&other) = delete;
 };
+
+} // namespace dc

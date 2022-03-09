@@ -7,6 +7,9 @@
 
 #include <set>
 
+namespace dc
+{
+
 struct MeshImportData
 {
   std::filesystem::path base_path_;
@@ -24,3 +27,5 @@ void do_import_mesh(const aiScene  *ai_scene,
 
 void import_mesh_asset(const std::filesystem::path &file_path,
                        const std::string           &name);
+
+} // namespace dc

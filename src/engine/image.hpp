@@ -6,6 +6,9 @@
 #include <filesystem>
 #include <vector>
 
+namespace dc
+{
+
 enum class ImageType
 {
   TwoD,
@@ -72,3 +75,5 @@ private:
 
 Image convert_equirectangular_map_to_vertical_cross(const Image &b);
 Image convert_vertical_cross_to_cube_map_faces(const Image &b);
+
+} // namespace dc

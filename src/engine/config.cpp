@@ -6,6 +6,9 @@
 #include <stdexcept>
 #include <string>
 
+namespace dc
+{
+
 void Config::load_config(const std::filesystem::path &file_path)
 {
   std::ifstream ifs(file_path);
@@ -149,3 +152,5 @@ std::string Config::config_value_string(const std::string &section,
   }
   return default_value;
 }
+
+} // namespace dc

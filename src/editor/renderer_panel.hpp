@@ -5,6 +5,9 @@
 
 #include <memory>
 
+namespace dc
+{
+
 class RendererPanel : public ImGuiPanel
 {
 public:
@@ -20,3 +23,5 @@ private:
   void render_general();
   void render_shadows();
 };
+
+} // namespace dc

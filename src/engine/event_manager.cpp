@@ -1,5 +1,8 @@
 #include "event_manager.hpp"
 
+namespace dc
+{
+
 void EventManager::publish(std::shared_ptr<Event> event)
 {
   // queue the event
@@ -16,3 +19,5 @@ void EventManager::dispatch(std::function<void(const Event &)> dispatch_func)
     dispatch_func(*event);
   }
 }
+
+} // namespace dc

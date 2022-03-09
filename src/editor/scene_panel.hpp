@@ -7,6 +7,9 @@
 
 #include <memory>
 
+namespace dc
+{
+
 class EntitySelectedEvent : public Event
 {
 public:
@@ -34,3 +37,5 @@ private:
 
   void draw_entity_node(Entity entity);
 };
+
+} // namespace dc

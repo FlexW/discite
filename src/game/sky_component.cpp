@@ -3,6 +3,9 @@
 #include "env_map_asset.hpp"
 #include "serialization.hpp"
 
+namespace dc
+{
+
 void SkyComponent::save(FILE *file) const
 {
   std::string asset_name;
@@ -27,3 +30,5 @@ void SkyComponent::read(FILE *file)
     environment_ = nullptr;
   }
 }
+
+} // namespace dc

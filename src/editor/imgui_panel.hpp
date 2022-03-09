@@ -3,6 +3,9 @@
 #include "event.hpp"
 #include "imgui.hpp"
 
+namespace dc
+{
+
 class ImGuiPanel
 {
 public:
@@ -26,3 +29,5 @@ private:
   virtual ImGuiWindowFlags on_before_render();
   virtual void on_after_render();
 };
+
+} // namespace dc

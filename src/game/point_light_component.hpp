@@ -2,6 +2,9 @@
 
 #include "math.hpp"
 
+namespace dc
+{
+
 struct PointLightComponent
 {
   glm::vec3 color_{1.0f};
@@ -13,3 +16,5 @@ struct PointLightComponent
   void save(FILE *file) const;
   void read(FILE *file);
 };
+
+} // namespace dc

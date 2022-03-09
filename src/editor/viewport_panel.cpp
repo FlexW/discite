@@ -15,6 +15,9 @@
 
 #include <memory>
 
+namespace dc
+{
+
 ViewportPanel::ViewportPanel() : ImGuiPanel{"Viewport"} {}
 
 void ViewportPanel::update(float delta_time) { move_editor_camera(delta_time); }
@@ -369,3 +372,5 @@ void ViewportPanel::set_renderer(std::shared_ptr<Renderer> renderer)
 {
   renderer_ = renderer;
 }
+
+} // namespace dc

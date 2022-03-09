@@ -1,8 +1,11 @@
 #pragma once
 
-#include <glad/glad.h>
+#include "gl.hpp"
 
 #include <filesystem>
+
+namespace dc
+{
 
 class GlTexture
 {
@@ -40,4 +43,4 @@ private:
   void operator=(GlTexture &&) = delete;
 };
 
-int calc_mipmap_levels_2d(int width, int height);
+} // namespace dc

@@ -28,11 +28,12 @@
 
 namespace
 {
+using namespace dc;
+
 glm::vec3 to_glm(const aiVector3t<float> &value)
 {
   return {value.x, value.y, value.z};
 }
-} // namespace
 
 std::string import_texture(aiMaterial     *ai_material,
                            aiTextureType   ai_texture_type,
@@ -45,7 +46,7 @@ std::string import_texture(aiMaterial     *ai_material,
   }
   else if (texture_count > 1)
   {
-    LOG_WARN()
+    DC_LOG_WARN()
         << "Mesh has more than one texture defined. Can just handle one.";
   }
 
@@ -105,7 +106,7 @@ std::string import_texture(aiMaterial     *ai_material,
   }
   catch (const std::runtime_error &error)
   {
-    LOG_WARN() << "Could not import texture: " << error.what();
+    DC_LOG_WARN() << "Could not import texture: " << error.what();
   }
 
   return imported_file_path;
@@ -144,7 +145,7 @@ std::string import_material(const aiScene  *ai_scene,
   }
   import_data.materials_.insert(material_import_file_path);
 
-  LOG_DEBUG() << "Import material " << material_import_file_path;
+  DC_LOG_DEBUG() << "Import material " << material_import_file_path;
 
   MaterialDescription material_description{};
 
@@ -246,6 +247,11 @@ std::string import_material(const aiScene  *ai_scene,
   return material_import_file_path;
 }
 
+} // namespace
+
+namespace dc
+{
+
 void do_import_mesh(const aiScene  *ai_scene,
                     const aiMesh   *ai_mesh,
                     aiMatrix4x4    &transform,
@@ -287,7 +293,7 @@ void do_import_mesh(const aiScene  *ai_scene,
 
     if (ai_mesh->HasTextureCoords(1))
     {
-      LOG_WARN()
+      DC_LOG_WARN()
           << "Vertex has more than one texture coordinate. Only one texture "
              "coordinate per vertex will be extracted.";
     }
@@ -296,7 +302,7 @@ void do_import_mesh(const aiScene  *ai_scene,
   }
 
   // Load indices
-  LOG_DEBUG() << "Load " << ai_mesh->mNumFaces << " faces in mesh "
+  DC_LOG_DEBUG() << "Load " << ai_mesh->mNumFaces << " faces in mesh "
               << ai_mesh->mName.C_Str();
 
   std::vector<std::uint32_t> indices;
@@ -351,7 +357,7 @@ void do_import_meshes(const aiScene  *ai_scene,
   {
     auto              ai_mesh   = ai_scene->mMeshes[ai_node->mMeshes[i]];
     const std::string mesh_name = ai_mesh->mName.C_Str();
-    LOG_DEBUG() << "Found mesh " << mesh_name << " in node "
+    DC_LOG_DEBUG() << "Found mesh " << mesh_name << " in node "
                 << ai_node->mName.C_Str();
 
     do_import_mesh(ai_scene, ai_mesh, transform, import_data);
@@ -381,7 +387,7 @@ void import_mesh(const aiScene *ai_scene, MeshImportData &import_data)
 void import_mesh_asset(const std::filesystem::path &file_path,
                        const std::string           &name)
 {
-  LOG_DEBUG() << "Import mesh from file " << file_path.string().c_str();
+  DC_LOG_DEBUG() << "Import mesh from file " << file_path.string().c_str();
 
   Assimp::Importer importer;
   const auto       ai_scene = importer.ReadFile(
@@ -413,3 +419,5 @@ void import_mesh_asset(const std::filesystem::path &file_path,
   import_data.base_path_ = file_path.parent_path();
   import_mesh(ai_scene, import_data);
 }
+
+} // namespace dc

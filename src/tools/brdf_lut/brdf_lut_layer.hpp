@@ -4,6 +4,9 @@
 
 #include <array>
 
+namespace dc
+{
+
 class BrdfLutLayer : public Layer
 {
 public:
@@ -22,3 +25,5 @@ private:
                                              brdf_height};
   std::array<float, buffer_size>  lut_data_;
 };
+
+} // namespace dc

@@ -1,10 +1,13 @@
 #include "image.hpp"
 #include "math.hpp"
 
-#include <cstring>
 #include <stb_image.h>
 
+#include <cstring>
 #include <stdexcept>
+
+namespace
+{
 
 glm::vec3 face_coords_to_xyz(int i, int j, int faceID, int faceSize)
 {
@@ -38,6 +41,11 @@ glm::vec3 face_coords_to_xyz(int i, int j, int faceID, int faceSize)
 
   return {};
 }
+
+} // namespace
+
+namespace dc
+{
 
 Image convert_equirectangular_map_to_vertical_cross(const Image &b)
 {
@@ -365,3 +373,5 @@ int Image::bytes_per_component() const
 {
   return (format_ == ImageFormat::Float ? sizeof(float) : sizeof(std::uint8_t));
 }
+
+} // namespace dc

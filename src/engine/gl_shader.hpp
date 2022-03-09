@@ -4,12 +4,13 @@
 #include "gl_vertex_buffer.hpp"
 #include "math.hpp"
 
-#include <glad/glad.h>
-
 #include <filesystem>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
+
+namespace dc
+{
 
 class GlShader
 {
@@ -65,3 +66,5 @@ private:
 
   void dump_shader_info();
 };
+
+} // namespace dc
