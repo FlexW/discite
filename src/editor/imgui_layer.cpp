@@ -2,12 +2,15 @@
 #include "engine.hpp"
 #include "imgui.h"
 #include "imgui.hpp"
+#include "log.hpp"
 #include "util.hpp"
 #include "window.hpp"
 
 #include <ImGuizmo.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+
+#include <filesystem>
 
 namespace dc
 {
@@ -18,6 +21,17 @@ void ImGuiLayer::init()
   ImGui::CreateContext();
 
   auto &io = ImGui::GetIO();
+
+  const auto config    = Engine::instance()->config();
+  const auto font_size = config->config_value_int("General", "font_size", 16);
+  io.Fonts->AddFontFromFileTTF("data/roboto_regular.ttf", font_size);
+
+  io.IniFilename = "data/editor_imgui.ini";
+  if (!std::filesystem::exists(io.IniFilename))
+  {
+    DC_LOG_WARN("ImGui editor ini file does not exist at {}", io.IniFilename);
+  }
+
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
   io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
