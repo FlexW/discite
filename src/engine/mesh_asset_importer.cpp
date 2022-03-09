@@ -46,8 +46,7 @@ std::string import_texture(aiMaterial     *ai_material,
   }
   else if (texture_count > 1)
   {
-    DC_LOG_WARN()
-        << "Mesh has more than one texture defined. Can just handle one.";
+    DC_LOG_WARN("Mesh has more than one texture defined. Can just handle one.");
   }
 
   aiString path{};
@@ -106,7 +105,7 @@ std::string import_texture(aiMaterial     *ai_material,
   }
   catch (const std::runtime_error &error)
   {
-    DC_LOG_WARN() << "Could not import texture: " << error.what();
+    DC_LOG_WARN("Could not import texture: {}", error.what());
   }
 
   return imported_file_path;
@@ -145,7 +144,7 @@ std::string import_material(const aiScene  *ai_scene,
   }
   import_data.materials_.insert(material_import_file_path);
 
-  DC_LOG_DEBUG() << "Import material " << material_import_file_path;
+  DC_LOG_DEBUG("Import material ", material_import_file_path.string());
 
   MaterialDescription material_description{};
 
@@ -293,17 +292,18 @@ void do_import_mesh(const aiScene  *ai_scene,
 
     if (ai_mesh->HasTextureCoords(1))
     {
-      DC_LOG_WARN()
-          << "Vertex has more than one texture coordinate. Only one texture "
-             "coordinate per vertex will be extracted.";
+      DC_LOG_WARN(
+          "Vertex has more than one texture coordinate. Only one texture "
+          "coordinate per vertex will be extracted.");
     }
 
     vertices.push_back(vertex);
   }
 
   // Load indices
-  DC_LOG_DEBUG() << "Load " << ai_mesh->mNumFaces << " faces in mesh "
-              << ai_mesh->mName.C_Str();
+  DC_LOG_DEBUG("Load {} faces in mesh {}",
+               ai_mesh->mNumFaces,
+               ai_mesh->mName.C_Str());
 
   std::vector<std::uint32_t> indices;
   indices.reserve(ai_mesh->mNumFaces * 3);
@@ -357,8 +357,7 @@ void do_import_meshes(const aiScene  *ai_scene,
   {
     auto              ai_mesh   = ai_scene->mMeshes[ai_node->mMeshes[i]];
     const std::string mesh_name = ai_mesh->mName.C_Str();
-    DC_LOG_DEBUG() << "Found mesh " << mesh_name << " in node "
-                << ai_node->mName.C_Str();
+    DC_LOG_DEBUG("Found mesh {} in node {}", mesh_name, ai_node->mName.C_Str());
 
     do_import_mesh(ai_scene, ai_mesh, transform, import_data);
   }
@@ -387,7 +386,7 @@ void import_mesh(const aiScene *ai_scene, MeshImportData &import_data)
 void import_mesh_asset(const std::filesystem::path &file_path,
                        const std::string           &name)
 {
-  DC_LOG_DEBUG() << "Import mesh from file " << file_path.string().c_str();
+  DC_LOG_DEBUG("Import mesh from file {}", file_path.string());
 
   Assimp::Importer importer;
   const auto       ai_scene = importer.ReadFile(

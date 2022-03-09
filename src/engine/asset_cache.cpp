@@ -22,7 +22,7 @@ std::shared_ptr<AssetHandle> AssetCache::load_asset(const Asset &asset)
 {
   if (asset.type().empty())
   {
-    DC_LOG_DEBUG() << "Trying to load an invalid asset";
+    DC_LOG_DEBUG("Trying to load an invalid asset");
     return nullptr;
   }
   // check if asset already loaded and if yes, load it from cache
@@ -36,7 +36,7 @@ std::shared_ptr<AssetHandle> AssetCache::load_asset(const Asset &asset)
   const auto asset_loader_iter = asset_loaders_.find(asset.type());
   if (asset_loader_iter == asset_loaders_.end())
   {
-    DC_LOG_WARN() << "No such asset loader " + asset.type();
+    DC_LOG_WARN("No such asset loader {}", asset.type());
     return nullptr;
   }
 

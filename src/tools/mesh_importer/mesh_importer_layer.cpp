@@ -40,7 +40,7 @@ void MeshImporterLayer::init()
   }
   catch (const std::runtime_error &error)
   {
-    DC_LOG_ERROR() << "Error while importing mesh " << error.what();
+    DC_LOG_ERROR("Error while importing mesh {}", error.what());
   }
 }
 

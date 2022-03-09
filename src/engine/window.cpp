@@ -19,8 +19,7 @@ constexpr auto opengl_version_minor = 6;
 
 void glfw_error_callback(int error_code, const char *description)
 {
-  DC_LOG_ERROR() << "GLFW Error code: " << error_code
-              << " Description: " << description;
+  DC_LOG_ERROR("GLFW Error code: {} Description: {}", error_code, description);
 }
 
 void APIENTRY gl_debug_callback(GLenum source,
@@ -93,33 +92,50 @@ void APIENTRY gl_debug_callback(GLenum source,
   switch (severity)
   {
   case GL_DEBUG_SEVERITY_HIGH:
-    DC_LOG_ERROR() << source_str << " Type: " << type_str << " Id: " << id
-                << " Message: " << msg;
+    DC_LOG_ERROR("{} Type: {} Id: {} Message: {}",
+                 source_str,
+                 type_str,
+                 id,
+                 msg);
     break;
   case GL_DEBUG_SEVERITY_MEDIUM:
-    DC_LOG_WARN() << source_str << " Type: " << type_str << " Id: " << id
-               << " Message: " << msg;
+    DC_LOG_WARN("{} Type: {} Id: {} Message: {}",
+                source_str,
+                type_str,
+                id,
+                msg);
     break;
   case GL_DEBUG_SEVERITY_LOW:
-    DC_LOG_WARN() << source_str << " Type: " << type_str << " Id: " << id
-               << " Message: " << msg;
+    DC_LOG_WARN("{} Type: {} Id: {} Message: {}",
+                source_str,
+                type_str,
+                id,
+                msg);
     break;
   case GL_DEBUG_SEVERITY_NOTIFICATION:
-    DC_LOG_DEBUG() << source_str << " Type: " << type_str << " Id: " << id
-                << " Message: " << msg;
+    DC_LOG_DEBUG("{} Type: {} Id: {} Message: {}",
+                 source_str,
+                 type_str,
+                 id,
+                 msg);
     break;
   default:
-    DC_LOG_WARN() << source_str << " Type: " << type_str << " Id: " << id
-               << " Message: " << msg;
+    DC_LOG_WARN("{} Type: {} Id: {} Message: {}",
+                source_str,
+                type_str,
+                id,
+                msg);
   }
 }
 
 void gl_dump_info()
 {
-  const auto renderer     = glGetString(GL_RENDERER);
-  const auto vendor       = glGetString(GL_VENDOR);
-  const auto version      = glGetString(GL_VERSION);
-  const auto glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION);
+  const auto renderer =
+      reinterpret_cast<const char *>(glGetString(GL_RENDERER));
+  const auto vendor  = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
+  const auto version = reinterpret_cast<const char *>(glGetString(GL_VERSION));
+  const auto glsl_version =
+      reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION));
 
   GLint major, minor, samples, sampleBuffers;
   glGetIntegerv(GL_MAJOR_VERSION, &major);
@@ -130,12 +146,12 @@ void gl_dump_info()
   GLint extensions_count = 0;
   glGetIntegerv(GL_NUM_EXTENSIONS, &extensions_count);
 
-  DC_LOG_INFO() << "GL Vendor: " << vendor;
-  DC_LOG_INFO() << "GL Renderer: " << renderer;
-  DC_LOG_INFO() << "GL Version: " << version;
-  DC_LOG_INFO() << "GLSL Version: " << glsl_version;
-  DC_LOG_INFO() << "MSAA samples: " << samples;
-  DC_LOG_INFO() << "MSAA buffers: " << sampleBuffers;
+  DC_LOG_INFO("GL Vendor: {}", vendor);
+  DC_LOG_INFO("GL Renderer: {}", renderer);
+  DC_LOG_INFO("GL Version: {}", version);
+  DC_LOG_INFO("GLSL Version: {}", glsl_version);
+  DC_LOG_INFO("MSAA samples: {}", samples);
+  DC_LOG_INFO("MSAA buffers: {}", sampleBuffers);
 
   std::string extensions;
   for (GLint i = 0; i < extensions_count; ++i)
@@ -151,7 +167,7 @@ void gl_dump_info()
           std::string(", ") + reinterpret_cast<const char *>(extension);
     }
   }
-  DC_LOG_DEBUG() << "GL Extensions: " << extensions;
+  DC_LOG_DEBUG("GL Extensions: {}", extensions);
 }
 
 Key to_key(int key)
@@ -300,7 +316,8 @@ Key to_key(int key)
     return Key::Escape;
   }
 
-  DC_LOG_WARN() << "Unknown GLFW key: " << key;
+  DC_LOG_WARN("Unknown GLFW key: {}", key);
+  DC_FAIL("Unknown GLFW key: {}", key);
 
   return Key::Undefined;
 }
@@ -317,7 +334,8 @@ KeyAction to_key_action(int key_action)
     return KeyAction::Repeat;
   }
 
-  DC_LOG_WARN() << "Unknown GLFW action: " << key_action;
+  DC_LOG_WARN("Unknown GLFW action: {}", key_action);
+  DC_FAIL("Unknown GLFW key action: {}", key_action);
 
   return KeyAction::Undefined;
 }
@@ -332,7 +350,7 @@ MouseButton to_mouse_button(int mouse_button)
     return MouseButton::Right;
   }
 
-  DC_LOG_WARN() << "Unknown GLFW mouse button: " << mouse_button;
+  DC_LOG_WARN("Unknown GLFW mouse button: {}", mouse_button);
   DC_FAIL("Unknown GLFW mouse button: {}", mouse_button);
 
   return MouseButton::Undefined;
@@ -350,7 +368,8 @@ MouseButtonAction to_mouse_button_action(int mouse_button_action)
     return MouseButtonAction::Repeat;
   }
 
-  DC_LOG_WARN() << "Unknown GLFW mouse button action: " << mouse_button_action;
+  DC_LOG_WARN("Unknown GLFW mouse button action: {}", mouse_button_action);
+  DC_FAIL("Unknown GLFW mouse button action: {}", mouse_button_action);
 
   return MouseButtonAction::Undefined;
 }
@@ -726,7 +745,7 @@ Window::Window(bool show_window)
 
   if (!gladLoadGL())
   {
-    DC_LOG_ERROR() << "GLAD could not load OpenGL";
+    DC_LOG_ERROR("GLAD could not load OpenGL");
     return;
   }
 

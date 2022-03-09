@@ -109,3 +109,7 @@ set_property(TARGET rapidjson PROPERTY
 
 # Fmt
 add_subdirectory(deps/src/fmt)
+
+# spdlog
+set(SPDLOG_FMT_EXTERNAL "ON" CACHE STRING "")
+add_subdirectory(deps/src/spdlog)

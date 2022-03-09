@@ -37,8 +37,9 @@ EnvMapAssetHandle::EnvMapAssetHandle(const std::filesystem::path &file_path,
   }
   catch (const std::runtime_error &error)
   {
-    DC_LOG_WARN() << "Could not load env map asset " << file_path.string() << ": "
-               << error.what();
+    DC_LOG_WARN("Could not load env map asset {}: {}",
+                file_path.string(),
+                error.what());
   }
 }
 

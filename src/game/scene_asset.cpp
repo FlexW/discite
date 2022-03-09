@@ -20,7 +20,7 @@ SceneAssetHandle::SceneAssetHandle(const std::filesystem::path &file_path,
   }
   catch (const std::runtime_error &error)
   {
-    DC_LOG_WARN() << "Could not load scene asset " << file_path.string();
+    DC_LOG_WARN("Could not load scene asset {}", file_path.string());
   }
 }
 

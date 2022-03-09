@@ -40,7 +40,7 @@ void SceneImporterLayer::init()
   }
   catch (const std::runtime_error &error)
   {
-    DC_LOG_ERROR() << "Error while importing scene " << error.what();
+    DC_LOG_ERROR("Error while importing scene {}", error.what());
   }
 }
 

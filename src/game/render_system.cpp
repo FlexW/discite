@@ -28,7 +28,7 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
   const auto scene = scene_.lock();
   if (!scene)
   {
-    DC_LOG_WARN() << "Scene is not valid. Will not render meshes";
+    DC_LOG_WARN("Scene is not valid. Will not render meshes");
   }
 
   // add meshes
@@ -93,7 +93,7 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
 
       if (found)
       {
-        DC_LOG_WARN() << "More than one sky is not supported";
+        DC_LOG_WARN("More than one sky is not supported");
         break;
       }
       found = true;
@@ -124,7 +124,7 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
 
       if (found)
       {
-        DC_LOG_WARN() << "More than one directional light is not supported";
+        DC_LOG_WARN("More than one directional light is not supported");
         break;
       }
       found = true;

@@ -127,7 +127,7 @@ namespace dc
 void import_scene_asset(const std::filesystem::path &file_path,
                         const std::string           &name)
 {
-  DC_LOG_DEBUG() << "Import scene from file " << file_path.string().c_str();
+  DC_LOG_DEBUG("Import scene from file {}", file_path.string());
 
   Assimp::Importer importer;
   const auto       ai_scene = importer.ReadFile(

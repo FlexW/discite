@@ -86,7 +86,7 @@ void CameraSystem::render(SceneRenderInfo & /*scene_render_info*/,
 
     if (found)
     {
-      DC_LOG_WARN() << "More than one camera is active";
+      DC_LOG_WARN("More than one camera is active");
       break;
     }
     found = true;

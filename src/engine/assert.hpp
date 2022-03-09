@@ -42,9 +42,9 @@
 
 #else
 
-#define DC_DO_ASSERT(file, line, expr, msg)
-#define DC_ASSERT(expr, msg)
-#define DC_DO_FAIL(file, line, msg)
-#define DC_FAIL(msg)
+#define DC_DO_ASSERT(file, line, expr, msg) (void)0
+#define DC_ASSERT(expr, msg)                (void)0
+#define DC_DO_FAIL(file, line, msg)         (void)0
+#define DC_FAIL(msg)                        (void)0
 
 #endif

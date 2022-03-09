@@ -159,7 +159,7 @@ void GlShader::dump_shader_info()
                  GL_ACTIVE_ATTRIBUTE_MAX_LENGTH,
                  &max_attrib_name_length);
 
-  DC_LOG_DEBUG() << "Active attributes: " << attribs_count;
+  DC_LOG_DEBUG("Active attributes: {}", attribs_count);
   std::vector<GLchar> attrib_name_data(max_attrib_name_length);
   for (GLint i = 0; i < attribs_count; ++i)
   {
@@ -174,8 +174,11 @@ void GlShader::dump_shader_info()
                       &type,
                       attrib_name_data.data());
     std::string attrib_name(attrib_name_data.data(), actual_length);
-    DC_LOG_DEBUG() << "Attribute " << i << " " << attrib_name << " type: " << type
-                << " size: " << array_size;
+    DC_LOG_DEBUG("Attribute {} {} type: {} size: {}",
+                 i,
+                 attrib_name,
+                 type,
+                 array_size);
   }
 
   GLint uniforms_count = 0;
@@ -183,7 +186,7 @@ void GlShader::dump_shader_info()
                           GL_UNIFORM,
                           GL_ACTIVE_RESOURCES,
                           &uniforms_count);
-  DC_LOG_DEBUG() << "Active uniforms: " << uniforms_count;
+  DC_LOG_DEBUG("Active uniforms: {}", uniforms_count);
   for (GLint i = 0; i < uniforms_count; ++i)
   {
     std::array<GLenum, 3> properties = {GL_NAME_LENGTH, GL_TYPE, GL_LOCATION};
@@ -207,7 +210,7 @@ void GlShader::dump_shader_info()
                              name.data());
     name[name.size() - 1] = '\0';
     const auto location   = results[2];
-    DC_LOG_DEBUG() << "Uniform " << location << " " << name;
+    DC_LOG_DEBUG("Uniform {} {}", location, name);
     uniform_locations_[name] = location;
   }
 }
@@ -215,8 +218,8 @@ void GlShader::dump_shader_info()
 void GlShader::init(const std::filesystem::path &vertex_shader_file_path,
                     const std::filesystem::path &fragment_shader_file_path)
 {
-  DC_LOG_INFO() << "Load vertex shader " << vertex_shader_file_path.string();
-  DC_LOG_INFO() << "Load fragment shader " << fragment_shader_file_path.string();
+  DC_LOG_INFO("Load vertex shader {}", vertex_shader_file_path.string());
+  DC_LOG_INFO("Load fragment shader {}", fragment_shader_file_path.string());
 
   // compile shaders
   const auto vertex_shader_id = compile_shader(vertex_shader_file_path);
@@ -235,9 +238,9 @@ void GlShader::init(const std::filesystem::path &vertex_shader_file_path,
                     const std::filesystem::path &geometry_shader_file_path,
                     const std::filesystem::path &fragment_shader_file_path)
 {
-  DC_LOG_INFO() << "Load vertex shader " << vertex_shader_file_path.string();
-  DC_LOG_INFO() << "Load geometry shader " << geometry_shader_file_path.string();
-  DC_LOG_INFO() << "Load fragment shader " << fragment_shader_file_path.string();
+  DC_LOG_INFO("Load vertex shader {}", vertex_shader_file_path.string());
+  DC_LOG_INFO("Load geometry shader {}", geometry_shader_file_path.string());
+  DC_LOG_INFO("Load fragment shader {}", fragment_shader_file_path.string());
 
   // compile shaders
   const auto vertex_shader_id = compile_shader(vertex_shader_file_path);
@@ -259,7 +262,7 @@ void GlShader::init(const std::filesystem::path &vertex_shader_file_path,
 
 void GlShader::init(const std::filesystem::path &compute_shader_file_path)
 {
-  DC_LOG_INFO() << "Load compute shader " << compute_shader_file_path.string();
+  DC_LOG_INFO("Load compute shader {}", compute_shader_file_path.string());
 
   // compile shaders
   const auto compute_shader_id = compile_shader(compute_shader_file_path);
@@ -280,7 +283,7 @@ GLint GlShader::uniform_location(const std::string &name)
     const auto location = glGetUniformLocation(program_id_, name.c_str());
     if (location == -1)
     {
-      DC_LOG_WARN() << "Could not find uniform " << name;
+      DC_LOG_WARN("Could not find uniform {}", name);
     }
     uniform_locations_[name] = location;
     return location;

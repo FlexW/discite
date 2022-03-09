@@ -2,7 +2,12 @@ add_library(engine)
 set_warnings_as_errors(engine)
 
  # We include the GL loader ourselfs
-target_compile_definitions(engine PUBLIC GLFW_INCLUDE_NONE)
+target_compile_definitions(engine PUBLIC
+  GLFW_INCLUDE_NONE
+  SPDLOG_ACTIVE_LEVEL=0)
+if(NOT CMAKE_BUILD_TYPE MATCHES RELEASE)
+  target_compile_definitions(engine PUBLIC DC_ENABLE_ASSERT)
+endif()
 
 target_include_directories(engine PUBLIC .)
 
@@ -26,7 +31,6 @@ target_sources(engine PRIVATE
   gl_vertex_array.cpp
   gl.cpp
   image.cpp
-  log.cpp
   string.cpp
   time.cpp
   material.cpp
@@ -65,10 +69,7 @@ target_link_libraries(engine PUBLIC
   gli
   rapidjson
   fmt
+  spdlog
   )
 
 target_compile_features(engine PUBLIC cxx_std_17)
-
-if(NOT CMAKE_BUILD_TYPE MATCHES RELEASE)
-  target_compile_definitions(engine PUBLIC DC_ENABLE_ASSERT)
-endif()

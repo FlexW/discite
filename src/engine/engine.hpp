@@ -62,7 +62,7 @@ private:
   void shutdown();
 
   void load_config();
-  void set_log_level();
+  void init_logger();
 
   void register_asset_loaders();
 };

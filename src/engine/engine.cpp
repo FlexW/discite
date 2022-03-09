@@ -5,10 +5,14 @@
 #include "log.hpp"
 #include "material_asset.hpp"
 #include "mesh_asset.hpp"
+#include "spdlog/logger.h"
+#include "spdlog/sinks/ansicolor_sink.h"
 #include "texture_asset.hpp"
 #include "time.hpp"
 #include "window.hpp"
 
+#include <spdlog/common.h>
+#include <spdlog/spdlog.h>
 
 #include <cstdlib>
 #include <memory>
@@ -33,7 +37,7 @@ int Engine::run(int argc, char *argv[], bool show_window)
   }
   catch (const std::runtime_error &error)
   {
-    DC_LOG_ERROR() << "Unhandled exception: " << error.what();
+    DC_LOG_ERROR("Unhandled exception: {}", error.what());
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
@@ -46,42 +50,62 @@ void Engine::push_layer(std::unique_ptr<Layer> layer)
 
 void Engine::load_config()
 {
-  const auto config_file_path = project_path_ / "engine.ini";
+  const auto config_file_path = "data/engine.ini";
   try
   {
     config_->load_config(config_file_path);
   }
   catch (const std::runtime_error &error)
   {
-    DC_LOG_WARN() << "Could not load config from " << config_file_path.string();
+    DC_LOG_WARN("Could not load config from {}", config_file_path);
   }
 }
 
-void Engine::set_log_level()
+void Engine::init_logger()
 {
+  constexpr auto ansi_bold_red = "\033[1;31m";
+  constexpr auto ansi_blue     = "\033[0;34m";
+  constexpr auto ansi_yellow   = "\033[0;33m";
+  constexpr auto ansi_grey     = "\033[0;90m";
+
+  auto sink = std::make_shared<spdlog::sinks::ansicolor_stdout_sink_st>();
+  sink->set_color(spdlog::level::debug, ansi_grey);
+  sink->set_color(spdlog::level::info, ansi_blue);
+  sink->set_color(spdlog::level::warn, ansi_yellow);
+  sink->set_color(spdlog::level::err, ansi_bold_red);
+
+  const auto logger = std::make_shared<spdlog::logger>("default", sink);
+  spdlog::set_default_logger(logger);
+
+  const auto log_pattern =
+      config_->config_value_string("General", "log_pattern", "");
+  if (!log_pattern.empty())
+  {
+    logger->set_pattern(log_pattern);
+  }
 
   const auto debug_level =
       config_->config_value_string("General", "log_level", "debug");
   if (debug_level == "debug")
   {
-    Log::set_reporting_level(LogLevel::Debug);
+    logger->set_level(spdlog::level::debug);
   }
   else if (debug_level == "info")
   {
-    Log::set_reporting_level(LogLevel::Info);
+    logger->set_level(spdlog::level::info);
   }
   else if (debug_level == "warn")
   {
-    Log::set_reporting_level(LogLevel::Warning);
+    logger->set_level(spdlog::level::warn);
   }
   else if (debug_level == "error")
   {
-    Log::set_reporting_level(LogLevel::Error);
+    logger->set_level(spdlog::level::err);
   }
   else
   {
-    DC_LOG_WARN() << "Unknown log level: " << debug_level;
-    Log::set_reporting_level(LogLevel::Debug);
+    DC_LOG_WARN("Unknown log level: {}", debug_level);
+    logger->set_level(spdlog::level::info);
   }
 }
 
@@ -111,7 +135,7 @@ void Engine::init(int argc, char *argv[], bool show_window)
   register_asset_loaders();
   layer_stack_.register_asset_loaders();
   load_config();
-  set_log_level();
+  init_logger();
   window_ = std::make_shared<Window>(show_window);
   layer_stack_.init();
 }
