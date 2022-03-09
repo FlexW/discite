@@ -1,6 +1,8 @@
 #include "cmd_args_parser.hpp"
 #include "assert.hpp"
 
+#include <fmt/core.h>
+
 #include <algorithm>
 #include <cstdlib>
 #include <stdexcept>
@@ -13,12 +15,10 @@ constexpr auto spacer = "  ";
 
 void show_usage(const ArgsParser &args_parser, const char *program_name)
 {
-  std::cout << "Usage:\n";
-  std::cout << "  " << program_name << " <OPTION>...\n\n";
-  std::cout << args_parser.format_help();
-  std::cout << "\nHelp and issue tracker: "
-               "https://github.com/FlexW/discite\n";
-  std::cout << "© 2022 Felix Weilbach" << std::endl;
+  fmt::print("Usage:\n{} <OPTION>...\n\n{}\nHelp and issue tracker: "
+             "https://github.com/FlexW/discite\n© 2022 Felix Weilbach\n",
+             program_name,
+             args_parser.format_help());
 }
 } // namespace
 
