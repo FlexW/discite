@@ -44,7 +44,7 @@ private:
 
   std::shared_ptr<GlTexture> brdf_lut_texture_{};
 
-  float light_size_{10.25f};
+  float light_size_{2.0f};
   float shadow_bias_min_{0.0f};
   bool  smooth_shadows_{true};
   bool  show_shadow_cascades_{false};

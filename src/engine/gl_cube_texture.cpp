@@ -102,8 +102,6 @@ GlCubeTexture::~GlCubeTexture()
   }
 }
 
-void GlCubeTexture::bind() { glBindTexture(GL_TEXTURE_CUBE_MAP, id_); }
-
-void GlCubeTexture::unbind() { glBindTexture(GL_TEXTURE_CUBE_MAP, 0); }
+void GlCubeTexture::bind_unit(int unit) const { glBindTextureUnit(unit, id_); }
 
 } // namespace dc

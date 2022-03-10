@@ -323,8 +323,6 @@ void do_import_mesh(const aiScene  *ai_scene,
   auto material = import_material(ai_scene, ai_mesh, import_data);
 
   auto vertex_array  = std::make_unique<GlVertexArray>();
-  auto vertex_buffer = std::make_shared<GlVertexBuffer>();
-  auto index_buffer  = std::make_shared<GlIndexBuffer>();
 
   GlVertexBufferLayout layout;
   layout.push_float(3); // position
@@ -332,9 +330,9 @@ void do_import_mesh(const aiScene  *ai_scene,
   layout.push_float(3); // tangent
   layout.push_float(3); // bitanget
   layout.push_float(2); // tex coords
-  vertex_buffer->set_data(vertices, layout);
+  auto vertex_buffer = std::make_shared<GlVertexBuffer>(vertices, layout);
 
-  index_buffer->set_data(indices);
+  auto index_buffer = std::make_shared<GlIndexBuffer>(indices);
 
   vertex_array->add_vertex_buffer(vertex_buffer);
   vertex_array->set_index_buffer(index_buffer);

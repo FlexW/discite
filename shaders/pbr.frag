@@ -40,7 +40,7 @@ struct DirectionalLight
 uniform bool directional_light_shadow_enabled = false;
 uniform sampler2DArray directional_light_shadow_tex;
 uniform mat4 light_space_matrices[CASCADES_COUNT];
-uniform float cascades_plane_distances[CASCADES_COUNT];
+uniform float cascades_plane_distances[CASCADES_COUNT - 1];
 uniform bool show_shadow_cascades = false;
 
 uniform sampler2D in_albedo_tex;
@@ -69,7 +69,7 @@ uniform int point_light_count = 0;
 uniform PointLight point_lights[MAX_POINT_LIGHTS_COUNT];
 
 uniform bool smooth_shadows = true;
-uniform float light_size = 10.25f;
+uniform float light_size = 0.25f;
 uniform float shadow_bias_min = 0.003f;
 uniform bool directional_light_enabled = false;
 uniform DirectionalLight directional_light;
@@ -230,14 +230,14 @@ float directional_light_pcss(sampler2DArray shadow_tex,
     float blocker_distance = find_blocker_distance_directional_light(shadow_tex,
                                                                      cascade,
                                                                      shadow_coords);
-    const float uv_radius_max = 0.002f;
+    const float uv_radius_max = 0.005f;
     float uv_radius = uv_radius_max;
     if (blocker_distance != -1.0)
     {
         float penumbra_width = (shadow_coords.z - blocker_distance) / blocker_distance;
 
         const float near = 0.01;
-        float uv_radius = penumbra_width * uv_light_size * near / shadow_coords.z;
+        uv_radius = penumbra_width * uv_light_size * near / shadow_coords.z;
         uv_radius = min(uv_radius, uv_radius_max);
     }
 
@@ -249,19 +249,14 @@ int calc_cascade_index()
 {
     float depth_value = abs(fs_in.position.z);
 
-    int layer = -1;
-    for (int i = 0; i < CASCADES_COUNT; ++i)
+    int layer = CASCADES_COUNT - 1;
+    for (int i = 0; i < CASCADES_COUNT - 1; ++i)
     {
         if (depth_value < cascades_plane_distances[i])
         {
             layer = i;
             break;
         }
-    }
-
-    if (layer == -1)
-    {
-        layer = CASCADES_COUNT;
     }
 
     return layer;

@@ -8,13 +8,13 @@
 namespace dc
 {
 
-struct TextureArrayData
+struct GlTextureArrayConfig
 {
-  TextureArrayData(GLenum sized_format,
-                   GLenum format,
-                   int    width,
-                   int    height,
-                   int    count)
+  GlTextureArrayConfig(GLenum sized_format,
+                       GLenum format,
+                       int    width,
+                       int    height,
+                       int    count)
       : sized_format{sized_format},
 
         format{format},
@@ -45,15 +45,12 @@ struct TextureArrayData
 class GlTextureArray
 {
 public:
-  GlTextureArray();
+  GlTextureArray(const GlTextureArrayConfig &texture_array_data);
   ~GlTextureArray();
 
   GLuint id() const;
 
-  void set_data(const TextureArrayData &texture_array_data);
-
-  void bind();
-  void unbind();
+  void bind_unit(int unit) const;
 
 private:
   GLuint id_{};

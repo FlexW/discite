@@ -8,14 +8,12 @@ namespace dc
 class GlRenderbuffer
 {
 public:
-  GlRenderbuffer();
+  GlRenderbuffer(GLenum internal_format, GLsizei width, GLsizei height);
+  GlRenderbuffer(GLenum  internal_format,
+                 GLsizei samples,
+                 GLsizei width,
+                 GLsizei height);
   ~GlRenderbuffer();
-
-  void set_storage(GLenum internal_format, GLsizei width, GLsizei height);
-  void set_storage_multisample(GLenum  internal_format,
-                               GLsizei samples,
-                               GLsizei width,
-                               GLsizei height);
 
   GLuint id() const;
 

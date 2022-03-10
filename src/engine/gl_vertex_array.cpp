@@ -11,8 +11,11 @@ GlVertexArray::~GlVertexArray() { glDeleteVertexArrays(1, &id_); }
 void GlVertexArray::add_vertex_buffer(
     std::shared_ptr<GlVertexBuffer> vertex_buffer)
 {
-  bind();
-  vertex_buffer->bind();
+  glVertexArrayVertexBuffer(id_,
+                            vertex_buffers_.size(),
+                            vertex_buffer->id(),
+                            0,
+                            vertex_buffer->layout().size());
 
   const auto layout          = vertex_buffer->layout();
   const auto layout_elements = layout.elements();
@@ -22,50 +25,46 @@ void GlVertexArray::add_vertex_buffer(
   for (std::size_t i = 0; i < layout_elements.size(); ++i)
   {
     const auto layout_element = layout_elements[i];
-    const auto binding_point  = vertex_buffers_.size() + i;
 
-    glEnableVertexAttribArray(binding_point);
+    glEnableVertexArrayAttrib(id_, binding_point_);
 
     switch (layout_element.type)
     {
     case GL_FLOAT:
-      glVertexAttribPointer(binding_point,
-                            layout_element.count,
-                            layout_element.type,
-                            false,
-                            layout.size(),
-                            reinterpret_cast<const void *>(offset));
+      glVertexArrayAttribFormat(id_,
+                                binding_point_,
+                                layout_element.count,
+                                layout_element.type,
+                                GL_FALSE,
+                                offset);
       break;
 
     case GL_INT:
-      glVertexAttribIPointer(binding_point,
-                             layout_element.count,
-                             GL_INT,
-                             layout_element.size,
-                             reinterpret_cast<const void *>(offset));
+      glVertexArrayAttribIFormat(id_,
+                                 binding_point_,
+                                 layout_element.count,
+                                 layout_element.type,
+                                 offset);
       break;
 
     default:
       DC_FAIL("Can not handle Glsl type");
     }
 
+    glVertexArrayAttribBinding(id_, binding_point_, vertex_buffers_.size());
+
     offset += layout_element.size;
+    ++binding_point_;
   }
 
   vertex_buffers_.push_back(vertex_buffer);
-
-  vertex_buffer->unbind();
-  unbind();
 }
 
 void GlVertexArray::set_index_buffer(
     std::shared_ptr<GlIndexBuffer> index_buffer)
 {
+  glVertexArrayElementBuffer(id_, index_buffer->id());
   index_buffer_ = index_buffer;
-
-  bind();
-  index_buffer_->bind();
-  unbind();
 }
 
 void GlVertexArray::bind() const { glBindVertexArray(id_); }

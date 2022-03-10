@@ -1,8 +1,12 @@
 #include "forward_pass.hpp"
+#include "gl_texture.hpp"
 #include "gl_texture_array.hpp"
+#include "log.hpp"
 #include "render_pass.hpp"
 #include "shadow_pass.hpp"
 
+#include <algorithm>
+#include <iterator>
 #include <memory>
 
 namespace dc
@@ -11,12 +15,17 @@ namespace dc
 ForwardPass::ForwardPass()
 {
   // dummy/placeholder texture
-  white_texture_ = std::make_shared<GlTexture>();
   std::vector<unsigned char> white_tex_data{255};
-  white_texture_->set_data(white_tex_data.data(), 1, 1, 1, false);
+  GlTextureConfig            white_tex_config{};
+  white_tex_config.data_             = white_tex_data.data();
+  white_tex_config.width_            = 1;
+  white_tex_config.height_           = 1;
+  white_tex_config.format_           = GL_RED;
+  white_tex_config.sized_format_     = GL_R8;
+  white_tex_config.generate_mipmaps_ = false;
+  white_texture_ = std::make_shared<GlTexture>(white_tex_config);
 
-  brdf_lut_texture_ = std::make_shared<GlTexture>();
-  brdf_lut_texture_->load_from_file("data/brdf_lut.ktx", true);
+  brdf_lut_texture_ = GlTexture::load_from_file("data/brdf_lut.ktx");
 
   init_shaders();
 
@@ -38,11 +47,12 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
 
   int global_texture_slot{0};
 
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, 0);
-
   glViewport(0, 0, viewport_info.width_, viewport_info.height_);
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  constexpr std::array<float, 4> clear_color{0.0f, 0.0f, 0.0f, 1.0f};
+  glClearNamedFramebufferfv(scene_framebuffer_->id(),
+                            GL_COLOR,
+                            0,
+                            clear_color.data());
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
   const auto view_matrix = view_render_info.view_matrix();
@@ -52,19 +62,16 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
   mesh_shader_->set_uniform("projection_matrix",
                             view_render_info.projection_matrix());
 
-  glActiveTexture(GL_TEXTURE0 + global_texture_slot);
-  brdf_lut_texture_->bind();
+  brdf_lut_texture_->bind_unit(global_texture_slot);
   mesh_shader_->set_uniform("brdf_lut_tex", global_texture_slot);
   ++global_texture_slot;
 
   const auto &sky = scene_render_info.env_map();
-  glActiveTexture(GL_TEXTURE0 + global_texture_slot);
-  sky.env_texture()->bind();
+  sky.env_texture()->bind_unit(global_texture_slot);
   mesh_shader_->set_uniform("env_tex", global_texture_slot);
   ++global_texture_slot;
 
-  glActiveTexture(GL_TEXTURE0 + global_texture_slot);
-  sky.env_irradiance_texture()->bind();
+  sky.env_irradiance_texture()->bind_unit(global_texture_slot);
   mesh_shader_->set_uniform("env_irradiance_tex", global_texture_slot);
   ++global_texture_slot;
 
@@ -106,23 +113,17 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
                             is_shadows_enabled_);
 
   {
-    for (std::size_t i = 0; i < light_space_matrices.size(); ++i)
-    {
-      mesh_shader_->set_uniform("light_space_matrices[" + std::to_string(i) +
-                                    "]",
-                                light_space_matrices[i]);
-    }
+    mesh_shader_->set_uniform("light_space_matrices[0]", light_space_matrices);
 
     mesh_shader_->set_uniform("show_shadow_cascades", show_shadow_cascades_);
-    for (std::size_t i = 0; i < cascade_frustums.size(); ++i)
-    {
-      mesh_shader_->set_uniform("cascades_plane_distances[" +
-                                    std::to_string(i) + "]",
-                                cascade_frustums[i].far);
-    }
+    std::vector<float> far_planes;
+    std::transform(cascade_frustums.cbegin(),
+                   cascade_frustums.cend(),
+                   std::back_inserter(far_planes),
+                   [](const auto &frustum) { return frustum.far; });
+    mesh_shader_->set_uniform("cascades_plane_distances[0]", far_planes);
 
-    glActiveTexture(GL_TEXTURE0 + global_texture_slot);
-    shadow_tex_array->bind();
+    shadow_tex_array->bind_unit(global_texture_slot);
     mesh_shader_->set_uniform("directional_light_shadow_tex",
                               global_texture_slot);
     ++global_texture_slot;
@@ -139,16 +140,14 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
     if (material->albedo_texture())
     {
       const auto albedo_texture = material->albedo_texture();
-      glActiveTexture(GL_TEXTURE0 + texture_slot);
-      albedo_texture->bind();
+      albedo_texture->bind_unit(texture_slot);
       mesh_shader_->set_uniform("in_albedo_tex", texture_slot);
       mesh_shader_->set_uniform("albedo_tex_enabled", true);
       ++texture_slot;
     }
     else
     {
-      glActiveTexture(GL_TEXTURE0 + texture_slot);
-      white_texture_->bind();
+      white_texture_->bind_unit(texture_slot);
       mesh_shader_->set_uniform("in_albedo_tex", texture_slot);
       mesh_shader_->set_uniform("in_albedo_color", material->albedo_color());
       mesh_shader_->set_uniform("albedo_tex_enabled", false);
@@ -157,16 +156,14 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
     if (material->roughness_texture())
     {
       const auto roughness_texture = material->roughness_texture();
-      glActiveTexture(GL_TEXTURE0 + texture_slot);
-      roughness_texture->bind();
+      roughness_texture->bind_unit(texture_slot);
       mesh_shader_->set_uniform("in_roughness_tex", texture_slot);
       mesh_shader_->set_uniform("roughness_tex_enabled", true);
       ++texture_slot;
     }
     else
     {
-      glActiveTexture(GL_TEXTURE0 + texture_slot);
-      white_texture_->bind();
+      white_texture_->bind_unit(texture_slot);
       mesh_shader_->set_uniform("in_roughness_tex", texture_slot);
       mesh_shader_->set_uniform("in_roughness", material->roughness());
       mesh_shader_->set_uniform("roughness_tex_enabled", false);
@@ -175,16 +172,14 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
     if (material->ambient_occlusion_texture())
     {
       const auto ao_texture = material->ambient_occlusion_texture();
-      glActiveTexture(GL_TEXTURE0 + texture_slot);
-      ao_texture->bind();
+      ao_texture->bind_unit(texture_slot);
       mesh_shader_->set_uniform("in_ao_tex", texture_slot);
       mesh_shader_->set_uniform("ao_tex_enabled", true);
       ++texture_slot;
     }
     else
     {
-      glActiveTexture(GL_TEXTURE0 + texture_slot);
-      white_texture_->bind();
+      white_texture_->bind_unit(texture_slot);
       mesh_shader_->set_uniform("in_ao_tex", texture_slot);
       mesh_shader_->set_uniform("ao_tex_enabled", false);
     }
@@ -192,16 +187,14 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
     if (material->emissive_texture())
     {
       const auto emissive_texture = material->emissive_texture();
-      glActiveTexture(GL_TEXTURE0 + texture_slot);
-      emissive_texture->bind();
+      emissive_texture->bind_unit(texture_slot);
       mesh_shader_->set_uniform("in_emissive_tex", texture_slot);
       mesh_shader_->set_uniform("emissive_tex_enabled", true);
       ++texture_slot;
     }
     else
     {
-      glActiveTexture(GL_TEXTURE0 + texture_slot);
-      white_texture_->bind();
+      white_texture_->bind_unit(texture_slot);
       mesh_shader_->set_uniform("in_emissive_tex", texture_slot);
       mesh_shader_->set_uniform("emissive_tex_enabled", false);
       mesh_shader_->set_uniform("in_emissive_color",
@@ -211,16 +204,14 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
     if (material->normal_texture())
     {
       const auto normal_texture = material->normal_texture();
-      glActiveTexture(GL_TEXTURE0 + texture_slot);
-      normal_texture->bind();
+      normal_texture->bind_unit(texture_slot);
       mesh_shader_->set_uniform("in_normal_tex", texture_slot);
       mesh_shader_->set_uniform("normal_tex_enabled", true);
       ++texture_slot;
     }
     else
     {
-      glActiveTexture(GL_TEXTURE0 + texture_slot);
-      white_texture_->bind();
+      white_texture_->bind_unit(texture_slot);
       mesh_shader_->set_uniform("in_normal_tex", texture_slot);
       mesh_shader_->set_uniform("normal_tex_enabled", false);
     }

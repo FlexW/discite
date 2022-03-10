@@ -10,10 +10,10 @@
 namespace
 {
 
-template <typename T, std::size_t TSize>
-gli::texture convert_lut_to_texture(const std::array<T, TSize> &lut_data,
-                                    std::uint32_t               brdf_width,
-                                    std::uint32_t               brdf_height)
+template <typename T>
+gli::texture convert_lut_to_texture(const std::vector<T> &lut_data,
+                                    std::uint32_t         brdf_width,
+                                    std::uint32_t         brdf_height)
 {
   auto lut_texture = gli::texture2d(gli::FORMAT_RG16_SFLOAT_PACK16,
                                     gli::extent2d(brdf_width, brdf_height),
@@ -26,7 +26,6 @@ gli::texture convert_lut_to_texture(const std::array<T, TSize> &lut_data,
       const std::uint32_t ofs{y * brdf_width + x};
       const gli::vec2     value{lut_data[ofs * 2 + 0], lut_data[ofs * 2 + 1]};
       const gli::texture::extent_type uv{x, y, 0};
-      // DC_LOG_DEBUG() << "Value: " << value;
       lut_texture.store<std::uint32_t>(uv, 0, gli::packHalf2x16(value));
     }
   }
@@ -47,8 +46,7 @@ void BrdfLutLayer::update(float /*delta_time*/) {}
 
 void BrdfLutLayer::render()
 {
-  GlShaderStorageBuffer dst_buffer;
-  dst_buffer.resize(lut_data_.size() * sizeof(float), GL_DYNAMIC_READ);
+  GlShaderStorageBuffer dst_buffer(lut_data_, GL_MAP_READ_BIT);
 
   GlShader shader{"shaders/brdf_lut.comp"};
   shader.bind();

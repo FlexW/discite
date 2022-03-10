@@ -62,6 +62,8 @@ public:
   Attachment depth_attachment() const;
   Attachment stencil_attachment() const;
 
+  GLuint id() const;
+
 private:
   GLuint id_{};
 

@@ -23,7 +23,7 @@ private:
 
   static constexpr std::uint32_t  buffer_size{2 * sizeof(float) * brdf_width *
                                              brdf_height};
-  std::array<float, buffer_size>  lut_data_;
+  std::vector<float>              lut_data_{buffer_size};
 };
 
 } // namespace dc

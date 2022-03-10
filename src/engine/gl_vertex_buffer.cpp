@@ -34,27 +34,24 @@ std::vector<GlVertexBufferLayoutElement> GlVertexBufferLayout::elements() const
 
 std::size_t GlVertexBufferLayout::size() const { return size_; }
 
-GlVertexBuffer::GlVertexBuffer() { glGenBuffers(1, &vertex_buffer_id_); }
-
 GlVertexBuffer::~GlVertexBuffer()
 {
-  if (vertex_buffer_id_)
+  if (id_)
   {
-    glDeleteBuffers(1, &vertex_buffer_id_);
+    glDeleteBuffers(1, &id_);
   }
 }
 
-GLuint GlVertexBuffer::id() const { return vertex_buffer_id_; }
+GLuint GlVertexBuffer::id() const { return id_; }
 
 GlVertexBufferLayout GlVertexBuffer::layout() const { return layout_; }
 
 GLsizei GlVertexBuffer::count() const { return vertex_count_; }
 
-void GlVertexBuffer::bind()
-{
-  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id_);
-}
+void GlVertexBuffer::bind() { glBindBuffer(GL_ARRAY_BUFFER, id_); }
 
 void GlVertexBuffer::unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
+
+std::size_t GlVertexBuffer::size() const { return size_; }
 
 } // namespace dc

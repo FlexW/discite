@@ -50,7 +50,11 @@ void ViewportPanel::on_render()
   {
     // no scene set, black out framebuffer to not have garbage on the screen
     scene_framebuffer_->bind();
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    constexpr std::array<float, 4> clear_color{0.0f, 0.0f, 0.0f, 1.0f};
+    glClearNamedFramebufferfv(scene_framebuffer_->id(),
+                              GL_COLOR,
+                              0,
+                              clear_color.data());
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     scene_framebuffer_->unbind();
   }

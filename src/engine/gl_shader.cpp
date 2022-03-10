@@ -3,7 +3,6 @@
 #include "log.hpp"
 
 #include <array>
-
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -148,9 +147,8 @@ void GlShader::link_shaders(const std::vector<GLuint> &shader_ids)
   check_for_program_link_errors(program_id_);
 }
 
-void GlShader::dump_shader_info()
+void GlShader::load_shader_data()
 {
-
   // Query informations
   GLint attribs_count = 0;
   glGetProgramiv(program_id_, GL_ACTIVE_ATTRIBUTES, &attribs_count);
@@ -182,36 +180,42 @@ void GlShader::dump_shader_info()
   }
 
   GLint uniforms_count = 0;
-  glGetProgramInterfaceiv(program_id_,
-                          GL_UNIFORM,
-                          GL_ACTIVE_RESOURCES,
-                          &uniforms_count);
+  glGetProgramiv(program_id_, GL_ACTIVE_UNIFORMS, &uniforms_count);
   DC_LOG_DEBUG("Active uniforms: {}", uniforms_count);
-  for (GLint i = 0; i < uniforms_count; ++i)
+  if (uniforms_count != 0)
   {
-    std::array<GLenum, 3> properties = {GL_NAME_LENGTH, GL_TYPE, GL_LOCATION};
-    std::array<GLint, 3>  results{};
-    glGetProgramResourceiv(program_id_,
-                           GL_UNIFORM,
-                           i,
-                           properties.size(),
-                           properties.data(),
-                           results.size(),
-                           nullptr,
-                           results.data());
-    std::string name;
-    const auto  name_length = results[0];
-    name.resize(name_length);
-    glGetProgramResourceName(program_id_,
-                             GL_UNIFORM,
-                             i,
-                             name_length,
-                             nullptr,
-                             name.data());
-    name[name.size() - 1] = '\0';
-    const auto location   = results[2];
-    DC_LOG_DEBUG("Uniform {} {}", location, name);
-    uniform_locations_[name] = location;
+    GLint max_name_len{0};
+    glGetProgramiv(program_id_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_name_len);
+    std::vector<char> uniform_name(max_name_len);
+    for (GLint i = 0; i < uniforms_count; ++i)
+    {
+      GLsizei length{0};
+      GLsizei count{0};
+      GLenum  type{GL_NONE};
+      glGetActiveUniform(program_id_,
+                         i,
+                         max_name_len,
+                         &length,
+                         &count,
+                         &type,
+                         uniform_name.data());
+
+      const auto location =
+          glGetUniformLocation(program_id_, uniform_name.data());
+
+      UniformInfo uniform_info{};
+      uniform_info.location = location;
+      uniform_info.count    = count;
+
+      uniforms_[std::string{uniform_name.data(),
+                            static_cast<std::size_t>(length)}] = uniform_info;
+
+      DC_LOG_DEBUG("Uniform {}:{} {} : {}",
+                   location,
+                   count,
+                   uniform_name.data(),
+                   type);
+    }
   }
 }
 
@@ -231,7 +235,7 @@ void GlShader::init(const std::filesystem::path &vertex_shader_file_path,
   // link the shaders together
   link_shaders(std::vector<GLuint>{vertex_shader_id, fragment_shader_id});
 
-  dump_shader_info();
+  load_shader_data();
 }
 
 void GlShader::init(const std::filesystem::path &vertex_shader_file_path,
@@ -257,7 +261,7 @@ void GlShader::init(const std::filesystem::path &vertex_shader_file_path,
                                    geometry_shader_id,
                                    fragment_shader_id});
 
-  dump_shader_info();
+  load_shader_data();
 }
 
 void GlShader::init(const std::filesystem::path &compute_shader_file_path)
@@ -269,6 +273,7 @@ void GlShader::init(const std::filesystem::path &compute_shader_file_path)
   defer(glDeleteShader(compute_shader_id));
 
   link_shaders(std::vector<GLuint>{compute_shader_id});
+  load_shader_data();
 }
 
 void GlShader::bind() { glUseProgram(program_id_); }
@@ -277,18 +282,13 @@ void GlShader::unbind() { glUseProgram(0); }
 
 GLint GlShader::uniform_location(const std::string &name)
 {
-  const auto iter = uniform_locations_.find(name);
-  if (iter == uniform_locations_.end())
+  const auto iter = uniforms_.find(name);
+  if (iter == uniforms_.end())
   {
-    const auto location = glGetUniformLocation(program_id_, name.c_str());
-    if (location == -1)
-    {
-      DC_LOG_WARN("Could not find uniform {}", name);
-    }
-    uniform_locations_[name] = location;
-    return location;
+    DC_LOG_WARN("Could not find uniform {}", name);
+    return -1;
   }
-  return iter->second;
+  return iter->second.location;
 }
 
 #define GET_UNIFORM_OR_RETURN(name, location)                                  \
@@ -350,6 +350,13 @@ void GlShader::set_uniform(const std::string            &name,
                      value.size(),
                      GL_FALSE,
                      glm::value_ptr(value[0]));
+}
+
+void GlShader::set_uniform(const std::string        &name,
+                           const std::vector<float> &value)
+{
+  GET_UNIFORM_OR_RETURN(name, location)
+  glUniform1fv(location, value.size(), value.data());
 }
 
 } // namespace dc

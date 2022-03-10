@@ -31,17 +31,17 @@ MeshAssetHandle::MeshAssetHandle(const std::filesystem::path &file_path,
       const auto material    = std::dynamic_pointer_cast<MaterialAssetHandle>(
           asset_cache->load_asset(Asset{sub_mesh.material_name_}));
 
-      const auto index_buffer = std::make_shared<GlIndexBuffer>();
-      index_buffer->set_data(sub_mesh.indices_);
+      const auto index_buffer =
+          std::make_shared<GlIndexBuffer>(sub_mesh.indices_);
 
-      const auto           vertex_buffer = std::make_shared<GlVertexBuffer>();
       GlVertexBufferLayout layout;
       layout.push_float(3); // position
       layout.push_float(3); // normal
       layout.push_float(3); // tangent
       layout.push_float(3); // bitanget
       layout.push_float(2); // tex coords
-      vertex_buffer->set_data(sub_mesh.vertices_, layout);
+      const auto vertex_buffer =
+          std::make_shared<GlVertexBuffer>(sub_mesh.vertices_, layout);
 
       auto vertex_array = std::make_unique<GlVertexArray>();
       vertex_array->add_vertex_buffer(vertex_buffer);

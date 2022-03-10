@@ -106,12 +106,15 @@ void RendererPanel::render_shadows()
   {
     debug_quad_framebuffer_->bind();
     glViewport(0, 0, color_tex_width, color_tex_height);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    constexpr std::array<float, 4> clear_color{0.0f, 0.0f, 0.0f, 1.0f};
+    glClearNamedFramebufferfv(debug_quad_framebuffer_->id(),
+                              GL_COLOR,
+                              0,
+                              clear_color.data());
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     depth_debug_shader_->bind();
-    glActiveTexture(GL_TEXTURE0);
-    renderer->shadow_pass_->shadow_tex_array_->bind();
+    renderer->shadow_pass_->shadow_tex_array_->bind_unit(0);
     depth_debug_shader_->set_uniform("depth_tex", 0);
     depth_debug_shader_->set_uniform("layer",
                                      static_cast<int>(debug_selected_cascade_));

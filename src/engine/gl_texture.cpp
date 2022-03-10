@@ -1,24 +1,67 @@
 #include "gl_texture.hpp"
 #include "image.hpp"
+#include "math.hpp"
 
+#include <GL/gl.h>
+#include <fmt/core.h>
 #include <gli/load_ktx.hpp>
 
-
 #include <cstdint>
+#include <memory>
 #include <stdexcept>
 #include <string>
 
 namespace dc
 {
 
-GlTexture::GlTexture() { glGenTextures(1, &id_); }
+GlTexture::GlTexture(const GlTextureConfig &config)
+{
+  glCreateTextures(GL_TEXTURE_2D, 1, &id_);
+
+  // send the image data to the GPU
+  const auto mipmap_levels =
+      config.generate_mipmaps_
+          ? math::calc_mipmap_levels_2d(config.width_, config.height_)
+          : 1;
+
+  glTextureStorage2D(id_,
+                     mipmap_levels,
+                     config.sized_format_,
+                     config.width_,
+                     config.height_);
+  if (config.data_)
+  {
+    glTextureSubImage2D(id_,
+                        0,
+                        0,
+                        0,
+                        config.width_,
+                        config.height_,
+                        config.format_,
+                        config.type_,
+                        config.data_);
+  }
+
+  // set texture parameters
+  glTextureParameteri(id_, GL_TEXTURE_MAX_LEVEL, config.max_level_);
+  glTextureParameteri(id_, GL_TEXTURE_WRAP_S, config.wrap_s_);
+  glTextureParameteri(id_, GL_TEXTURE_WRAP_T, config.wrap_t_);
+  glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, config.min_filter_);
+  glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, config.mag_filter_);
+
+  // generate mipmaps if needed
+  if (config.generate_mipmaps_)
+  {
+    glGenerateTextureMipmap(id_);
+  }
+}
 
 GlTexture::~GlTexture() { glDeleteTextures(1, &id_); }
 
 GLuint GlTexture::id() const { return id_; }
 
-void GlTexture::load_from_file(const std::filesystem::path &file_path,
-                               bool                         generate_mipmap)
+std::shared_ptr<GlTexture>
+GlTexture::load_from_file(const std::filesystem::path &file_path)
 {
   if (file_path.extension() == ".ktx")
   {
@@ -28,138 +71,56 @@ void GlTexture::load_from_file(const std::filesystem::path &file_path,
         gl.translate(texture_ktx.format(), texture_ktx.swizzles())};
     glm::tvec3<GLsizei> extent{texture_ktx.extent(0)};
     const auto          width  = extent.x;
-    const auto          height        = extent.y;
-    const auto mipmap_levels = math::calc_mipmap_levels_2d(width, height);
+    const auto          height = extent.y;
 
-    bind();
-
-    glTextureParameteri(id_, GL_TEXTURE_MAX_LEVEL, 0);
-    glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTextureParameteri(id_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTextureParameteri(id_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glTextureStorage2D(id_, mipmap_levels, format.Internal, width, height);
-    glTextureSubImage2D(id_,
-                        0,
-                        0,
-                        0,
-                        width,
-                        height,
-                        format.External,
-                        format.Type,
-                        texture_ktx.data(0, 0, 0));
-    format_ = format.External;
-
-    unbind();
+    GlTextureConfig config{};
+    config.data_             = const_cast<void *>(texture_ktx.data(0, 0, 0));
+    config.width_            = width;
+    config.height_           = height;
+    config.max_level_        = 0;
+    config.min_filter_       = GL_LINEAR;
+    config.mag_filter_       = GL_LINEAR;
+    config.wrap_s_           = GL_CLAMP_TO_EDGE;
+    config.wrap_t_           = GL_CLAMP_TO_EDGE;
+    config.format_           = format.External;
+    config.sized_format_     = format.Internal;
+    config.type_             = format.Type;
+    config.generate_mipmaps_ = false;
+    return std::make_shared<GlTexture>(config);
   }
   else
   {
-    const Image image{file_path};
-    set_data(image.data(),
-             image.width(),
-             image.height(),
-             image.channels_count(),
-             generate_mipmap);
+    const Image     image{file_path};
+    GlTextureConfig config{};
+    config.data_   = const_cast<unsigned char *>(image.data());
+    config.width_  = image.width();
+    config.height_ = image.height();
+
+    if (image.channels_count() == 1)
+    {
+      config.format_       = GL_RED;
+      config.sized_format_ = GL_R8;
+    }
+    else if (image.channels_count() == 3)
+    {
+      config.format_       = GL_RGB;
+      config.sized_format_ = GL_RGB8;
+    }
+    else if (image.channels_count() == 4)
+    {
+      config.format_       = GL_RGBA;
+      config.sized_format_ = GL_RGBA8;
+    }
+    else
+    {
+      throw std::runtime_error(fmt::format("Can not handle {} channels in {}",
+                                           image.channels_count(),
+                                           file_path.string()));
+    }
+    return std::make_shared<GlTexture>(config);
   }
 }
 
-void GlTexture::set_data(const std::uint8_t *data,
-                         int                 width,
-                         int                 height,
-                         int                 channels_count,
-                         bool                generate_mipmap)
-{
-  bind();
-
-  // Figure out the image format
-  GLint internal_format{};
-  if (channels_count == 1)
-  {
-    format_         = GL_RED;
-    internal_format = GL_RED;
-  }
-  else if (channels_count == 3)
-  {
-    format_         = GL_RGB;
-    internal_format = GL_RGB;
-  }
-  else if (channels_count == 4)
-  {
-    format_         = GL_RGBA;
-    internal_format = GL_RGBA;
-  }
-  else
-  {
-    throw std::runtime_error("Can not handle channel count " +
-                             std::to_string(channels_count));
-  }
-
-  // Send the image data to the GPU
-  glTexImage2D(GL_TEXTURE_2D,
-               0,
-               internal_format,
-               width,
-               height,
-               0,
-               format_,
-               GL_UNSIGNED_BYTE,
-               data);
-
-  // Set texture parameters
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  if (generate_mipmap)
-  {
-    glTexParameteri(GL_TEXTURE_2D,
-                    GL_TEXTURE_MIN_FILTER,
-                    GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  }
-  else
-  {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  }
-
-  // Generate mipmaps if needed
-  if (generate_mipmap)
-  {
-    glGenerateMipmap(GL_TEXTURE_2D);
-  }
-
-  unbind();
-}
-
-void GlTexture::bind() { glBindTexture(GL_TEXTURE_2D, id_); }
-
-void GlTexture::unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
-
-void GlTexture::set_storage(GLsizei width,
-                            GLsizei height,
-                            GLint   internal_format,
-                            GLenum  format)
-{
-  bind();
-
-  glTexImage2D(GL_TEXTURE_2D,
-               0,
-               internal_format,
-               width,
-               height,
-               0,
-               format,
-               GL_UNSIGNED_BYTE,
-               nullptr);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  unbind();
-}
-
-GLenum GlTexture::format() const { return format_; }
+void GlTexture::bind_unit(int unit) const { glBindTextureUnit(unit, id_); }
 
 } // namespace dc

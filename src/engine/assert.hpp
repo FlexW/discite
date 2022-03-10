@@ -4,22 +4,20 @@
 
 #if defined(DC_ENABLE_ASSERT)
 
-#define DC_SEGV                                                                \
-  *(volatile int *)0 = 0;                                                      \
-  std::exit(EXIT_FAILURE);
+#define DC_ABORT() std::abort()
 
 #define DC_DO_ASSERT(file, line, expr, msg, ...)                               \
   do                                                                           \
   {                                                                            \
     if (!(expr))                                                               \
     {                                                                          \
+      const auto fmsg = fmt::format(msg, ##__VA_ARGS__);                       \
       fmt::print(stderr,                                                       \
-                 "Failure in {} on line {}:\n\n" #expr "\n\n{}\n",             \
+                 "Failure in {} on line {}:\n\t{}\n\t" #expr "\n\n",           \
                  (file),                                                       \
                  (line),                                                       \
-                 (msg),                                                        \
-                 ##__VA_ARGS__);                                               \
-      DC_SEGV                                                                  \
+                 (fmsg));                                                      \
+      DC_ABORT();                                                              \
     }                                                                          \
   } while (false)
 
@@ -29,13 +27,13 @@
 #define DC_DO_FAIL(file, line, msg, ...)                                       \
   do                                                                           \
   {                                                                            \
+    const auto fmsg = fmt::format(msg, ##__VA_ARGS__);                         \
     fmt::print(stderr,                                                         \
-               "Failure in {} on line {}:\n\n{}\n",                            \
+               "Failure in {} on line {}:\n\t{}\n\n",                          \
                (file),                                                         \
                (line),                                                         \
-               (msg),                                                          \
-               ##__VA_ARGS__);                                                 \
-    DC_SEGV                                                                    \
+               (fmsg));                                                        \
+    DC_ABORT();                                                                \
   } while (false)
 
 #define DC_FAIL(msg, ...) DC_DO_FAIL(__FILE__, __LINE__, msg, ##__VA_ARGS__)

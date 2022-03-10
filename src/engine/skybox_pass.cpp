@@ -26,15 +26,14 @@ void SkyboxPass::execute(const SceneRenderInfo         &scene_render_info,
   scene_framebuffer->bind();
 
   sky_box_shader_->bind();
-  glActiveTexture(GL_TEXTURE0);
   const auto &sky = scene_render_info.env_map();
   if (is_show_irradiance_as_skybox_)
   {
-    sky.env_irradiance_texture()->bind();
+    sky.env_irradiance_texture()->bind_unit(0);
   }
   else
   {
-    sky.env_texture()->bind();
+    sky.env_texture()->bind_unit(0);
   }
   sky_box_shader_->set_uniform("env_tex", 0);
   sky_box_shader_->set_uniform("projection_matrix",

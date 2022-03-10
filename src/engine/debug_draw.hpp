@@ -25,6 +25,8 @@ public:
   void submit(const glm::mat4 &view_matrix, const glm::mat4 &projection_matrix);
 
 private:
+  static constexpr std::size_t default_buffer_size{4000};
+
   std::vector<glm::vec3> lines_;
   std::vector<glm::vec3> colors_;
 

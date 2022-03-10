@@ -1,6 +1,7 @@
 #include "shadow_pass.hpp"
 #include "defer.hpp"
 #include "gl_texture_array.hpp"
+#include "log.hpp"
 
 namespace dc
 {
@@ -48,13 +49,8 @@ void ShadowPass::execute(const SceneRenderInfo &scene_render_info,
   glCullFace(GL_FRONT);
   shadow_map_shader_->bind();
 
-  // set light space matrices
-  for (std::size_t i = 0; i < light_space_matrices.size(); ++i)
-  {
-    shadow_map_shader_->set_uniform("light_space_matrices[" +
-                                        std::to_string(i) + "]",
-                                    light_space_matrices[i]);
-  }
+  shadow_map_shader_->set_uniform("light_space_matrices[0]",
+                                  light_space_matrices);
 
   // iterate through all solid meshes
   for (const auto &mesh_info : solid_meshes_)
@@ -69,12 +65,8 @@ void ShadowPass::execute(const SceneRenderInfo &scene_render_info,
   shadow_map_transparent_shader_->bind();
 
   // set light space matrices
-  for (std::size_t i = 0; i < light_space_matrices.size(); ++i)
-  {
-    shadow_map_transparent_shader_->set_uniform("light_space_matrices[" +
-                                                    std::to_string(i) + "]",
-                                                light_space_matrices[i]);
-  }
+  shadow_map_transparent_shader_->set_uniform("light_space_matrices[0]",
+                                              light_space_matrices);
 
   glCullFace(GL_BACK);
   // iterate through all transparent meshes
@@ -86,8 +78,7 @@ void ShadowPass::execute(const SceneRenderInfo &scene_render_info,
       continue;
     }
     // TODO: why does 1 work and 0 not?
-    glActiveTexture(GL_TEXTURE1);
-    diffuse_tex->bind();
+    diffuse_tex->bind_unit(1);
     shadow_map_transparent_shader_->set_uniform("tex", 1);
     shadow_map_transparent_shader_->set_uniform("model_matrix",
                                                 mesh_info.model_matrix_);
@@ -112,7 +103,8 @@ void ShadowPass::execute(const SceneRenderInfo &scene_render_info,
 void ShadowPass::calc_shadow_cascades_splits(
     const ViewRenderInfo &view_render_info)
 {
-  assert(shadow_cascades_count_ > 0);
+  DC_ASSERT(shadow_cascades_count_ > 0, "Shadow cascades too small");
+  cascade_frustums_.clear();
   cascade_frustums_.resize(shadow_cascades_count_);
 
   const auto far    = view_render_info.far_plane();
@@ -256,17 +248,17 @@ ShadowPass::calc_frustum_corners(const ViewRenderInfo &view_render_info,
 
 void ShadowPass::recreate_shadow_tex_framebuffer()
 {
-  shadow_tex_array_ = std::make_shared<GlTextureArray>();
-  TextureArrayData texture_array_data{GL_DEPTH_COMPONENT32F,
-                                      GL_DEPTH_COMPONENT,
-                                      shadow_tex_width_,
-                                      shadow_tex_height_,
-                                      static_cast<int>(shadow_cascades_count_)};
+  GlTextureArrayConfig texture_array_data{
+      GL_DEPTH_COMPONENT32F,
+      GL_DEPTH_COMPONENT,
+      shadow_tex_width_,
+      shadow_tex_height_,
+      static_cast<int>(shadow_cascades_count_)};
   texture_array_data.min_filter   = GL_NEAREST;
   texture_array_data.mag_filter   = GL_NEAREST;
   texture_array_data.type         = GL_FLOAT;
   texture_array_data.border_color = {1.0f, 1.0f, 1.0f, 1.0f};
-  shadow_tex_array_->set_data(texture_array_data);
+  shadow_tex_array_ = std::make_shared<GlTextureArray>(texture_array_data);
 
   shadow_framebuffer_ = std::make_shared<GlFramebuffer>();
 

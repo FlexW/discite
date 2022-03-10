@@ -2,6 +2,7 @@
 
 #include "gl.hpp"
 
+#include <cstdint>
 #include <vector>
 
 namespace dc
@@ -10,21 +11,19 @@ namespace dc
 class GlIndexBuffer
 {
 public:
-  GlIndexBuffer();
+  GlIndexBuffer(const std::vector<std::uint32_t> &indices);
   ~GlIndexBuffer();
-
-  void set_data(const std::vector<unsigned> &indices);
 
   void bind();
   void unbind();
 
   GLuint id() const;
 
-  GLsizei count() const;
+  std::size_t count() const;
 
 private:
-  GLuint  index_buffer_id_{};
-  GLsizei count_{};
+  GLuint  id_{};
+  std::size_t count_{};
 
   GlIndexBuffer(const GlIndexBuffer &) = delete;
   void operator=(const GlIndexBuffer &) = delete;

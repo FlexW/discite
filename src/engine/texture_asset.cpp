@@ -37,8 +37,34 @@ TextureAssetHandle::TextureAssetHandle(const std::filesystem::path &file_path,
     }
     defer(stbi_image_free(loaded_data));
 
-    texture_ = std::make_shared<GlTexture>();
-    texture_->set_data(loaded_data, width, height, channels_count, true);
+    GlTextureConfig config{};
+    config.data_   = loaded_data;
+    config.width_  = width;
+    config.height_ = height;
+
+    if (channels_count == 1)
+    {
+      config.format_       = GL_RED;
+      config.sized_format_ = GL_R8;
+    }
+    else if (channels_count == 3)
+    {
+      config.format_       = GL_RGB;
+      config.sized_format_ = GL_RGB8;
+    }
+    else if (channels_count == 4)
+    {
+      config.format_       = GL_RGBA;
+      config.sized_format_ = GL_RGBA8;
+    }
+    else
+    {
+      throw std::runtime_error(fmt::format("Can not handle {} channels in {}",
+                                           channels_count,
+                                           file_path.string()));
+    }
+
+    texture_ = std::make_shared<GlTexture>(config);
   }
   catch (const std::runtime_error &error)
   {

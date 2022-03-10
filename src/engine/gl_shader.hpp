@@ -47,11 +47,18 @@ public:
   void set_uniform(const std::string &name, const glm::mat4 &value);
   void set_uniform(const std::string            &name,
                    const std::vector<glm::mat4> &value);
+  void set_uniform(const std::string &name, const std::vector<float> &value);
 
 private:
+  struct UniformInfo
+  {
+    GLint   location{};
+    GLsizei count{};
+  };
+
   GLuint program_id_{};
 
-  std::unordered_map<std::string, GLint> uniform_locations_;
+  std::unordered_map<std::string, UniformInfo> uniforms_;
 
   GlShader(const GlShader &) = delete;
   void operator=(const GlShader &) = delete;
@@ -64,7 +71,7 @@ private:
   GLuint compile_shader(const std::filesystem::path &file_path);
   void   link_shaders(const std::vector<GLuint> &shader_ids);
 
-  void dump_shader_info();
+  void load_shader_data();
 };
 
 } // namespace dc

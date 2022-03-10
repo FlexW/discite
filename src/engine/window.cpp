@@ -317,7 +317,6 @@ Key to_key(int key)
   }
 
   DC_LOG_WARN("Unknown GLFW key: {}", key);
-  DC_FAIL("Unknown GLFW key: {}", key);
 
   return Key::Undefined;
 }

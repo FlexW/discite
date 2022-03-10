@@ -25,7 +25,8 @@ public:
   GLsizei        vertex_count() const;
 
 private:
-  GLuint id_{};
+  GLuint   id_{};
+  unsigned binding_point_{0};
 
   std::vector<std::shared_ptr<GlVertexBuffer>>  vertex_buffers_;
   std::shared_ptr<GlIndexBuffer>                index_buffer_;

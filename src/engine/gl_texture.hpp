@@ -2,40 +2,46 @@
 
 #include "gl.hpp"
 
+#include <cstdint>
 #include <filesystem>
 
 namespace dc
 {
 
+struct GlTextureConfig
+{
+  void *data_{nullptr};
+  GLint width_{};
+  GLint height_{};
+
+  GLenum format_{GL_RGBA};
+  GLenum sized_format_{GL_RGBA8};
+
+  GLint    max_level_{1000};
+  GLint    wrap_s_{GL_REPEAT};
+  GLint    wrap_t_{GL_REPEAT};
+  GLint    min_filter_{GL_LINEAR_MIPMAP_LINEAR};
+  GLint    mag_filter_{GL_LINEAR};
+  unsigned generate_mipmaps_{true};
+
+  GLenum type_{GL_UNSIGNED_BYTE};
+};
+
 class GlTexture
 {
 public:
-  GlTexture();
+  static std::shared_ptr<GlTexture>
+  load_from_file(const std::filesystem::path &file_path);
+
+  GlTexture(const GlTextureConfig &config);
   ~GlTexture();
 
   GLuint id() const;
 
-  void load_from_file(const std::filesystem::path &file_path,
-                      bool                         generate_mipmap);
-  void set_data(const std::uint8_t *data,
-                int                 width,
-                int                 height,
-                int                 channels_count,
-                bool                generate_mipmap);
-  void set_storage(GLsizei width,
-                   GLsizei height,
-                   GLint   internal_format,
-                   GLenum  format);
-
-  void bind();
-  void unbind();
-
-  GLenum format() const;
+  void bind_unit(int unit) const;
 
 private:
   GLuint id_{};
-
-  GLenum format_{GL_RGB};
 
   GlTexture(const GlTexture &) = delete;
   void operator=(const GlTexture &) = delete;

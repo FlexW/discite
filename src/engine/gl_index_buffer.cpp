@@ -1,41 +1,35 @@
 #include "gl_index_buffer.hpp"
 
+#include <cstddef>
+#include <cstdint>
+
 namespace dc
 {
 
-GlIndexBuffer::GlIndexBuffer() { glGenBuffers(1, &index_buffer_id_); }
+GlIndexBuffer::GlIndexBuffer(const std::vector<std::uint32_t> &indices)
+    : count_{indices.size()}
+{
+  glCreateBuffers(1, &id_);
+  glNamedBufferStorage(id_,
+                       indices.size() * sizeof(std::uint32_t),
+                       indices.data(),
+                       0);
+}
 
 GlIndexBuffer::~GlIndexBuffer()
 {
-  if (index_buffer_id_)
+  if (id_)
   {
-    glDeleteBuffers(1, &index_buffer_id_);
+    glDeleteBuffers(1, &id_);
   }
 }
 
-GLuint GlIndexBuffer::id() const { return index_buffer_id_; }
+GLuint GlIndexBuffer::id() const { return id_; }
 
-void GlIndexBuffer::bind()
-{
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id_);
-}
+void GlIndexBuffer::bind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_); }
 
 void GlIndexBuffer::unbind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
 
-void GlIndexBuffer::set_data(const std::vector<unsigned> &indices)
-{
-  bind();
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_id_);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-               indices.size() * sizeof(unsigned),
-               indices.data(),
-               GL_STATIC_DRAW);
-  unbind();
-
-  count_ = indices.size();
-}
-
-GLsizei GlIndexBuffer::count() const { return count_; }
+std::size_t GlIndexBuffer::count() const { return count_; }
 
 } // namespace dc

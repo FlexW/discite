@@ -10,14 +10,13 @@ namespace dc
 
 DebugDraw::DebugDraw()
 {
-  lines_vertex_buffer_  = std::make_shared<GlVertexBuffer>();
-  colors_vertex_buffer_ = std::make_shared<GlVertexBuffer>();
-
   GlVertexBufferLayout layout_vec3;
   layout_vec3.push_float(3);
 
-  lines_vertex_buffer_->set_data(lines_, layout_vec3, GL_DYNAMIC_DRAW);
-  colors_vertex_buffer_->set_data(colors_, layout_vec3, GL_DYNAMIC_DRAW);
+  lines_vertex_buffer_ =
+      std::make_shared<GlVertexBuffer>(default_buffer_size, layout_vec3);
+  colors_vertex_buffer_ =
+      std::make_shared<GlVertexBuffer>(default_buffer_size, layout_vec3);
 
   vertex_array_.add_vertex_buffer(lines_vertex_buffer_);
   vertex_array_.add_vertex_buffer(colors_vertex_buffer_);
@@ -49,28 +48,30 @@ void DebugDraw::draw_line(const std::vector<glm::vec3> &line,
   }
 }
 
-void DebugDraw::submit(const glm::mat4 &view_matrix,
-                       const glm::mat4 &projection_matrix)
+void DebugDraw::submit(const glm::mat4 & /*view_matrix*/,
+                       const glm::mat4 & /*projection_matrix*/)
 {
   if (lines_.size() == 0)
   {
     return;
   }
 
-  GlVertexBufferLayout layout_vec3;
-  layout_vec3.push_float(3);
+  // TODO: Fill vertex buffers and draw
 
-  lines_vertex_buffer_->set_data(lines_, layout_vec3, GL_DYNAMIC_DRAW);
-  colors_vertex_buffer_->set_data(colors_, layout_vec3, GL_DYNAMIC_DRAW);
+  // GlVertexBufferLayout layout_vec3;
+  // layout_vec3.push_float(3);
 
-  gl_shader_->bind();
-  gl_shader_->set_uniform("view_matrix", view_matrix);
-  gl_shader_->set_uniform("projection_matrix", projection_matrix);
-  draw(vertex_array_, GL_LINES);
-  gl_shader_->unbind();
+  // lines_vertex_buffer_->set_data(lines_, layout_vec3, GL_DYNAMIC_DRAW);
+  // colors_vertex_buffer_->set_data(colors_, layout_vec3, GL_DYNAMIC_DRAW);
 
-  lines_.clear();
-  colors_.clear();
+  // gl_shader_->bind();
+  // gl_shader_->set_uniform("view_matrix", view_matrix);
+  // gl_shader_->set_uniform("projection_matrix", projection_matrix);
+  // draw(vertex_array_, GL_LINES);
+  // gl_shader_->unbind();
+
+  // lines_.clear();
+  // colors_.clear();
 }
 
 } // namespace dc
