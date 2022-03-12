@@ -3,13 +3,13 @@
 #include "engine.hpp"
 #include "entity_panel.hpp"
 #include "imgui_layer.hpp"
+#include "performance_panel.hpp"
 #include "renderer_panel.hpp"
 #include "scene_asset.hpp"
 #include "scene_panel.hpp"
 #include "serialization.hpp"
 #include "viewport_panel.hpp"
 #include "window.hpp"
-
 
 #include <memory>
 
@@ -29,8 +29,9 @@ void EditorLayer::init()
   const auto viewport_panel = std::make_shared<ViewportPanel>();
   viewport_panel->set_renderer(game_layer_->renderer());
 
-  const auto scene_panel  = std::make_shared<ScenePanel>();
-  const auto entity_panel = std::make_shared<EntityPanel>();
+  const auto scene_panel       = std::make_shared<ScenePanel>();
+  const auto entity_panel      = std::make_shared<EntityPanel>();
+  const auto performance_panel = std::make_shared<PerformancePanel>();
 
   const auto imgui_layer =
       Engine::instance()->layer_stack()->layer<ImGuiLayer>();
@@ -39,6 +40,7 @@ void EditorLayer::init()
   imgui_layer->add_panel(viewport_panel);
   imgui_layer->add_panel(scene_panel);
   imgui_layer->add_panel(entity_panel);
+  imgui_layer->add_panel(performance_panel);
 }
 
 void EditorLayer::shutdown() {}

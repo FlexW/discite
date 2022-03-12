@@ -7,6 +7,7 @@
 #include "gl.hpp"
 #include "layer_stack.hpp"
 #include "log.hpp"
+#include "time.hpp"
 #include "window.hpp"
 
 #include <filesystem>
@@ -26,10 +27,11 @@ public:
 
   void set_close(bool value);
 
-  Config       *config() const;
-  Window       *window() const;
-  EventManager *event_manager() const;
-  LayerStack   *layer_stack();
+  Config              *config() const;
+  Window              *window() const;
+  EventManager        *event_manager() const;
+  LayerStack          *layer_stack();
+  PerformanceProfiler *performance_profiler();
 
   AssetCache           *asset_cache() const;
   AssetImporterManager *asset_importer_manager() const;
@@ -37,6 +39,8 @@ public:
 
 private:
   std::filesystem::path project_path_ = std::filesystem::current_path();
+
+  PerformanceProfiler performance_profiler_;
 
   std::unique_ptr<Config>       config_{std::make_unique<Config>()};
   LayerStack                    layer_stack_;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "engine.hpp"
 #include "forward_pass.hpp"
 #include "hdr_pass.hpp"
 #include "shadow_pass.hpp"

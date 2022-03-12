@@ -6,3 +6,4 @@ external/deps/.bootstrap.json
 external/deps/archives/
 external/deps/src/
 imgui.ini
+*.opt

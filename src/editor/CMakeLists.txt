@@ -14,6 +14,7 @@ target_sources(editor PRIVATE
   dockspace_panel.cpp
   scene_panel.cpp
   entity_panel.cpp
+  performance_panel.cpp
   )
 
 target_link_libraries(editor PRIVATE

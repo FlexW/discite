@@ -699,7 +699,7 @@ Window::Window(bool show_window)
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE,
                  config->config_value_bool("Window", "resizable", true));
-  glfwWindowHint(GLFW_SAMPLES, 8);
+  // glfwWindowHint(GLFW_SAMPLES, 8);
 
   const auto is_opengl_debug =
       config->config_value_bool("OpenGL", "debug", true);
@@ -728,7 +728,15 @@ Window::Window(bool show_window)
   glfwMakeContextCurrent(window_);
 
   // enable vsync
-  glfwSwapInterval(0);
+  const auto is_vsync = config->config_value_bool("Window", "vsync", true);
+  if (is_vsync)
+  {
+    glfwSwapInterval(1);
+  }
+  else
+  {
+    glfwSwapInterval(0);
+  }
 
   glfwSetWindowFocusCallback(window_, window_focus_callback);
   glfwSetCursorEnterCallback(window_, cursor_enter_callback);

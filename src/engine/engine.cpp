@@ -5,6 +5,7 @@
 #include "log.hpp"
 #include "material_asset.hpp"
 #include "mesh_asset.hpp"
+#include "profiling.hpp"
 #include "spdlog/logger.h"
 #include "spdlog/sinks/ansicolor_sink.h"
 #include "texture_asset.hpp"
@@ -31,15 +32,36 @@ int Engine::run(int argc, char *argv[], bool show_window)
 {
   try
   {
+    DC_PROFILE_THREAD("main");
+    DC_PROFILE_START_CAPTURE();
+
     init(argc, argv, show_window);
+
+    DC_PROFILE_STOP_CAPTURE();
+    DC_PROFILE_SAVE_CAPTURE("init");
+
+    DC_PROFILE_START_CAPTURE();
+
     main_loop();
+
+    DC_PROFILE_STOP_CAPTURE();
+    DC_PROFILE_SAVE_CAPTURE("main_loop");
+
+    DC_PROFILE_START_CAPTURE();
+
     shutdown();
+
+    DC_PROFILE_STOP_CAPTURE();
+    DC_PROFILE_SAVE_CAPTURE("shutdown");
   }
   catch (const std::runtime_error &error)
   {
+    DC_PROFILE_SHUTDOWN();
     DC_LOG_ERROR("Unhandled exception: {}", error.what());
     return EXIT_FAILURE;
   }
+
+  DC_PROFILE_SHUTDOWN();
   return EXIT_SUCCESS;
 }
 
@@ -146,18 +168,36 @@ void Engine::main_loop()
 
   while (!window_->is_close() && !is_close_)
   {
-    window_->dispatch_events();
-    event_manager_->dispatch([this](const Event &event)
-                             { layer_stack_.on_event(event); });
+    DC_PROFILE_FRAME("main");
+    performance_profiler_.clear();
+    {
+      DC_TIME_SCOPE_PERF("Frame");
 
-    // calculate delta time
-    const auto delta_time = (current_time_millis() - last_time) / 1000.0f;
-    last_time             = current_time_millis();
+      {
+        DC_TIME_SCOPE_PERF("Dispatch events");
+        window_->dispatch_events();
+        event_manager_->dispatch([this](const Event &event)
+                                 { layer_stack_.on_event(event); });
+      }
 
-    layer_stack_.update(delta_time);
-    layer_stack_.render();
+      // calculate delta time
+      const auto delta_time = (current_time_millis() - last_time) / 1000.0f;
+      last_time             = current_time_millis();
 
-    window_->swap_buffers();
+      {
+        DC_TIME_SCOPE_PERF("Layers update");
+        layer_stack_.update(delta_time);
+      }
+      {
+        DC_TIME_SCOPE_PERF("Layers render");
+        layer_stack_.render();
+      }
+
+      {
+        DC_TIME_SCOPE_PERF("Swap buffers");
+        window_->swap_buffers();
+      }
+    }
   }
 }
 
@@ -183,6 +223,11 @@ Window *Engine::window() const { return window_.get(); }
 EventManager *Engine::event_manager() const { return event_manager_.get(); }
 
 LayerStack *Engine::layer_stack() { return &layer_stack_; }
+
+PerformanceProfiler *Engine::performance_profiler()
+{
+  return &performance_profiler_;
+}
 
 AssetCache *Engine::asset_cache() const { return asset_cache_.get(); }
 

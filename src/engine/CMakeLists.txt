@@ -7,6 +7,8 @@ target_compile_definitions(engine PUBLIC
   SPDLOG_ACTIVE_LEVEL=0)
 if(NOT CMAKE_BUILD_TYPE MATCHES RELEASE)
   target_compile_definitions(engine PUBLIC DC_ENABLE_ASSERT)
+  # target_compile_definitions(engine PUBLIC DC_ENABLE_PROFILING)
+  target_compile_definitions(engine PUBLIC DC_ENABLE_TIMING)
 endif()
 
 target_include_directories(engine PUBLIC .)
@@ -75,6 +77,7 @@ target_link_libraries(engine PUBLIC
   rapidjson
   fmt
   spdlog
+  OptickCore
   )
 
 target_compile_features(engine PUBLIC cxx_std_17)
