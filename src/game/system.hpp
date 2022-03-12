@@ -1,7 +1,7 @@
 #pragma once
 
 #include "event.hpp"
-#include "renderer.hpp"
+#include "frame_data.hpp"
 
 namespace dc
 {

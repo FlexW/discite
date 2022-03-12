@@ -1,6 +1,6 @@
 #pragma once
 
-#include "renderer.hpp"
+#include "frame_data.hpp"
 #include "scene.hpp"
 #include "system.hpp"
 

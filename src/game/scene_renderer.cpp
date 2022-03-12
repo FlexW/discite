@@ -1,9 +1,9 @@
-#include "renderer.hpp"
+#include "scene_renderer.hpp"
 
 namespace dc
 {
 
-Renderer::Renderer()
+SceneRenderer::SceneRenderer()
 {
   shadow_pass_->set_output(
       [this](const SceneRenderInfo          &scene_render_info,
@@ -40,8 +40,8 @@ Renderer::Renderer()
       });
 }
 
-void Renderer::render(const SceneRenderInfo &scene_render_info,
-                      const ViewRenderInfo  &view_render_info)
+void SceneRenderer::render(const SceneRenderInfo &scene_render_info,
+                           const ViewRenderInfo  &view_render_info)
 {
   // executes all passes
   shadow_pass_->execute(scene_render_info, view_render_info);

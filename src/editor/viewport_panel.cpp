@@ -5,9 +5,9 @@
 #include "imgui.h"
 #include "imgui_panel.hpp"
 #include "relationship_component.hpp"
-#include "renderer.hpp"
 #include "scene.hpp"
 #include "scene_panel.hpp"
+#include "scene_renderer.hpp"
 #include "window.hpp"
 
 #include <ImGuizmo.h>
@@ -370,7 +370,7 @@ void ViewportPanel::rotate_editor_camera(double offset_x, double offset_y)
   editor_camera_.process_rotation(offset_x, offset_y);
 }
 
-void ViewportPanel::set_renderer(std::shared_ptr<Renderer> renderer)
+void ViewportPanel::set_renderer(std::shared_ptr<SceneRenderer> renderer)
 {
   renderer_ = renderer;
 }

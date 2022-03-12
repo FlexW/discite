@@ -1,7 +1,7 @@
 #pragma once
 
 #include "imgui_panel.hpp"
-#include "renderer.hpp"
+#include "scene_renderer.hpp"
 
 #include <memory>
 
@@ -14,10 +14,10 @@ public:
   RendererPanel();
   ~RendererPanel();
 
-  void set_renderer(std::shared_ptr<Renderer> renderer);
+  void set_renderer(std::shared_ptr<SceneRenderer> renderer);
 
 private:
-  std::weak_ptr<Renderer> renderer_{};
+  std::weak_ptr<SceneRenderer> renderer_{};
 
   GLuint                         quad_vertex_array_{0};
   std::shared_ptr<GlShader>      depth_debug_shader_{};

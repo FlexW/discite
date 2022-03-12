@@ -2,12 +2,12 @@
 #include "directional_light.hpp"
 #include "directional_light_component.hpp"
 #include "entity.hpp"
+#include "frame_data.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include "log.hpp"
 #include "model_component.hpp"
 #include "point_light.hpp"
 #include "point_light_component.hpp"
-#include "renderer.hpp"
 #include "sky_component.hpp"
 #include "transform_component.hpp"
 

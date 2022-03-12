@@ -134,7 +134,7 @@ void RendererPanel::render_shadows()
   ImGui::Image(reinterpret_cast<void *>(tex->id()), {area.x, area.x});
 }
 
-void RendererPanel::set_renderer(std::shared_ptr<Renderer> renderer)
+void RendererPanel::set_renderer(std::shared_ptr<SceneRenderer> renderer)
 {
   renderer_ = renderer;
 }

@@ -5,9 +5,9 @@
 #include "event.hpp"
 #include "gl_framebuffer.hpp"
 #include "imgui_panel.hpp"
-#include "renderer.hpp"
 #include "scene.hpp"
 #include "scene_panel.hpp"
+#include "scene_renderer.hpp"
 #include "window.hpp"
 
 #include <ImGuizmo.h>
@@ -25,7 +25,7 @@ public:
   void update(float delta_time) override;
   bool on_event(const Event &event) override;
 
-  void set_renderer(std::shared_ptr<Renderer> renderer);
+  void set_renderer(std::shared_ptr<SceneRenderer> renderer);
 
 private:
   Camera editor_camera_;
@@ -38,7 +38,7 @@ private:
   bool                is_show_gizmo_{false};
   ImGuizmo::OPERATION guizmo_operation_{ImGuizmo::OPERATION::TRANSLATE};
 
-  std::weak_ptr<Renderer> renderer_{};
+  std::weak_ptr<SceneRenderer> renderer_{};
 
   std::weak_ptr<Scene>           scene_{};
   std::shared_ptr<GlFramebuffer> scene_framebuffer_{};

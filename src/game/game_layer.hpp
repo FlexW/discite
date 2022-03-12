@@ -1,9 +1,9 @@
 #pragma once
 
 #include "layer.hpp"
-#include "renderer.hpp"
 #include "scene.hpp"
 #include "scene_asset.hpp"
+#include "scene_renderer.hpp"
 
 #include <memory>
 
@@ -22,7 +22,7 @@ public:
 
   bool on_event(const Event &event) override;
 
-  std::shared_ptr<Renderer> renderer() const;
+  std::shared_ptr<SceneRenderer> renderer() const;
 
   void set_scene(std::shared_ptr<SceneAssetHandle> value);
   std::shared_ptr<SceneAssetHandle> scene() const;
@@ -31,7 +31,7 @@ private:
   bool is_init_{false};
 
   std::shared_ptr<SceneAssetHandle> scene_{};
-  std::shared_ptr<Renderer> renderer_;
+  std::shared_ptr<SceneRenderer>    renderer_;
 };
 
 } // namespace dc

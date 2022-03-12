@@ -7,9 +7,9 @@
 #include "model_component.hpp"
 #include "point_light_component.hpp"
 #include "render_system.hpp"
-#include "renderer.hpp"
 #include "scene.hpp"
 #include "scene_asset.hpp"
+#include "scene_renderer.hpp"
 #include "sky_component.hpp"
 #include "transform_component.hpp"
 
@@ -38,7 +38,7 @@ void GameLayer::register_asset_loaders()
 
 void GameLayer::init()
 {
-  renderer_ = std::make_unique<Renderer>();
+  renderer_ = std::make_unique<SceneRenderer>();
 
   is_init_ = true;
   // TODO: Maybe load a main scene in case there is nothing loaded yet
@@ -72,7 +72,7 @@ void GameLayer::render()
   renderer_->render(scene_render_info, view_render_info);
 }
 
-std::shared_ptr<Renderer> GameLayer::renderer() const { return renderer_; }
+std::shared_ptr<SceneRenderer> GameLayer::renderer() const { return renderer_; }
 
 bool GameLayer::on_event(const Event &event)
 {

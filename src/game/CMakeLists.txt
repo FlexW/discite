@@ -9,7 +9,7 @@ target_sources(game PRIVATE
   render_system.cpp
   camera_system.cpp
   camera_component.cpp
-  renderer.cpp
+  scene_renderer.cpp
   entity.cpp
   transform_component.cpp
   scene_asset_importer.cpp

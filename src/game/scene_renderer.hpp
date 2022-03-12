@@ -10,10 +10,10 @@
 namespace dc
 {
 
-class Renderer
+class SceneRenderer
 {
 public:
-  Renderer();
+  SceneRenderer();
 
   void render(const SceneRenderInfo &scene_render_info,
               const ViewRenderInfo  &view_render_info);
