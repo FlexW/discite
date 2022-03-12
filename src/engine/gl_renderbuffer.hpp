@@ -5,14 +5,18 @@
 namespace dc
 {
 
+struct GlRenderbufferConfig
+{
+  GLenum  sized_format_;
+  GLsizei width_;
+  GLsizei height_;
+  GLuint  msaa_{0};
+};
+
 class GlRenderbuffer
 {
 public:
-  GlRenderbuffer(GLenum internal_format, GLsizei width, GLsizei height);
-  GlRenderbuffer(GLenum  internal_format,
-                 GLsizei samples,
-                 GLsizei width,
-                 GLsizei height);
+  GlRenderbuffer(const GlRenderbufferConfig &config);
   ~GlRenderbuffer();
 
   GLuint id() const;

@@ -16,6 +16,7 @@ struct GlTextureConfig
 
   GLenum format_{GL_RGBA};
   GLenum sized_format_{GL_RGBA8};
+  GLuint msaa_{0};
 
   GLint    max_level_{1000};
   GLint    wrap_s_{GL_REPEAT};

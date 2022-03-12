@@ -22,7 +22,7 @@ std::shared_ptr<AssetHandle> AssetCache::load_asset(const Asset &asset)
 {
   if (asset.type().empty())
   {
-    DC_LOG_DEBUG("Trying to load an invalid asset");
+    DC_LOG_WARN("Trying to load asset with emtpy name");
     return nullptr;
   }
   // check if asset already loaded and if yes, load it from cache

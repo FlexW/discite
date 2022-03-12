@@ -699,6 +699,7 @@ Window::Window(bool show_window)
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE,
                  config->config_value_bool("Window", "resizable", true));
+  glfwWindowHint(GLFW_SAMPLES, 8);
 
   const auto is_opengl_debug =
       config->config_value_bool("OpenGL", "debug", true);
@@ -771,6 +772,7 @@ Window::Window(bool show_window)
   glEnable(GL_CULL_FACE);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
+  glEnable(GL_MULTISAMPLE);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

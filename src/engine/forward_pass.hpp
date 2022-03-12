@@ -37,6 +37,7 @@ private:
   int                            scene_framebuffer_width_{0};
   int                            scene_framebuffer_height_{0};
   std::shared_ptr<GlFramebuffer> scene_framebuffer_{};
+  std::shared_ptr<GlFramebuffer> scene_framebuffer_msaa_{};
 
   std::shared_ptr<GlTexture> white_texture_{};
 

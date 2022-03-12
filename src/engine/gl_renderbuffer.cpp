@@ -3,25 +3,24 @@
 namespace dc
 {
 
-GlRenderbuffer::GlRenderbuffer(GLenum  internal_format,
-                               GLsizei width,
-                               GLsizei height)
+GlRenderbuffer::GlRenderbuffer(const GlRenderbufferConfig &config)
 {
   glCreateRenderbuffers(1, &id_);
-  glNamedRenderbufferStorage(id_, internal_format, width, height);
-}
-
-GlRenderbuffer::GlRenderbuffer(GLenum  internal_format,
-                               GLsizei samples,
-                               GLsizei width,
-                               GLsizei height)
-{
-  glCreateRenderbuffers(1, &id_);
-  glNamedRenderbufferStorageMultisample(id_,
-                                        samples,
-                                        internal_format,
-                                        width,
-                                        height);
+  if (config.msaa_ == 0)
+  {
+    glNamedRenderbufferStorage(id_,
+                               config.sized_format_,
+                               config.width_,
+                               config.height_);
+  }
+  else
+  {
+    glNamedRenderbufferStorageMultisample(id_,
+                                          config.msaa_,
+                                          config.sized_format_,
+                                          config.width_,
+                                          config.height_);
+  }
 }
 
 GlRenderbuffer::~GlRenderbuffer() { glDeleteRenderbuffers(1, &id_); }

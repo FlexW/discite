@@ -42,14 +42,14 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
   const auto &viewport_info = view_render_info.viewport_info();
   recreate_scene_framebuffer(viewport_info.width_, viewport_info.height_);
 
-  scene_framebuffer_->bind();
+  scene_framebuffer_msaa_->bind();
   glCullFace(GL_BACK);
 
   int global_texture_slot{0};
 
   glViewport(0, 0, viewport_info.width_, viewport_info.height_);
   constexpr std::array<float, 4> clear_color{0.0f, 0.0f, 0.0f, 1.0f};
-  glClearNamedFramebufferfv(scene_framebuffer_->id(),
+  glClearNamedFramebufferfv(scene_framebuffer_msaa_->id(),
                             GL_COLOR,
                             0,
                             clear_color.data());
@@ -221,7 +221,21 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
   }
 
   mesh_shader_->unbind();
-  scene_framebuffer_->unbind();
+  scene_framebuffer_msaa_->unbind();
+
+  // resolve msaa framebuffer info normal framebuffer
+  glBlitNamedFramebuffer(scene_framebuffer_msaa_->id(),
+                         scene_framebuffer_->id(),
+                         0,
+                         0,
+                         scene_framebuffer_width_,
+                         scene_framebuffer_height_,
+                         0,
+                         0,
+                         scene_framebuffer_width_,
+                         scene_framebuffer_height_,
+                         GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
+                         GL_NEAREST);
 
   if (output_)
   {
@@ -244,26 +258,56 @@ void ForwardPass::recreate_scene_framebuffer(int width, int height)
   scene_framebuffer_width_  = width;
   scene_framebuffer_height_ = height;
 
-  FramebufferAttachmentCreateConfig color_config{};
-  color_config.type_            = AttachmentType::Texture;
-  color_config.format_          = GL_RGBA;
-  color_config.internal_format_ = GL_RGBA16F;
-  color_config.width_           = scene_framebuffer_width_;
-  color_config.height_          = scene_framebuffer_height_;
+  {
+    static constexpr GLuint samples{8};
+    // create msaa framebuffer
+    FramebufferAttachmentCreateConfig color_config{};
+    color_config.type_            = AttachmentType::Texture;
+    color_config.format_          = GL_RGBA;
+    color_config.internal_format_ = GL_RGBA16F;
+    color_config.width_           = scene_framebuffer_width_;
+    color_config.height_          = scene_framebuffer_height_;
+    color_config.msaa_            = samples;
 
-  FramebufferAttachmentCreateConfig depth_config{};
-  depth_config.type_            = AttachmentType::Renderbuffer;
-  depth_config.format_          = GL_DEPTH_COMPONENT;
-  depth_config.internal_format_ = GL_DEPTH_COMPONENT32F;
-  depth_config.width_           = scene_framebuffer_width_;
-  depth_config.height_          = scene_framebuffer_height_;
+    FramebufferAttachmentCreateConfig depth_config{};
+    depth_config.type_            = AttachmentType::Renderbuffer;
+    depth_config.format_          = GL_DEPTH_COMPONENT;
+    depth_config.internal_format_ = GL_DEPTH_COMPONENT32F;
+    depth_config.width_           = scene_framebuffer_width_;
+    depth_config.height_          = scene_framebuffer_height_;
+    depth_config.msaa_            = samples;
 
-  FramebufferConfig config{};
-  config.color_attachments_.push_back(color_config);
-  config.depth_attachment_ = depth_config;
+    FramebufferConfig config{};
+    config.color_attachments_.push_back(color_config);
+    config.depth_attachment_ = depth_config;
 
-  scene_framebuffer_ = std::make_shared<GlFramebuffer>();
-  scene_framebuffer_->attach(config);
+    scene_framebuffer_msaa_ = std::make_shared<GlFramebuffer>();
+    scene_framebuffer_msaa_->attach(config);
+  }
+
+  {
+    // create framebuffer to resolve msaa buffer
+    FramebufferAttachmentCreateConfig color_config{};
+    color_config.type_            = AttachmentType::Texture;
+    color_config.format_          = GL_RGBA;
+    color_config.internal_format_ = GL_RGBA16F;
+    color_config.width_           = scene_framebuffer_width_;
+    color_config.height_          = scene_framebuffer_height_;
+
+    FramebufferAttachmentCreateConfig depth_config{};
+    depth_config.type_            = AttachmentType::Renderbuffer;
+    depth_config.format_          = GL_DEPTH_COMPONENT;
+    depth_config.internal_format_ = GL_DEPTH_COMPONENT32F;
+    depth_config.width_           = scene_framebuffer_width_;
+    depth_config.height_          = scene_framebuffer_height_;
+
+    FramebufferConfig config{};
+    config.color_attachments_.push_back(color_config);
+    config.depth_attachment_ = depth_config;
+
+    scene_framebuffer_ = std::make_shared<GlFramebuffer>();
+    scene_framebuffer_->attach(config);
+  }
 }
 
 void ForwardPass::set_output(Output output) { output_ = output; }

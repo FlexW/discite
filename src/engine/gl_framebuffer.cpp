@@ -42,15 +42,17 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
       case AttachmentType::Texture:
       {
         GlTextureConfig config{};
-        config.width_            = color_attachment.width_;
-        config.height_           = color_attachment.height_;
-        config.sized_format_     = color_attachment.internal_format_;
-        config.wrap_s_           = GL_REPEAT;
-        config.wrap_t_           = GL_REPEAT;
-        config.min_filter_       = GL_LINEAR;
-        config.mag_filter_       = GL_LINEAR;
-        auto texture             = std::make_shared<GlTexture>(config);
-        const auto target              = GL_COLOR_ATTACHMENT0 + i;
+        config.width_        = color_attachment.width_;
+        config.height_       = color_attachment.height_;
+        config.sized_format_ = color_attachment.internal_format_;
+        config.wrap_s_       = GL_REPEAT;
+        config.wrap_t_       = GL_REPEAT;
+        config.min_filter_   = GL_LINEAR;
+        config.mag_filter_   = GL_LINEAR;
+        config.msaa_         = color_attachment.msaa_;
+
+        auto       texture = std::make_shared<GlTexture>(config);
+        const auto target  = GL_COLOR_ATTACHMENT0 + i;
         glNamedFramebufferTexture(id_, target, texture->id(), 0);
         color_attachment_targets.push_back(target);
         color_attachments_.push_back(std::move(texture));
@@ -58,10 +60,12 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
       }
       case AttachmentType::Renderbuffer:
       {
-        auto renderbuffer =
-            std::make_shared<GlRenderbuffer>(color_attachment.internal_format_,
-                                             color_attachment.width_,
-                                             color_attachment.height_);
+        GlRenderbufferConfig config{};
+        config.sized_format_ = color_attachment.internal_format_;
+        config.width_        = color_attachment.width_;
+        config.height_       = color_attachment.height_;
+        config.msaa_         = color_attachment.msaa_;
+        auto renderbuffer    = std::make_shared<GlRenderbuffer>(config);
 
         const auto target = GL_COLOR_ATTACHMENT0 + i;
         glNamedFramebufferRenderbuffer(id_,
@@ -118,24 +122,28 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
       case AttachmentType::Texture:
       {
         GlTextureConfig config{};
-        config.width_            = depth_attachment.width_;
-        config.height_           = depth_attachment.height_;
-        config.sized_format_     = depth_attachment.internal_format_;
-        config.wrap_s_           = GL_REPEAT;
-        config.wrap_t_           = GL_REPEAT;
-        config.min_filter_       = GL_LINEAR;
-        config.mag_filter_       = GL_LINEAR;
-        auto texture             = std::make_shared<GlTexture>(config);
+        config.width_        = depth_attachment.width_;
+        config.height_       = depth_attachment.height_;
+        config.sized_format_ = depth_attachment.internal_format_;
+        config.wrap_s_       = GL_REPEAT;
+        config.wrap_t_       = GL_REPEAT;
+        config.min_filter_   = GL_LINEAR;
+        config.mag_filter_   = GL_LINEAR;
+        config.msaa_         = depth_attachment.msaa_;
+
+        auto texture         = std::make_shared<GlTexture>(config);
         glNamedFramebufferTexture(id_, GL_DEPTH_ATTACHMENT, texture->id(), 0);
         color_attachments_.push_back(std::move(texture));
         break;
       }
       case AttachmentType::Renderbuffer:
       {
-        auto renderbuffer =
-            std::make_shared<GlRenderbuffer>(depth_attachment.internal_format_,
-                                             depth_attachment.width_,
-                                             depth_attachment.height_);
+        GlRenderbufferConfig config{};
+        config.sized_format_ = depth_attachment.internal_format_;
+        config.width_        = depth_attachment.width_;
+        config.height_       = depth_attachment.height_;
+        config.msaa_         = depth_attachment.msaa_;
+        auto renderbuffer    = std::make_shared<GlRenderbuffer>(config);
 
         glNamedFramebufferRenderbuffer(id_,
                                        GL_DEPTH_ATTACHMENT,
@@ -178,10 +186,13 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
       }
       case AttachmentType::Renderbuffer:
       {
-        auto renderbuffer = std::make_shared<GlRenderbuffer>(
-            stencil_attachment.internal_format_,
-            stencil_attachment.width_,
-            stencil_attachment.height_);
+        GlRenderbufferConfig config{};
+        config.sized_format_ = stencil_attachment.internal_format_;
+        config.width_        = stencil_attachment.width_;
+        config.height_       = stencil_attachment.height_;
+        config.msaa_         = stencil_attachment.msaa_;
+
+        auto renderbuffer = std::make_shared<GlRenderbuffer>(config);
 
         glNamedFramebufferRenderbuffer(id_,
                                        GL_STENCIL_ATTACHMENT,

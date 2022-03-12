@@ -16,19 +16,31 @@ namespace dc
 
 GlTexture::GlTexture(const GlTextureConfig &config)
 {
-  glCreateTextures(GL_TEXTURE_2D, 1, &id_);
+  if (config.msaa_ == 0)
+  {
+    glCreateTextures(GL_TEXTURE_2D, 1, &id_);
 
-  // send the image data to the GPU
-  const auto mipmap_levels =
-      config.generate_mipmaps_
-          ? math::calc_mipmap_levels_2d(config.width_, config.height_)
-          : 1;
+    const auto mipmap_levels =
+        config.generate_mipmaps_
+            ? math::calc_mipmap_levels_2d(config.width_, config.height_)
+            : 1;
 
-  glTextureStorage2D(id_,
-                     mipmap_levels,
-                     config.sized_format_,
-                     config.width_,
-                     config.height_);
+    glTextureStorage2D(id_,
+                       mipmap_levels,
+                       config.sized_format_,
+                       config.width_,
+                       config.height_);
+  }
+  else
+  {
+    glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &id_);
+    glTextureStorage2DMultisample(id_,
+                                  config.msaa_,
+                                  config.sized_format_,
+                                  config.width_,
+                                  config.height_,
+                                  GL_TRUE);
+  }
   if (config.data_)
   {
     glTextureSubImage2D(id_,
@@ -44,13 +56,16 @@ GlTexture::GlTexture(const GlTextureConfig &config)
 
   // set texture parameters
   glTextureParameteri(id_, GL_TEXTURE_MAX_LEVEL, config.max_level_);
-  glTextureParameteri(id_, GL_TEXTURE_WRAP_S, config.wrap_s_);
-  glTextureParameteri(id_, GL_TEXTURE_WRAP_T, config.wrap_t_);
-  glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, config.min_filter_);
-  glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, config.mag_filter_);
+  if (config.msaa_ == 0)
+  {
+    glTextureParameteri(id_, GL_TEXTURE_WRAP_S, config.wrap_s_);
+    glTextureParameteri(id_, GL_TEXTURE_WRAP_T, config.wrap_t_);
+    glTextureParameteri(id_, GL_TEXTURE_MIN_FILTER, config.min_filter_);
+    glTextureParameteri(id_, GL_TEXTURE_MAG_FILTER, config.mag_filter_);
+  }
 
   // generate mipmaps if needed
-  if (config.generate_mipmaps_)
+  if (config.generate_mipmaps_ && config.msaa_ == 0)
   {
     glGenerateTextureMipmap(id_);
   }

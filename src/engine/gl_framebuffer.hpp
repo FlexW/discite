@@ -26,6 +26,7 @@ struct FramebufferAttachmentCreateConfig
   GLint          internal_format_;
   GLsizei        width_;
   GLsizei        height_;
+  GLuint         msaa_{0};
 };
 
 using FramebufferAttachmentConfig =
