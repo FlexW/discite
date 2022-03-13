@@ -334,7 +334,6 @@ KeyAction to_key_action(int key_action)
   }
 
   DC_LOG_WARN("Unknown GLFW action: {}", key_action);
-  DC_FAIL("Unknown GLFW key action: {}", key_action);
 
   return KeyAction::Undefined;
 }
@@ -350,7 +349,6 @@ MouseButton to_mouse_button(int mouse_button)
   }
 
   DC_LOG_WARN("Unknown GLFW mouse button: {}", mouse_button);
-  DC_FAIL("Unknown GLFW mouse button: {}", mouse_button);
 
   return MouseButton::Undefined;
 }
@@ -368,7 +366,6 @@ MouseButtonAction to_mouse_button_action(int mouse_button_action)
   }
 
   DC_LOG_WARN("Unknown GLFW mouse button action: {}", mouse_button_action);
-  DC_FAIL("Unknown GLFW mouse button action: {}", mouse_button_action);
 
   return MouseButtonAction::Undefined;
 }
