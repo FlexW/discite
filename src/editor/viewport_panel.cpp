@@ -17,7 +17,10 @@
 namespace dc
 {
 
-ViewportPanel::ViewportPanel() : ImGuiPanel{"Viewport"} {}
+ViewportPanel::ViewportPanel() : ImGuiPanel{"Viewport"}
+{
+  editor_camera_.set_enable_acceleration(true);
+}
 
 void ViewportPanel::update(float delta_time) { move_editor_camera(delta_time); }
 
@@ -342,22 +345,24 @@ void ViewportPanel::move_editor_camera(float delta_time)
   }
 
   const auto window = Engine::instance()->window();
+  editor_camera_.clear_movement();
   if (window->key(Key::W) == KeyAction::Press)
   {
-    editor_camera_.process_movement(CameraMovement::Forward, delta_time);
+    editor_camera_.set_move_forward(true);
   }
   if (window->key(Key::S) == KeyAction::Press)
   {
-    editor_camera_.process_movement(CameraMovement::Backward, delta_time);
+    editor_camera_.set_move_backward(true);
   }
   if (window->key(Key::A) == KeyAction::Press)
   {
-    editor_camera_.process_movement(CameraMovement::Left, delta_time);
+    editor_camera_.set_move_left(true);
   }
   if (window->key(Key::D) == KeyAction::Press)
   {
-    editor_camera_.process_movement(CameraMovement::Right, delta_time);
+    editor_camera_.set_move_right(true);
   }
+  editor_camera_.update_movement(delta_time);
 }
 
 void ViewportPanel::rotate_editor_camera(double offset_x, double offset_y)
@@ -367,7 +372,7 @@ void ViewportPanel::rotate_editor_camera(double offset_x, double offset_y)
     return;
   }
 
-  editor_camera_.process_rotation(offset_x, offset_y);
+  editor_camera_.update_rotation(offset_x, offset_y);
 }
 
 void ViewportPanel::set_renderer(std::shared_ptr<SceneRenderer> renderer)

@@ -37,22 +37,24 @@ void CameraSystem::update(float delta_time)
     auto      &camera = camera_component.camera_;
     const auto window = Engine::instance()->window();
     // process movement
+    camera.clear_movement();
     if (window->key(Key::W) == KeyAction::Press)
     {
-      camera.process_movement(CameraMovement::Forward, delta_time);
+      camera.set_move_forward(true);
     }
     if (window->key(Key::S) == KeyAction::Press)
     {
-      camera.process_movement(CameraMovement::Backward, delta_time);
+      camera.set_move_backward(true);
     }
     if (window->key(Key::A) == KeyAction::Press)
     {
-      camera.process_movement(CameraMovement::Left, delta_time);
+      camera.set_move_left(true);
     }
     if (window->key(Key::D) == KeyAction::Press)
     {
-      camera.process_movement(CameraMovement::Right, delta_time);
+      camera.set_move_right(true);
     }
+    camera.update_movement(delta_time);
   }
 }
 
@@ -112,7 +114,7 @@ bool CameraSystem::on_mouse_movement(const MouseMovementEvent &event)
     }
 
     auto &camera = camera_component.camera_;
-    camera.process_rotation(event.offset_x_, event.offset_y_);
+    camera.update_rotation(event.offset_x_, event.offset_y_);
   }
 
   return false;

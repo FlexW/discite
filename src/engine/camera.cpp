@@ -15,34 +15,63 @@ glm::mat4 Camera::view_matrix() const
   return glm::lookAt(position_, position_ + front_, up_);
 }
 
-void Camera::process_movement(const CameraMovement direction,
-                              const float          delta_time)
+void Camera::update_movement(float delta_time)
 {
-  const auto velocity = movement_speed_ * delta_time;
-
   const auto front = free_fly_ ? front_ : front_movement_;
 
-  if (direction == CameraMovement::Forward)
+  glm::vec3 movement{0.0f};
+  if (move_forward_)
   {
-    position_ += front * velocity;
+    movement += front;
   }
-  if (direction == CameraMovement::Backward)
+  if (move_backward_)
   {
-    position_ -= front * velocity;
+    movement -= front;
   }
-  if (direction == CameraMovement::Left)
+  if (move_left_)
   {
-    position_ -= right_ * velocity;
+    movement -= right_;
   }
-  if (direction == CameraMovement::Right)
+  if (move_right_)
   {
-    position_ += right_ * velocity;
+    movement += right_;
   }
+
+  if (is_enable_acceleration_)
+  {
+    if (movement == glm::vec3{0.0f})
+    {
+      // decelerate naturally according to the damping value
+      movement_speed_ -=
+          movement_speed_ * std::min((1.0f / damping_) * delta_time, 1.0f);
+    }
+    else
+    {
+      // acceleration
+      movement_speed_ += movement * acceleration_ * delta_time;
+      if (glm::length(movement_speed_) > max_movement_speed_)
+      {
+        movement_speed_ = glm::normalize(movement_speed_) * max_movement_speed_;
+      }
+    }
+  }
+  else
+  {
+    if (movement == glm::vec3{0.0f})
+    {
+      movement_speed_ = glm::vec3{0.0f};
+    }
+    else
+    {
+      movement_speed_ =
+          glm::normalize(movement * delta_time) * max_movement_speed_;
+    }
+  }
+
+  position_ += movement_speed_ * delta_time;
 }
 
-void Camera::process_rotation(float      xoffset,
-                              float      yoffset,
-                              const bool constrain_pitch)
+void Camera::update_rotation(float xoffset, float yoffset, bool constrain_pitch)
 {
   xoffset *= mouse_sensitivity_;
   yoffset *= mouse_sensitivity_;
@@ -106,6 +135,22 @@ void Camera::update_camera_vectors()
 
 void Camera::set_position(const glm::vec3 &value) { position_ = value; }
 
+void Camera::set_move_forward(bool value) { move_forward_ = value; }
+
+void Camera::set_move_backward(bool value) { move_backward_ = value; }
+
+void Camera::set_move_left(bool value) { move_left_ = value; }
+
+void Camera::set_move_right(bool value) { move_right_ = value; }
+
+void Camera::clear_movement()
+{
+  move_forward_  = false;
+  move_backward_ = false;
+  move_left_     = false;
+  move_right_    = false;
+}
+
 void Camera::set_free_fly(bool value) { free_fly_ = value; }
 
 glm::vec3 Camera::front_movement() const { return front_movement_; }
@@ -114,7 +159,10 @@ glm::vec3 Camera::right() const { return right_; }
 
 glm::vec3 Camera::front() const { return front_; }
 
-void Camera::set_movement_speed(float value) { movement_speed_ = value; }
+void Camera::set_max_movement_speed(float value)
+{
+  max_movement_speed_ = value;
+}
 
 float Camera::pitch() const { return pitch_; }
 
@@ -196,6 +244,11 @@ void Camera::read(FILE *file)
   read_value(file, far_plane_);
   read_value(file, aspect_ratio_);
   read_value(file, projection_matrix_);
+}
+
+void Camera::set_enable_acceleration(bool value)
+{
+  is_enable_acceleration_ = value;
 }
 
 } // namespace dc

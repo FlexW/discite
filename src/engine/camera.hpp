@@ -5,14 +5,6 @@
 namespace dc
 {
 
-enum class CameraMovement
-{
-  Forward,
-  Backward,
-  Left,
-  Right
-};
-
 class Camera
 {
 public:
@@ -20,11 +12,10 @@ public:
 
   glm::mat4 view_matrix() const;
 
-  void process_movement(const CameraMovement direction, const float delta_time);
+  void update_movement(float delta_time);
 
-  void process_rotation(float      xoffset,
-                        float      yoffset,
-                        const bool constrain_pitch = true);
+  void
+  update_rotation(float xoffset, float yoffset, bool constrain_pitch = true);
 
   void process_scroll(float yoffset);
 
@@ -32,6 +23,12 @@ public:
 
   void      set_position(const glm::vec3 &value);
   glm::vec3 position() const { return position_; }
+
+  void set_move_forward(bool value);
+  void set_move_backward(bool value);
+  void set_move_left(bool value);
+  void set_move_right(bool value);
+  void clear_movement();
 
   void set_free_fly(bool value);
 
@@ -42,7 +39,9 @@ public:
   float pitch() const;
   void  set_pitch(float value);
 
-  void set_movement_speed(float value);
+  void set_max_movement_speed(float value);
+
+  void set_enable_acceleration(bool value);
 
   void  set_near_plane(float value);
   float near_plane() const;
@@ -66,12 +65,22 @@ private:
   glm::vec3 up_{world_up_};
   glm::vec3 right_;
 
+  bool move_forward_{false};
+  bool move_backward_{false};
+  bool move_left_{false};
+  bool move_right_{false};
+
   float yaw_{-90.0f};
   float pitch_{0.0f};
 
-  float movement_speed_{20.0f};
-  float mouse_sensitivity_{0.2f};
-  float zoom_{45.0f};
+  bool  is_enable_acceleration_{false};
+  float acceleration_{150.0f};
+  float damping_{0.2f};
+  float max_movement_speed_{15.0f};
+
+  glm::vec3 movement_speed_{0.0f};
+  float     mouse_sensitivity_{0.2f};
+  float     zoom_{45.0f};
 
   bool free_fly_{true};
 
