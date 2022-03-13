@@ -1,6 +1,7 @@
 .vs
 .out
 build
+bin
 compile_commands.json
 external/deps/.bootstrap.json
 external/deps/archives/

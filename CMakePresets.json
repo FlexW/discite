@@ -34,6 +34,10 @@
         "WERROR": {
           "type": "BOOL",
           "value": "ON"
+        },
+        "DC_BIN_DIR": {
+          "type": "STRING",
+          "value": "clang_release"
         }
       },
       "warnings": {
@@ -67,6 +71,10 @@
         "WERROR": {
           "type": "BOOL",
           "value": "OFF"
+        },
+        "DC_BIN_DIR": {
+          "type": "STRING",
+          "value": "gcc_release"
         }
       },
       "warnings": {
@@ -84,6 +92,10 @@
         "CMAKE_BUILD_TYPE": {
           "type": "STRING",
           "value": "Debug"
+        },
+        "DC_BIN_DIR": {
+          "type": "STRING",
+          "value": "clang_debug"
         }
       }
     },
@@ -98,6 +110,10 @@
         "CMAKE_BUILD_TYPE": {
           "type": "STRING",
           "value": "Debug"
+        },
+        "DC_BIN_DIR": {
+          "type": "STRING",
+          "value": "gcc_debug"
         }
       }
     },
@@ -120,6 +136,10 @@
         "CMAKE_C_FLAGS": {
           "type": "STRING",
           "value": "-g -O1 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+        },
+        "DC_BIN_DIR": {
+          "type": "STRING",
+          "value": "clang_asan"
         }
       }
     },
@@ -142,6 +162,10 @@
         "CMAKE_C_FLAGS": {
           "type": "STRING",
           "value": "-g -O1 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+        },
+        "DC_BIN_DIR": {
+          "type": "STRING",
+          "value": "gcc_asan"
         }
       }
     },
@@ -168,6 +192,10 @@
         "WERROR": {
           "type": "BOOL",
           "value": "ON"
+        },
+        "DC_BIN_DIR": {
+          "type": "STRING",
+          "value": "msvc_debug"
         }
       },
       "vendor": {
@@ -199,6 +227,10 @@
         "WERROR": {
           "type": "BOOL",
           "value": "OFF"
+        },
+        "DC_BIN_DIR": {
+          "type": "STRING",
+          "value": "msvc_release"
         }
       },
       "vendor": {

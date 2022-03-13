@@ -95,6 +95,7 @@ target_include_directories(imguizmo PUBLIC deps/src/imgui deps/src/imguizmo)
 add_subdirectory(deps/src/entt)
 
 # gli
+set(GLI_TEST_ENABLE "OFF" CACHE STRING "")
 add_subdirectory(deps/src/gli)
 
 # RapidJSON

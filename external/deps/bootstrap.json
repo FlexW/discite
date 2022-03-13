@@ -56,7 +56,7 @@
     },
       "postprocess": {
           "type": "patch",
-          "file": "gli_warnings.patch"
+          "file": "gli.patch"
       }
   },
   {
