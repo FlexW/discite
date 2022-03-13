@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "imgui.hpp"
 #include "log.hpp"
+#include "profiling.hpp"
 #include "util.hpp"
 #include "window.hpp"
 
@@ -60,6 +61,8 @@ void ImGuiLayer::shutdown()
 
 void ImGuiLayer::update(float delta_time)
 {
+  DC_PROFILE_SCOPE("ImGuiLayer::update()");
+
   for (const auto &panel : panels_)
   {
     panel->update(delta_time);
@@ -68,21 +71,32 @@ void ImGuiLayer::update(float delta_time)
 
 void ImGuiLayer::render()
 {
+  DC_PROFILE_SCOPE("ImGuiLayer::render()");
   DC_TIME_SCOPE_PERF("Imgui render");
 
-  ImGui_ImplOpenGL3_NewFrame();
-  ImGui_ImplGlfw_NewFrame();
-  ImGui::NewFrame();
-  ImGuizmo::BeginFrame();
+  {
+    DC_PROFILE_SCOPE("ImGuiLayer::render() - New imgui frame");
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    ImGuizmo::BeginFrame();
+  }
 
   render_panels();
 
-  ImGui::Render();
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  {
+    DC_PROFILE_SCOPE("ImGuiLayer::render() - Render imgui");
+    ImGui::Render();
+  }
+  {
+    DC_PROFILE_SCOPE("ImGuiLayer::render() - Render draw data");
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  }
 
   auto &io = ImGui::GetIO();
   if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
   {
+    DC_PROFILE_SCOPE("ImGuiLayer::render() - Update platform windows");
     auto backup_current_context = glfwGetCurrentContext();
     ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
@@ -209,6 +223,8 @@ void ImGuiLayer::add_panel(std::shared_ptr<ImGuiPanel> panel)
 
 void ImGuiLayer::render_panels()
 {
+  DC_PROFILE_SCOPE("ImGuiLayer::render_panels()");
+
   for (const auto &panel : panels_)
   {
     panel->render();

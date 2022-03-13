@@ -1,4 +1,5 @@
 #include "dockspace_panel.hpp"
+#include "profiling.hpp"
 #include "engine.hpp"
 #include "imgui.h"
 #include "imgui_panel.hpp"
@@ -41,6 +42,8 @@ ImGuiWindowFlags DockspacePanel::on_before_render()
 
 void DockspacePanel::on_render()
 {
+  DC_PROFILE_SCOPE("DockspacePanel::on_render()");
+
   ImGui::PopStyleVar();
   ImGui::PopStyleVar(2);
 

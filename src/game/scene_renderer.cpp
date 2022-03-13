@@ -1,5 +1,6 @@
 #include "scene_renderer.hpp"
 #include "time.hpp"
+#include "profiling.hpp"
 
 namespace dc
 {
@@ -44,6 +45,7 @@ SceneRenderer::SceneRenderer()
 void SceneRenderer::render(const SceneRenderInfo &scene_render_info,
                            const ViewRenderInfo  &view_render_info)
 {
+  DC_PROFILE_SCOPE("SceneRenderer::render()");
   DC_TIME_SCOPE_PERF("Scene renderer render");
   // executes all passes
   shadow_pass_->execute(scene_render_info, view_render_info);

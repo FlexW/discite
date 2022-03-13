@@ -1,4 +1,5 @@
 #include "entity_panel.hpp"
+#include "profiling.hpp"
 #include "camera_component.hpp"
 #include "directional_light_component.hpp"
 #include "engine.hpp"
@@ -24,6 +25,8 @@ EntityPanel::EntityPanel() : ImGuiPanel{"Entity"} {}
 
 void EntityPanel::on_render()
 {
+  DC_PROFILE_SCOPE("EntityPanel::on_render()");
+
   if (!entity_.valid())
   {
     return;

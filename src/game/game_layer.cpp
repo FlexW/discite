@@ -6,6 +6,7 @@
 #include "entity.hpp"
 #include "model_component.hpp"
 #include "point_light_component.hpp"
+#include "profiling.hpp"
 #include "render_system.hpp"
 #include "scene.hpp"
 #include "scene_asset.hpp"
@@ -52,6 +53,8 @@ void GameLayer::shutdown() {}
 
 void GameLayer::update(float delta_time)
 {
+  DC_PROFILE_SCOPE("GameLayer::update()");
+
   if (scene_ && scene_->is_ready())
   {
     scene_->get()->update(delta_time);
@@ -60,6 +63,8 @@ void GameLayer::update(float delta_time)
 
 void GameLayer::render()
 {
+  DC_PROFILE_SCOPE("GameLayer::render()");
+
   SceneRenderInfo scene_render_info{};
   ViewRenderInfo  view_render_info{};
   if (scene_ && scene_->is_ready())
@@ -76,6 +81,8 @@ std::shared_ptr<SceneRenderer> GameLayer::renderer() const { return renderer_; }
 
 bool GameLayer::on_event(const Event &event)
 {
+  DC_PROFILE_SCOPE("GameLayer::on_event()");
+
   if (scene_ && scene_->is_ready())
   {
     return scene_->get()->on_event(event);

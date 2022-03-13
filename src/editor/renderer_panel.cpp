@@ -1,4 +1,5 @@
 #include "renderer_panel.hpp"
+#include "profiling.hpp"
 #include "imgui.hpp"
 #include "imgui_panel.hpp"
 
@@ -23,6 +24,8 @@ RendererPanel::~RendererPanel()
 
 void RendererPanel::on_render()
 {
+  DC_PROFILE_SCOPE("RendererPanel::on_render()");
+
   if (ImGui::BeginTabBar("Renderer tabs"))
   {
     if (ImGui::BeginTabItem("General"))

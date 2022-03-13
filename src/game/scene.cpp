@@ -9,6 +9,7 @@
 #include "model_component.hpp"
 #include "name_component.hpp"
 #include "point_light_component.hpp"
+#include "profiling.hpp"
 #include "relationship_component.hpp"
 #include "render_system.hpp"
 #include "serialization.hpp"
@@ -61,6 +62,8 @@ void Scene::init()
 
 void Scene::update(float delta_time)
 {
+  DC_PROFILE_SCOPE("Scene::update()");
+
   for (const auto &system : systems_)
   {
     system->update(delta_time);
@@ -68,8 +71,10 @@ void Scene::update(float delta_time)
 }
 
 void Scene::render(SceneRenderInfo &scene_render_info,
-                   ViewRenderInfo  &view_render_info)
+                   ViewRenderInfo & view_render_info)
 {
+  DC_PROFILE_SCOPE("Scene::render()");
+
   for (const auto &system : systems_)
   {
     system->render(scene_render_info, view_render_info);
@@ -78,6 +83,8 @@ void Scene::render(SceneRenderInfo &scene_render_info,
 
 bool Scene::on_event(const Event &event)
 {
+  DC_PROFILE_SCOPE("Scene::on_event()");
+
   for (const auto &system : systems_)
   {
     system->on_event(event);
@@ -93,6 +100,8 @@ Entity Scene::create_entity(const std::string &name)
 
 Entity Scene::create_entity(const std::string &name, Uuid uuid)
 {
+  DC_PROFILE_SCOPE("Scene::create_entity()");
+
   Entity     entity{registry_.create(), shared_from_this()};
   const auto entity_name = name.empty() ? "Entity" : name;
   entity.add_component<GuidComponent>(uuid);
@@ -123,6 +132,8 @@ Entity Scene::get_or_create_entity(Uuid uuid)
 
 Entity Scene::entity(Uuid uuid)
 {
+  DC_PROFILE_SCOPE("Scene::entity()");
+
   assert(uuid != 0);
   const auto iter = uuid_to_entity_map_.find(uuid);
   assert(iter != uuid_to_entity_map_.end());
@@ -131,6 +142,8 @@ Entity Scene::entity(Uuid uuid)
 
 bool Scene::exists(Uuid uuid) const
 {
+  DC_PROFILE_SCOPE("Scene::exists()");
+
   if (uuid == 0)
   {
     return false;
@@ -141,8 +154,10 @@ bool Scene::exists(Uuid uuid) const
 }
 
 void Scene::save(const std::filesystem::path &file_path,
-                 const AssetDescription      &asset_description)
+                 const AssetDescription &     asset_description)
 {
+  DC_PROFILE_SCOPE("Scene::save()");
+
   const auto file = std::fopen(file_path.string().c_str(), "wb");
   if (!file)
   {
@@ -193,11 +208,13 @@ void Scene::save(const std::filesystem::path &file_path,
     }
 
     write_string(file, "*end*");
-    }
+  }
 }
 
 AssetDescription Scene::read(const std::filesystem::path &file_path)
 {
+  DC_PROFILE_SCOPE("Scene::read()");
+
   const auto file = std::fopen(file_path.string().c_str(), "rb");
   if (!file)
   {

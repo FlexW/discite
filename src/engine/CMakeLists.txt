@@ -13,7 +13,7 @@ endif()
 
 if(NOT CMAKE_BUILD_TYPE MATCHES RELEASE)
   target_compile_definitions(engine PUBLIC DC_ENABLE_ASSERT)
-  # target_compile_definitions(engine PUBLIC DC_ENABLE_PROFILING)
+  target_compile_definitions(engine PUBLIC DC_ENABLE_PROFILING)
   target_compile_definitions(engine PUBLIC DC_ENABLE_TIMING)
 endif()
 

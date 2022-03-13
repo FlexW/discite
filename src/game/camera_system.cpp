@@ -1,4 +1,5 @@
 #include "camera_system.hpp"
+#include "profiling.hpp"
 #include "camera_component.hpp"
 #include "engine.hpp"
 #include "log.hpp"
@@ -18,6 +19,8 @@ void CameraSystem::init() {}
 
 void CameraSystem::update(float delta_time)
 {
+  DC_PROFILE_SCOPE("CameraSystem::update()");
+
   const auto scene = scene_.lock();
   if (!scene)
   {
@@ -61,6 +64,8 @@ void CameraSystem::update(float delta_time)
 void CameraSystem::render(SceneRenderInfo & /*scene_render_info*/,
                           ViewRenderInfo &view_render_info)
 {
+  DC_PROFILE_SCOPE("CameraSystem::render()");
+
   const auto scene = scene_.lock();
   if (!scene)
   {

@@ -64,7 +64,7 @@ private:
 #if defined(DC_ENABLE_TIMING)
 
 #define DC_TIME_SCOPE_PERF(name)                                               \
-  ScopedPerformanceTimer timer__LINE__(                                        \
+  ScopedPerformanceTimer scope_timer__LINE__(                                        \
       name,                                                                    \
       *dc::Engine::instance()->performance_profiler())
 

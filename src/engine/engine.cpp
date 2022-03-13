@@ -175,6 +175,7 @@ void Engine::main_loop()
       DC_TIME_SCOPE_PERF("Frame");
 
       {
+        DC_PROFILE_SCOPE("Engine::main_loop() - Dispatch events");
         DC_TIME_SCOPE_PERF("Dispatch events");
         window_->dispatch_events();
         event_manager_->dispatch([this](const Event &event)
@@ -186,15 +187,18 @@ void Engine::main_loop()
       last_time             = current_time_millis();
 
       {
+        DC_PROFILE_SCOPE("Engine::main_loop() - Layers update");
         DC_TIME_SCOPE_PERF("Layers update");
         layer_stack_.update(delta_time);
       }
       {
+        DC_PROFILE_SCOPE("Engine::main_loop() - Layers render");
         DC_TIME_SCOPE_PERF("Layers render");
         layer_stack_.render();
       }
 
       {
+        DC_PROFILE_SCOPE("Engine::main_loop() - Swap buffers");
         DC_TIME_SCOPE_PERF("Swap buffers");
         window_->swap_buffers();
       }

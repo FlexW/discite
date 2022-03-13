@@ -3,13 +3,13 @@
 #include "directional_light_component.hpp"
 #include "entity.hpp"
 #include "frame_data.hpp"
-#include "glm/gtx/quaternion.hpp"
 #include "log.hpp"
 #include "model_component.hpp"
 #include "point_light.hpp"
 #include "point_light_component.hpp"
 #include "sky_component.hpp"
 #include "transform_component.hpp"
+#include "profiling.hpp"
 
 #include <memory>
 
@@ -25,6 +25,8 @@ void RenderSystem::update(float /*delta_time*/) {}
 void RenderSystem::render(SceneRenderInfo &scene_render_info,
                           ViewRenderInfo & /*view_render_info*/)
 {
+  DC_PROFILE_SCOPE("RenderSystem::render()");
+
   const auto scene = scene_.lock();
   if (!scene)
   {
@@ -33,6 +35,8 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
 
   // add meshes
   {
+    DC_PROFILE_SCOPE("RenderSystem::render() - Process meshes");
+
     auto view = scene->all_entities_with<TransformComponent, ModelComponent>();
     for (const auto entity : view)
     {
@@ -57,6 +61,8 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
 
   // add point lights
   {
+    DC_PROFILE_SCOPE("RenderSystem::render() - Process point lights");
+
     auto view =
         scene->all_entities_with<TransformComponent, PointLightComponent>();
     for (const auto entity : view)
@@ -79,6 +85,8 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
 
   // add sky
   {
+    DC_PROFILE_SCOPE("RenderSystem::render() - Process sky");
+
     auto view = scene->all_entities_with<SkyComponent>();
     bool found{false};
     for (const auto &entity : view)
@@ -102,6 +110,8 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
 
   // add directional light
   {
+    DC_PROFILE_SCOPE("RenderSystem::render() - Process directional light");
+
     auto view = scene->all_entities_with<TransformComponent,
                                          DirectionalLightComponent>();
     bool found{false};

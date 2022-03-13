@@ -1,5 +1,6 @@
 #include "editor_layer.hpp"
 #include "dockspace_panel.hpp"
+#include "profiling.hpp"
 #include "engine.hpp"
 #include "entity_panel.hpp"
 #include "imgui_layer.hpp"
@@ -70,6 +71,8 @@ void EditorLayer::set_capture_mouse(bool value)
 
 bool EditorLayer::on_event(const Event &event)
 {
+  DC_PROFILE_SCOPE("EditorLayer::on_event()");
+
   const auto event_id = event.id();
   if (event_id == KeyEvent::id)
   {
@@ -81,6 +84,8 @@ bool EditorLayer::on_event(const Event &event)
 
 bool EditorLayer::on_key_event(const KeyEvent &event)
 {
+  DC_PROFILE_SCOPE("EditorLayer::on_key_event()");
+
   if (event.key_ == Key::S && event.ctrl_pressed_)
   {
     const auto scene = game_layer_->scene();

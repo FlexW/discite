@@ -1,4 +1,5 @@
 #include "viewport_panel.hpp"
+#include "profiling.hpp"
 #include "engine.hpp"
 #include "gl_framebuffer.hpp"
 #include "gl_texture.hpp"
@@ -26,6 +27,8 @@ void ViewportPanel::update(float delta_time) { move_editor_camera(delta_time); }
 
 void ViewportPanel::on_render()
 {
+  DC_PROFILE_SCOPE("ViewportPanel::on_render()");
+
   const auto viewport_size = calc_viewport_size();
   account_for_window_size_changes(viewport_size.x, viewport_size.y);
 
@@ -33,6 +36,8 @@ void ViewportPanel::on_render()
   const auto renderer = renderer_.lock();
   if (scene)
   {
+    DC_PROFILE_SCOPE("ViewportPanel::on_render() - render scene");
+
     SceneRenderInfo scene_render_info{};
     ViewRenderInfo  view_render_info{};
     scene->render(scene_render_info, view_render_info);

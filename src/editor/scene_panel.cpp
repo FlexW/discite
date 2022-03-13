@@ -1,4 +1,5 @@
 #include "scene_panel.hpp"
+#include "profiling.hpp"
 #include "engine.hpp"
 #include "entity.hpp"
 #include "entt/core/fwd.hpp"
@@ -28,6 +29,8 @@ ScenePanel::ScenePanel() : ImGuiPanel{"Scene"} {}
 
 void ScenePanel::on_render()
 {
+  DC_PROFILE_SCOPE("ScenePanel::on_render()");
+
   if (ImGui::Button("Add entity"))
   {
     const auto scene = scene_.lock();
