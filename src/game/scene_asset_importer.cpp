@@ -75,10 +75,10 @@ std::string load_mesh(const aiScene   *ai_scene,
 
   auto mesh_asset_handle = std::dynamic_pointer_cast<MeshAssetHandle>(
       Engine::instance()->asset_cache()->load_asset(
-          Asset{mesh_asset_handle_name}));
+          Asset{mesh_asset_handle_name.string()}));
   entity.add_component<ModelComponent>(mesh_asset_handle);
 
-  return mesh_asset_handle_name;
+  return mesh_asset_handle_name.string();
 }
 
 void import_node(const aiScene        *ai_scene,

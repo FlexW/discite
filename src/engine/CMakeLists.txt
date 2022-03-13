@@ -5,6 +5,12 @@ set_warnings_as_errors(engine)
 target_compile_definitions(engine PUBLIC
   GLFW_INCLUDE_NONE
   SPDLOG_ACTIVE_LEVEL=0)
+
+# Make the MSVC compilers preprocessor more standard like
+if ((MSVC))
+  target_compile_options(engine PUBLIC "/Zc:preprocessor")
+endif()
+
 if(NOT CMAKE_BUILD_TYPE MATCHES RELEASE)
   target_compile_definitions(engine PUBLIC DC_ENABLE_ASSERT)
   # target_compile_definitions(engine PUBLIC DC_ENABLE_PROFILING)

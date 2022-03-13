@@ -48,11 +48,11 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
   int global_texture_slot{0};
 
   glViewport(0, 0, viewport_info.width_, viewport_info.height_);
-  constexpr std::array<float, 4> clear_color{0.0f, 0.0f, 0.0f, 1.0f};
+  const glm::vec4 clear_color{0.0f, 0.0f, 0.0f, 1.0f};
   glClearNamedFramebufferfv(scene_framebuffer_msaa_->id(),
                             GL_COLOR,
                             0,
-                            clear_color.data());
+                            glm::value_ptr(clear_color));
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
   const auto view_matrix = view_render_info.view_matrix();

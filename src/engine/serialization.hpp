@@ -3,12 +3,11 @@
 #include "defer.hpp"
 #include "mesh.hpp"
 
-#include <bits/types/FILE.h>
-
 #include <filesystem>
 #include <stdexcept>
 #include <unordered_map>
 #include <vector>
+#include <cstdlib>
 
 namespace dc
 {

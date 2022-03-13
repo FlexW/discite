@@ -68,6 +68,8 @@ void ImGuiLayer::update(float delta_time)
 
 void ImGuiLayer::render()
 {
+  DC_TIME_SCOPE_PERF("Imgui render");
+
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();

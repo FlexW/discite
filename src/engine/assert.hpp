@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fmt/format.h>
+#include <fmt/core.h>
 
 #if defined(DC_ENABLE_ASSERT)
 

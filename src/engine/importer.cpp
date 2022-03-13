@@ -7,7 +7,8 @@ namespace dc
 
 std::filesystem::path sanitize_file_path(const std::filesystem::path &file_path)
 {
-  std::string file_path_str{file_path.parent_path() / file_path.stem()};
+  std::string file_path_str{
+      (file_path.parent_path() / file_path.stem()).string()};
 
   for (std::size_t i{0}; i < file_path_str.size(); ++i)
   {

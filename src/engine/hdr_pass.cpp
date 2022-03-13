@@ -1,6 +1,8 @@
 #include "hdr_pass.hpp"
 #include "gl_framebuffer.hpp"
+
 #include <memory>
+#include <array>
 
 namespace dc
 {

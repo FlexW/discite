@@ -2,9 +2,8 @@
 #include "image.hpp"
 #include "math.hpp"
 
-#include <GL/gl.h>
-#include <fmt/core.h>
 #include <gli/load_ktx.hpp>
+#include <fmt/format.h>
 
 #include <cstdint>
 #include <memory>

@@ -106,11 +106,11 @@ void RendererPanel::render_shadows()
   {
     debug_quad_framebuffer_->bind();
     glViewport(0, 0, color_tex_width, color_tex_height);
-    constexpr std::array<float, 4> clear_color{0.0f, 0.0f, 0.0f, 1.0f};
+    const glm::vec4 clear_color{0.0f, 0.0f, 0.0f, 1.0f};
     glClearNamedFramebufferfv(debug_quad_framebuffer_->id(),
                               GL_COLOR,
                               0,
-                              clear_color.data());
+                              glm::value_ptr(clear_color));
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
     depth_debug_shader_->bind();

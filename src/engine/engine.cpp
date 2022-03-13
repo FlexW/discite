@@ -12,9 +12,6 @@
 #include "time.hpp"
 #include "window.hpp"
 
-#include <spdlog/common.h>
-#include <spdlog/spdlog.h>
-
 #include <cstdlib>
 #include <memory>
 #include <stdexcept>
@@ -90,11 +87,15 @@ void Engine::init_logger()
   constexpr auto ansi_yellow   = "\033[0;33m";
   constexpr auto ansi_grey     = "\033[0;90m";
 
+  #ifdef _WIN32
+  auto sink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_st>();
+  #else
   auto sink = std::make_shared<spdlog::sinks::ansicolor_stdout_sink_st>();
   sink->set_color(spdlog::level::debug, ansi_grey);
   sink->set_color(spdlog::level::info, ansi_blue);
   sink->set_color(spdlog::level::warn, ansi_yellow);
   sink->set_color(spdlog::level::err, ansi_bold_red);
+  #endif
 
   const auto logger = std::make_shared<spdlog::logger>("default", sink);
   spdlog::set_default_logger(logger);

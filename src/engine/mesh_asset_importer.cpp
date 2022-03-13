@@ -67,11 +67,11 @@ std::string import_texture(aiMaterial     *ai_material,
       std::filesystem::path{"textures"} /
       (import_data.mesh_name_ + "_" + file_path.stem().string() + ".dctex"));
 
-  if (import_data.textures_.find(imported_file_path) !=
+  if (import_data.textures_.find(imported_file_path.string()) !=
       import_data.textures_.end())
   {
     // texture was already imported
-    return imported_file_path;
+    return imported_file_path.string();
   }
 
   TextureDescription texture_description{};
@@ -96,19 +96,19 @@ std::string import_texture(aiMaterial     *ai_material,
     texture_description.data_ = std::move(png_data);
 
     AssetDescription asset_description{};
-    asset_description.original_file_ = normalize_path(file_path);
+    asset_description.original_file_ = normalize_path(file_path).string();
     texture_description.save(Engine::instance()->base_directory() /
                                  imported_file_path,
                              asset_description);
 
-    import_data.textures_[imported_file_path] = std::move(texture_description);
+    import_data.textures_[imported_file_path.string()] = std::move(texture_description);
   }
   catch (const std::runtime_error &error)
   {
     DC_LOG_WARN("Could not import texture: {}", error.what());
   }
 
-  return imported_file_path;
+  return imported_file_path.string();
 }
 
 std::filesystem::path numerate_file_path(const std::filesystem::path &path,
@@ -135,14 +135,14 @@ std::string import_material(const aiScene  *ai_scene,
 
   // find a unique_material name
   int i{1};
-  while (import_data.materials_.find(material_import_file_path) !=
+  while (import_data.materials_.find(material_import_file_path.string()) !=
          import_data.materials_.end())
   {
     material_import_file_path =
         numerate_file_path(original_material_import_file_path, i);
     ++i;
   }
-  import_data.materials_.insert(material_import_file_path);
+  import_data.materials_.insert(material_import_file_path.string());
 
   DC_LOG_DEBUG("Import material ", material_import_file_path.string());
 
@@ -243,7 +243,7 @@ std::string import_material(const aiScene  *ai_scene,
                                 material_import_file_path,
                             asset_description);
 
-  return material_import_file_path;
+  return material_import_file_path.string();
 }
 
 } // namespace
