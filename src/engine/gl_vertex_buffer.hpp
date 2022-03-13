@@ -13,7 +13,7 @@ struct GlVertexBufferLayoutElement
 {
   GLsizei  size;
   unsigned count;
-  GLenum  type;
+  GLenum   type;
 };
 
 class GlVertexBufferLayout
@@ -24,10 +24,10 @@ public:
 
   std::vector<GlVertexBufferLayoutElement> elements() const;
 
-  std::size_t size() const;
+  GLsizei size() const;
 
 private:
-  std::size_t                              size_ = 0;
+  GLsizei                                  size_ = 0;
   std::vector<GlVertexBufferLayoutElement> elements_;
 };
 
@@ -35,7 +35,7 @@ class GlVertexBuffer
 {
 public:
   template <typename T>
-  GlVertexBuffer(const std::vector<T>      &data,
+  GlVertexBuffer(const std::vector<T> &     data,
                  const GlVertexBufferLayout layout,
                  GLenum                     flags = 0)
       : size_{data.size() * sizeof(T)}

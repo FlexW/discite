@@ -1,7 +1,8 @@
 #pragma once
 
-#include "GLFW/glfw3.h"
 #include "event.hpp"
+
+#include <GLFW/glfw3.h>
 
 #include <memory>
 #include <utility>

@@ -32,7 +32,7 @@ std::vector<GlVertexBufferLayoutElement> GlVertexBufferLayout::elements() const
   return elements_;
 }
 
-std::size_t GlVertexBufferLayout::size() const { return size_; }
+GLsizei GlVertexBufferLayout::size() const { return size_; }
 
 GlVertexBuffer::~GlVertexBuffer()
 {

@@ -66,7 +66,7 @@
         },
         "WERROR": {
           "type": "BOOL",
-          "value": "ON"
+          "value": "OFF"
         }
       },
       "warnings": {
@@ -147,17 +147,59 @@
     },
 
     {
-      "name": "windows",
-      "displayName": "Windows",
-      "description": "Windows config",
+      "name": "msvc_debug",
+      "displayName": "MSVC Debug",
+      "description": "MSVC Debug config",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/windows",
+      "binaryDir": "${sourceDir}/build/msvc_debug",
       "architecture": {
         "value": "x64",
         "strategy": "external"
       },
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": {
+          "type": "BOOL",
+          "value": "ON"
+        },
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "Debug"
+        },
+        "WERROR": {
+          "type": "BOOL",
+          "value": "ON"
+        }
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+
+    {
+      "name": "msvc_release",
+      "displayName": "MSVC Release",
+      "description": "MSVC Release build",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/msvc_release",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": {
+          "type": "BOOL",
+          "value": "ON"
+        },
+        "CMAKE_BUILD_TYPE": {
+          "type": "STRING",
+          "value": "RelWithDebInfo"
+        },
+        "WERROR": {
+          "type": "BOOL",
+          "value": "OFF"
+        }
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {

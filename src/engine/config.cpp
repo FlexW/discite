@@ -99,7 +99,7 @@ float Config::config_value_float(const std::string &section,
     const auto key_iter = section_iter->second.find(name);
     if (key_iter != section_iter->second.end())
     {
-      return std::atof(key_iter->second.c_str());
+      return static_cast<float>(std::atof(key_iter->second.c_str()));
     }
   }
   return default_value;

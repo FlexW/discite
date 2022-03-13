@@ -12,7 +12,7 @@ void GlVertexArray::add_vertex_buffer(
     std::shared_ptr<GlVertexBuffer> vertex_buffer)
 {
   glVertexArrayVertexBuffer(id_,
-                            vertex_buffers_.size(),
+                            static_cast<GLsizei>(vertex_buffers_.size()),
                             vertex_buffer->id(),
                             0,
                             vertex_buffer->layout().size());
@@ -20,7 +20,7 @@ void GlVertexArray::add_vertex_buffer(
   const auto layout          = vertex_buffer->layout();
   const auto layout_elements = layout.elements();
 
-  GLintptr offset{0};
+  GLuint offset{0};
 
   for (std::size_t i = 0; i < layout_elements.size(); ++i)
   {
@@ -51,7 +51,7 @@ void GlVertexArray::add_vertex_buffer(
       DC_FAIL("Can not handle Glsl type");
     }
 
-    glVertexArrayAttribBinding(id_, binding_point_, vertex_buffers_.size());
+    glVertexArrayAttribBinding(id_, binding_point_, static_cast<GLsizei>(vertex_buffers_.size()));
 
     offset += layout_element.size;
     ++binding_point_;

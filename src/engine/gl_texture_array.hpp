@@ -10,11 +10,11 @@ namespace dc
 
 struct GlTextureArrayConfig
 {
-  GlTextureArrayConfig(GLenum sized_format,
-                       GLenum format,
-                       int    width,
-                       int    height,
-                       int    count)
+  GlTextureArrayConfig(GLenum  sized_format,
+                       GLenum  format,
+                       GLsizei width,
+                       GLsizei height,
+                       GLint   count)
       : sized_format{sized_format},
 
         format{format},
@@ -25,12 +25,12 @@ struct GlTextureArrayConfig
   }
 
   std::vector<unsigned char *> data{};
-  GLenum         sized_format;
-  GLenum         format;
-  GLenum         type{GL_UNSIGNED_BYTE};
-  int            width;
-  int            height;
-  int            count;
+  GLenum                       sized_format;
+  GLenum                       format;
+  GLenum                       type{GL_UNSIGNED_BYTE};
+  GLsizei                      width;
+  GLsizei                      height;
+  GLint                        count;
 
   bool is_generate_mipmap{false};
 

@@ -7,7 +7,7 @@ namespace dc
 {
 
 GlIndexBuffer::GlIndexBuffer(const std::vector<std::uint32_t> &indices)
-    : count_{indices.size()}
+    : count_{static_cast<GLsizei>(indices.size())}
 {
   glCreateBuffers(1, &id_);
   glNamedBufferStorage(id_,
@@ -30,6 +30,6 @@ void GlIndexBuffer::bind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_); }
 
 void GlIndexBuffer::unbind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
 
-std::size_t GlIndexBuffer::count() const { return count_; }
+GLsizei GlIndexBuffer::count() const { return count_; }
 
 } // namespace dc

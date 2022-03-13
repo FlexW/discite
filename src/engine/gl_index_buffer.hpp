@@ -19,11 +19,11 @@ public:
 
   GLuint id() const;
 
-  std::size_t count() const;
+  GLsizei count() const;
 
 private:
   GLuint  id_{};
-  std::size_t count_{};
+  GLsizei count_{};
 
   GlIndexBuffer(const GlIndexBuffer &) = delete;
   void operator=(const GlIndexBuffer &) = delete;
