@@ -41,6 +41,7 @@ private:
 
   std::shared_ptr<GlTexture> white_texture_{};
 
+  std::shared_ptr<GlShader> depth_only_shader_;
   std::shared_ptr<GlShader> mesh_shader_{};
 
   std::shared_ptr<GlTexture> brdf_lut_texture_{};

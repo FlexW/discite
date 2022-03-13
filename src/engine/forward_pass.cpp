@@ -1,4 +1,5 @@
 #include "forward_pass.hpp"
+#include "gl_shader.hpp"
 #include "gl_texture.hpp"
 #include "gl_texture_array.hpp"
 #include "log.hpp"
@@ -55,7 +56,45 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
                             glm::value_ptr(clear_color));
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
+  const auto &sky = scene_render_info.env_map();
+  if (!sky.env_texture() || !sky.env_irradiance_texture())
+  {
+    // can not render anything without them
+    if (output_)
+    {
+      output_(scene_render_info, view_render_info, scene_framebuffer_);
+    }
+    return;
+  }
+
   const auto view_matrix = view_render_info.view_matrix();
+
+  // render depth pre pass
+  depth_only_shader_->bind();
+  depth_only_shader_->set_uniform("view_matrix", view_matrix);
+  depth_only_shader_->set_uniform("projection_matrix",
+                                  view_render_info.projection_matrix());
+  for (const auto &mesh : scene_render_info.meshes())
+  {
+    depth_only_shader_->set_uniform("model_matrix", mesh.model_matrix_);
+
+    const auto albedo_tex = mesh.mesh_->material()->albedo_texture();
+    if (albedo_tex && albedo_tex->format() == GL_RGBA)
+    {
+      albedo_tex->bind_unit(1);
+      depth_only_shader_->set_uniform("is_tex", true);
+    }
+    else
+    {
+      white_texture_->bind_unit(1);
+      depth_only_shader_->set_uniform("is_tex", false);
+    }
+    depth_only_shader_->set_uniform("tex", 1);
+
+    const auto vertex_array = mesh.mesh_->vertex_array();
+    draw(*vertex_array, GL_TRIANGLES);
+  }
+  depth_only_shader_->unbind();
 
   mesh_shader_->bind();
   mesh_shader_->set_uniform("view_matrix", view_matrix);
@@ -66,7 +105,6 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
   mesh_shader_->set_uniform("brdf_lut_tex", global_texture_slot);
   ++global_texture_slot;
 
-  const auto &sky = scene_render_info.env_map();
   sky.env_texture()->bind_unit(global_texture_slot);
   mesh_shader_->set_uniform("env_tex", global_texture_slot);
   ++global_texture_slot;
@@ -245,6 +283,9 @@ void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
 
 void ForwardPass::init_shaders()
 {
+  depth_only_shader_ = std::make_shared<GlShader>();
+  depth_only_shader_->init("shaders/pbr.vert", "shaders/depth_only.frag");
+
   mesh_shader_ = std::make_shared<GlShader>();
   mesh_shader_->init("shaders/pbr.vert", "shaders/pbr.frag");
 }

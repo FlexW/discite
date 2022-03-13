@@ -13,7 +13,7 @@
 namespace dc
 {
 
-GlTexture::GlTexture(const GlTextureConfig &config)
+GlTexture::GlTexture(const GlTextureConfig &config) : format_{config.format_}
 {
   if (config.msaa_ == 0)
   {
@@ -136,5 +136,7 @@ GlTexture::load_from_file(const std::filesystem::path &file_path)
 }
 
 void GlTexture::bind_unit(int unit) const { glBindTextureUnit(unit, id_); }
+
+GLenum GlTexture::format() const { return format_; }
 
 } // namespace dc

@@ -23,10 +23,20 @@ void SkyboxPass::execute(const SceneRenderInfo         &scene_render_info,
                          const ViewRenderInfo          &view_render_info,
                          std::shared_ptr<GlFramebuffer> scene_framebuffer)
 {
+  const auto &sky = scene_render_info.env_map();
+  if (!sky.env_texture() || !sky.env_irradiance_texture())
+  {
+    // can not render anything without them
+    if (output_)
+    {
+      output_(scene_render_info, view_render_info, scene_framebuffer);
+    }
+    return;
+  }
+
   scene_framebuffer->bind();
 
   sky_box_shader_->bind();
-  const auto &sky = scene_render_info.env_map();
   if (is_show_irradiance_as_skybox_)
   {
     sky.env_irradiance_texture()->bind_unit(0);

@@ -41,8 +41,11 @@ public:
 
   void bind_unit(int unit) const;
 
+  GLenum format() const;
+
 private:
   GLuint id_{};
+  GLenum format_{};
 
   GlTexture(const GlTexture &) = delete;
   void operator=(const GlTexture &) = delete;
