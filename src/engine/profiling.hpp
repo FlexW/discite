@@ -23,7 +23,7 @@
 #define DC_PROFILE_SHUTDOWN()         void(0)
 
 #define DC_PROFILE_FRAME(...)          void(0)
-#define DC_PROFILE_FUNC(...)           void(0)
+#define DC_PROFILE_SCOPE(...)          void(0)
 #define DC_PROFILE_TAG(NAME, ...)      void(0)
 #define DC_PROFILE_SCOPE_DYNAMIC(NAME) void(0)
 #define DC_PROFILE_THREAD(...)         void(0)
