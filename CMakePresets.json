@@ -191,7 +191,7 @@
         },
         "WERROR": {
           "type": "BOOL",
-          "value": "ON"
+          "value": "OFF"
         },
         "DC_BIN_DIR": {
           "type": "STRING",
