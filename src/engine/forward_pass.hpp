@@ -6,6 +6,9 @@
 #include "gl_texture.hpp"
 #include "render_pass.hpp"
 #include "shadow_pass.hpp"
+#include "render_object.hpp"
+
+#include <list>
 
 namespace dc
 {
@@ -20,6 +23,9 @@ public:
 
   ForwardPass();
 
+  void register_object(std::shared_ptr<RenderObject> object);
+  void unregister_object(std::shared_ptr<RenderObject> object);
+
   void execute(const SceneRenderInfo          &scene_render_info,
                const ViewRenderInfo           &view_render_info,
                std::shared_ptr<GlTextureArray> shadow_tex_array,
@@ -31,6 +37,8 @@ public:
 private:
   // TODO: Workaround. Expose public API
   friend class RendererPanel;
+
+  std::list<std::shared_ptr<RenderObject>> render_objects_;
 
   Output output_;
 

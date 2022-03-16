@@ -69,6 +69,7 @@ target_sources(engine PRIVATE
   forward_pass.cpp
   skybox_pass.cpp
   hdr_pass.cpp
+  render_object.cpp
   )
 
 target_link_libraries(engine PUBLIC

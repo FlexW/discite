@@ -34,8 +34,46 @@ ForwardPass::ForwardPass()
   glDepthFunc(GL_LEQUAL);
 }
 
-void ForwardPass::execute(const SceneRenderInfo          &scene_render_info,
-                          const ViewRenderInfo           &view_render_info,
+void ForwardPass::register_object(std::shared_ptr<RenderObject> object)
+{
+  // search if a render object with the same material was already added
+  auto iter = render_objects_.begin();
+  for (; iter != render_objects_.end(); ++iter)
+  {
+    if (object->material() == (*iter)->material())
+    {
+      // search if a render object with the same mesh was already added
+      while (iter != render_objects_.end() &&
+             (*iter)->material() == object->material() &&
+             (*iter)->mesh() != object->mesh())
+      {
+        ++iter;
+      }
+      break;
+    }
+  }
+
+  // add the render object
+  render_objects_.insert(iter, object);
+}
+
+void ForwardPass::unregister_object(std::shared_ptr<RenderObject> object)
+{
+  // search for the object
+  for (auto iter = render_objects_.begin(); iter != render_objects_.end();
+       ++iter)
+  {
+    if ((*iter) == object)
+    {
+      // delete it from the list
+      render_objects_.erase(iter);
+      break;
+    }
+  }
+}
+
+void ForwardPass::execute(const SceneRenderInfo &         scene_render_info,
+                          const ViewRenderInfo &          view_render_info,
                           std::shared_ptr<GlTextureArray> shadow_tex_array,
                           const std::vector<glm::mat4>    light_space_matrices,
                           const std::vector<CascadeSplit> cascade_frustums)
