@@ -2,8 +2,8 @@
 #include "image.hpp"
 #include "math.hpp"
 
-#include <gli/load_ktx.hpp>
 #include <fmt/format.h>
+#include <gli/load_ktx.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -13,19 +13,23 @@
 namespace dc
 {
 
-GlTexture::GlTexture(const GlTextureConfig &config) : format_{config.format_}
+GlTexture::GlTexture(const GlTextureConfig &config)
+    : format_{config.format_},
+      sized_format_(config.sized_format_),
+      width_{config.width_},
+      height_{config.height_}
 {
   if (config.msaa_ == 0)
   {
     glCreateTextures(GL_TEXTURE_2D, 1, &id_);
 
-    const auto mipmap_levels =
+    mipmap_levels_ =
         config.generate_mipmaps_
             ? math::calc_mipmap_levels_2d(config.width_, config.height_)
             : 1;
 
     glTextureStorage2D(id_,
-                       mipmap_levels,
+                       mipmap_levels_,
                        config.sized_format_,
                        config.width_,
                        config.height_);
@@ -138,5 +142,13 @@ GlTexture::load_from_file(const std::filesystem::path &file_path)
 void GlTexture::bind_unit(int unit) const { glBindTextureUnit(unit, id_); }
 
 GLenum GlTexture::format() const { return format_; }
+
+GLenum GlTexture::sized_format() const { return sized_format_; }
+
+GLint GlTexture::width() const { return width_; }
+
+GLint GlTexture::height() const { return height_; }
+
+GLuint GlTexture::mipmap_levels() const { return mipmap_levels_; }
 
 } // namespace dc

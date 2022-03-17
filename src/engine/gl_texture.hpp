@@ -42,10 +42,20 @@ public:
   void bind_unit(int unit) const;
 
   GLenum format() const;
+  GLenum sized_format() const;
+
+  GLint width() const;
+  GLint height() const;
+
+  GLuint mipmap_levels() const;
 
 private:
   GLuint id_{};
   GLenum format_{};
+  GLenum sized_format_{};
+  GLint  width_{};
+  GLint  height_{};
+  GLuint mipmap_levels_{0};
 
   GlTexture(const GlTexture &) = delete;
   void operator=(const GlTexture &) = delete;

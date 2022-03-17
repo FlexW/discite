@@ -49,6 +49,7 @@ target_sources(engine PRIVATE
   layer_stack.cpp
   gl_shader_storage_buffer.cpp
   gl_cube_texture.cpp
+  gl_texture_view.cpp
   asset.cpp
   mesh_asset.cpp
   env_map_asset.cpp
@@ -69,6 +70,7 @@ target_sources(engine PRIVATE
   forward_pass.cpp
   skybox_pass.cpp
   hdr_pass.cpp
+  bloom_pass.cpp
   )
 
 target_link_libraries(engine PUBLIC

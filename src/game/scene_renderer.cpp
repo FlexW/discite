@@ -1,6 +1,6 @@
 #include "scene_renderer.hpp"
-#include "time.hpp"
 #include "profiling.hpp"
+#include "time.hpp"
 
 namespace dc
 {
@@ -8,8 +8,8 @@ namespace dc
 SceneRenderer::SceneRenderer()
 {
   shadow_pass_->set_output(
-      [this](const SceneRenderInfo          &scene_render_info,
-             const ViewRenderInfo           &view_render_info,
+      [this](const SceneRenderInfo &         scene_render_info,
+             const ViewRenderInfo &          view_render_info,
              std::shared_ptr<GlTextureArray> shadow_tex_array,
              const std::vector<glm::mat4>    light_space_matrices,
              const std::vector<CascadeSplit> cascade_frustums)
@@ -22,8 +22,18 @@ SceneRenderer::SceneRenderer()
       });
 
   forward_pass_->set_output(
-      [this](const SceneRenderInfo         &scene_render_info,
-             const ViewRenderInfo          &view_render_info,
+      [this](const SceneRenderInfo &        scene_render_info,
+             const ViewRenderInfo &         view_render_info,
+             std::shared_ptr<GlFramebuffer> scene_framebuffer)
+      {
+        bloom_pass_->execute(scene_render_info,
+                             view_render_info,
+                             scene_framebuffer);
+      });
+
+  bloom_pass_->set_output(
+      [this](const SceneRenderInfo &        scene_render_info,
+             const ViewRenderInfo &         view_render_info,
              std::shared_ptr<GlFramebuffer> scene_framebuffer)
       {
         skybox_pass_->execute(scene_render_info,
@@ -32,8 +42,8 @@ SceneRenderer::SceneRenderer()
       });
 
   skybox_pass_->set_output(
-      [this](const SceneRenderInfo         &scene_render_info,
-             const ViewRenderInfo          &view_render_info,
+      [this](const SceneRenderInfo &        scene_render_info,
+             const ViewRenderInfo &         view_render_info,
              std::shared_ptr<GlFramebuffer> scene_framebuffer)
       {
         hdr_pass_->execute(scene_render_info,
@@ -43,7 +53,7 @@ SceneRenderer::SceneRenderer()
 }
 
 void SceneRenderer::render(const SceneRenderInfo &scene_render_info,
-                           const ViewRenderInfo  &view_render_info)
+                           const ViewRenderInfo & view_render_info)
 {
   DC_PROFILE_SCOPE("SceneRenderer::render()");
   DC_TIME_SCOPE_PERF("Scene renderer render");
