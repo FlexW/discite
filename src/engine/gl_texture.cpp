@@ -1,4 +1,5 @@
 #include "gl_texture.hpp"
+#include "assert.hpp"
 #include "image.hpp"
 #include "math.hpp"
 
@@ -150,5 +151,21 @@ GLint GlTexture::width() const { return width_; }
 GLint GlTexture::height() const { return height_; }
 
 GLuint GlTexture::mipmap_levels() const { return mipmap_levels_; }
+
+std::pair<GLint, GLint> GlTexture::mipmap_size(int level) const
+{
+  DC_ASSERT(level >= 0, "Negative mipmap levels are not supported"); 
+
+  auto width = width_;
+  auto height = height_;
+
+  for (; level != 0; --level)
+  {
+    width /= 2;
+    height /= 2;
+  }
+
+  return {width, height};
+}
 
 } // namespace dc

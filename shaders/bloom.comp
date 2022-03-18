@@ -115,6 +115,9 @@ void main()
         color.rgb = DownsampleBox13(u_Texture, 0, texCoords, 1.0f / texSize);
         color = Prefilter(color, texCoords);
         color.a = 1.0f;
+        // color.r = 0.0f;
+        // color.g = 0.0f;
+        // color.b = 1.0f;
     }
     else if (Mode == MODE_UPSAMPLE_FIRST)
     {

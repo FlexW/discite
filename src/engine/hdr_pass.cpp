@@ -1,8 +1,8 @@
 #include "hdr_pass.hpp"
 #include "gl_framebuffer.hpp"
 
-#include <memory>
 #include <array>
+#include <memory>
 
 namespace dc
 {
@@ -21,9 +21,10 @@ HdrPass::~HdrPass()
   }
 }
 
-void HdrPass::execute(const SceneRenderInfo         &scene_render_info,
-                      const ViewRenderInfo          &view_render_info,
-                      std::shared_ptr<GlFramebuffer> scene_framebuffer)
+void HdrPass::execute(const SceneRenderInfo &        scene_render_info,
+                      const ViewRenderInfo &         view_render_info,
+                      std::shared_ptr<GlFramebuffer> scene_framebuffer,
+                      std::shared_ptr<GlTexture>     bloom_texture)
 {
   const auto framebuffer = view_render_info.framebuffer();
 
@@ -47,8 +48,12 @@ void HdrPass::execute(const SceneRenderInfo         &scene_render_info,
       scene_framebuffer->color_attachment(0));
 
   scene_tex->bind_unit(0);
-  // hdr_shader_->set_uniform("exposure", exposure_);
+  hdr_shader_->set_uniform("exposure", exposure_);
   hdr_shader_->set_uniform("hdr_tex", 0);
+
+  bloom_texture->bind_unit(1);
+  hdr_shader_->set_uniform("bloom_intensity", bloom_intensity_);
+  hdr_shader_->set_uniform("bloom_tex", 1);
 
   // draw quad
   glBindVertexArray(quad_vertex_array_);

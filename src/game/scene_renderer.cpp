@@ -26,19 +26,21 @@ SceneRenderer::SceneRenderer()
              const ViewRenderInfo &         view_render_info,
              std::shared_ptr<GlFramebuffer> scene_framebuffer)
       {
-        bloom_pass_->execute(scene_render_info,
-                             view_render_info,
-                             scene_framebuffer);
+        skybox_pass_->execute(scene_render_info,
+                              view_render_info,
+                              scene_framebuffer);
       });
 
   bloom_pass_->set_output(
       [this](const SceneRenderInfo &        scene_render_info,
              const ViewRenderInfo &         view_render_info,
-             std::shared_ptr<GlFramebuffer> scene_framebuffer)
+             std::shared_ptr<GlFramebuffer> scene_framebuffer,
+             std::shared_ptr<GlTexture>     bloom_texture)
       {
-        skybox_pass_->execute(scene_render_info,
-                              view_render_info,
-                              scene_framebuffer);
+        hdr_pass_->execute(scene_render_info,
+                           view_render_info,
+                           scene_framebuffer,
+                           bloom_texture);
       });
 
   skybox_pass_->set_output(
@@ -46,9 +48,9 @@ SceneRenderer::SceneRenderer()
              const ViewRenderInfo &         view_render_info,
              std::shared_ptr<GlFramebuffer> scene_framebuffer)
       {
-        hdr_pass_->execute(scene_render_info,
-                           view_render_info,
-                           scene_framebuffer);
+        bloom_pass_->execute(scene_render_info,
+                             view_render_info,
+                             scene_framebuffer);
       });
 }
 

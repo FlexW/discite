@@ -48,6 +48,7 @@ public:
   GLint height() const;
 
   GLuint mipmap_levels() const;
+  std::pair<GLint, GLint> mipmap_size(int level) const;
 
 private:
   GLuint id_{};

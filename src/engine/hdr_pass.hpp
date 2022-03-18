@@ -20,9 +20,10 @@ public:
   HdrPass();
   ~HdrPass();
 
-  void execute(const SceneRenderInfo         &scene_render_info,
-               const ViewRenderInfo          &view_render_info,
-               std::shared_ptr<GlFramebuffer> scene_framebuffer);
+  void execute(const SceneRenderInfo &        scene_render_info,
+               const ViewRenderInfo &         view_render_info,
+               std::shared_ptr<GlFramebuffer> scene_framebuffer,
+               std::shared_ptr<GlTexture>  bloom_texture);
 
   void set_output(Output output);
 
@@ -32,7 +33,8 @@ private:
 
   Output output_;
 
-  float                     exposure_{0.01f};
+  float                     exposure_{1.0f};
+  float                     bloom_intensity_{1.0f};
   std::shared_ptr<GlShader> hdr_shader_{};
 
   GLuint quad_vertex_array_{0};
