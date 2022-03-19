@@ -51,9 +51,13 @@ void HdrPass::execute(const SceneRenderInfo &        scene_render_info,
   hdr_shader_->set_uniform("exposure", exposure_);
   hdr_shader_->set_uniform("hdr_tex", 0);
 
-  bloom_texture->bind_unit(1);
-  hdr_shader_->set_uniform("bloom_intensity", bloom_intensity_);
-  hdr_shader_->set_uniform("bloom_tex", 1);
+  hdr_shader_->set_uniform("is_bloom", bloom_texture != nullptr);
+  if (bloom_texture)
+  {
+    bloom_texture->bind_unit(1);
+    hdr_shader_->set_uniform("bloom_intensity", bloom_intensity_);
+    hdr_shader_->set_uniform("bloom_tex", 1);
+  }
 
   // draw quad
   glBindVertexArray(quad_vertex_array_);

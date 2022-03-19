@@ -10,6 +10,7 @@ in VS_OUT
 uniform sampler2D hdr_tex;
 uniform sampler2D bloom_tex;
 
+uniform bool is_bloom = true;
 uniform float exposure = 1.0f;
 uniform float bloom_intensity = 1.0f;
 
@@ -59,7 +60,11 @@ void main()
 	vec2 bloom_tex_size = vec2(float(bloom_tex_sizei.x), float(bloom_tex_sizei.y));
 
 	const float sample_scale = 0.5;
-	vec3 bloom = upsample_tent9(bloom_tex, 0, fs_in.tex_coord, 1.0f / bloom_tex_size, sample_scale) * bloom_intensity;
+    vec3 bloom = vec3(0.0);
+    if (is_bloom)
+    {
+        bloom = upsample_tent9(bloom_tex, 0, fs_in.tex_coord, 1.0f / bloom_tex_size, sample_scale) * bloom_intensity;
+    }
 
     vec3 hdr_color = texture(hdr_tex, fs_in.tex_coord).rgb;
     hdr_color += bloom;

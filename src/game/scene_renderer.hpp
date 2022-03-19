@@ -24,6 +24,8 @@ private:
   // TODO: Workaround. Expose public API
   friend class RendererPanel;
 
+  bool is_bloom_enabled_{true};
+
   std::unique_ptr<ShadowPass>  shadow_pass_{std::make_unique<ShadowPass>()};
   std::unique_ptr<ForwardPass> forward_pass_{std::make_unique<ForwardPass>()};
   std::unique_ptr<BloomPass>   bloom_pass_{std::make_unique<BloomPass>()};

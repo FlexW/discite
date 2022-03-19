@@ -48,9 +48,19 @@ SceneRenderer::SceneRenderer()
              const ViewRenderInfo &         view_render_info,
              std::shared_ptr<GlFramebuffer> scene_framebuffer)
       {
-        bloom_pass_->execute(scene_render_info,
+        if (is_bloom_enabled_)
+        {
+          bloom_pass_->execute(scene_render_info,
+                               view_render_info,
+                               scene_framebuffer);
+        }
+        else
+        {
+          hdr_pass_->execute(scene_render_info,
                              view_render_info,
-                             scene_framebuffer);
+                             scene_framebuffer,
+                             nullptr);
+        }
       });
 }
 

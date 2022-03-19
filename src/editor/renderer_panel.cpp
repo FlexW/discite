@@ -1,7 +1,7 @@
 #include "renderer_panel.hpp"
-#include "profiling.hpp"
 #include "imgui.hpp"
 #include "imgui_panel.hpp"
+#include "profiling.hpp"
 
 namespace dc
 {
@@ -56,6 +56,8 @@ void RendererPanel::render_general()
               renderer->skybox_pass_->is_show_irradiance_as_skybox_);
 
   imgui_input("Exposure", renderer->hdr_pass_->exposure_);
+
+  imgui_input("Bloom", renderer->is_bloom_enabled_);
   imgui_input("Bloom intensity", renderer->hdr_pass_->bloom_intensity_);
   imgui_input("Bloom threshold", renderer->bloom_pass_->threshold_);
 }
