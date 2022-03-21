@@ -46,6 +46,13 @@ void ViewRenderInfo::set_view_matrix(const glm::mat4 &value)
 
 glm::mat4 ViewRenderInfo::view_matrix() const { return view_matrix_; }
 
+void ViewRenderInfo::set_view_position(const glm::vec3 &value)
+{
+  view_position_ = value;
+}
+
+glm::vec3 ViewRenderInfo::view_position() const { return view_position_; }
+
 void ViewRenderInfo::set_projection_matrix(const glm::mat4 &value)
 {
   projection_matrix_ = value;

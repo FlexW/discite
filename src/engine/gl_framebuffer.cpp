@@ -164,6 +164,17 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
       glNamedFramebufferTexture(id_, GL_DEPTH_ATTACHMENT, tex_array->id(), 0);
       depth_attachment_ = tex_array;
     }
+    else if (std::holds_alternative<std::shared_ptr<GlCubeTexture>>(
+                 attachment_config))
+    {
+      const auto cube_texture =
+          std::get<std::shared_ptr<GlCubeTexture>>(attachment_config);
+      glNamedFramebufferTexture(id_,
+                                GL_DEPTH_ATTACHMENT,
+                                cube_texture->id(),
+                                0);
+      depth_attachment_ = cube_texture;
+    }
     else
     {
       DC_FAIL("Not implemented");
@@ -311,6 +322,12 @@ Attachment GlFramebuffer::depth_attachment() const { return depth_attachment_; }
 void GlFramebuffer::set_depth_attachment(std::shared_ptr<GlRenderbuffer> value)
 {
   glNamedFramebufferRenderbuffer(id_, GL_DEPTH_ATTACHMENT, value->id(), 0);
+  depth_attachment_ = value;
+}
+
+void GlFramebuffer::set_depth_attachment(std::shared_ptr<GlCubeTexture> value)
+{
+  glNamedFramebufferTexture(id_, GL_DEPTH_ATTACHMENT, value->id(), 0);
   depth_attachment_ = value;
 }
 

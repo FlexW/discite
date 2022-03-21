@@ -28,6 +28,17 @@ ForwardPass::ForwardPass()
   white_tex_config.generate_mipmaps_ = false;
   white_texture_ = std::make_shared<GlTexture>(white_tex_config);
 
+  GlCubeTextureConfig dummy_cube_texture_config{};
+  dummy_cube_texture_config.width_            = 1;
+  dummy_cube_texture_config.height_           = 1;
+  dummy_cube_texture_config.format            = GL_RED;
+  dummy_cube_texture_config.sized_format      = GL_R8;
+  dummy_cube_texture_config.type_             = GL_UNSIGNED_BYTE;
+  dummy_cube_texture_config.min_filter_       = GL_LINEAR;
+  dummy_cube_texture_config.generate_mipmaps_ = false;
+  dummy_cube_texture_ =
+      std::make_shared<GlCubeTexture>(dummy_cube_texture_config);
+
   brdf_lut_texture_ = GlTexture::load_from_file("data/brdf_lut.ktx");
 
   init_shaders();
@@ -440,6 +451,7 @@ void ForwardPass::execute(const SceneRenderInfo &         scene_render_info,
   depth_only_shader_->unbind();
 
   mesh_shader_->bind();
+  mesh_shader_->set_uniform("view_position", view_render_info.view_position());
   mesh_shader_->set_uniform("view_matrix", view_matrix);
   mesh_shader_->set_uniform("projection_matrix",
                             view_render_info.projection_matrix());
@@ -467,6 +479,9 @@ void ForwardPass::execute(const SceneRenderInfo &         scene_render_info,
     mesh_shader_->set_uniform(
         "point_lights[" + std::to_string(i) + "].position",
         glm::vec3(view_matrix * glm::vec4(point_lights[i].position(), 1.0f)));
+    mesh_shader_->set_uniform("point_lights[" + std::to_string(i) +
+                                  "].position_world_space",
+                              point_lights[i].position());
 
     mesh_shader_->set_uniform("point_lights[" + std::to_string(i) + "].color",
                               point_lights[i].color());
@@ -478,6 +493,23 @@ void ForwardPass::execute(const SceneRenderInfo &         scene_render_info,
                               point_lights[i].radius());
     mesh_shader_->set_uniform("point_lights[" + std::to_string(i) + "].falloff",
                               point_lights[i].falloff());
+
+    mesh_shader_->set_uniform("point_lights[" + std::to_string(i) +
+                                  "].cast_shadow",
+                              point_lights[i].cast_shadow());
+    // TODO: How to handle multiple point lights
+    if (point_lights[i].cast_shadow())
+    {
+      point_lights[i].shadow_tex()->bind_unit(global_texture_slot);
+      mesh_shader_->set_uniform("point_light_shadow_tex", global_texture_slot);
+      ++global_texture_slot;
+    }
+    else
+    {
+      dummy_cube_texture_->bind_unit(global_texture_slot);
+      mesh_shader_->set_uniform("point_light_shadow_tex", global_texture_slot);
+      ++global_texture_slot;
+    }
   }
 
   const auto &directional_light = scene_render_info.directional_light();

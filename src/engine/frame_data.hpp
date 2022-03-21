@@ -14,7 +14,7 @@ namespace dc
 struct MeshInfo
 {
   glm::mat4 model_matrix_;
-  Mesh     *mesh_;
+  Mesh *    mesh_;
 };
 
 class SceneRenderInfo
@@ -29,14 +29,14 @@ public:
   void set_directional_light(const DirectionalLight &directional_light);
   DirectionalLight directional_light() const;
 
-  void          set_env_map(const EnvironmentMap &sky);
+  void           set_env_map(const EnvironmentMap &sky);
   EnvironmentMap env_map() const;
 
 private:
   std::vector<MeshInfo>   meshes_;
   std::vector<PointLight> point_lights_;
   DirectionalLight        directional_light_;
-  EnvironmentMap           env_map_;
+  EnvironmentMap          env_map_;
 };
 
 struct ViewportInfo
@@ -52,6 +52,9 @@ class ViewRenderInfo
 public:
   void      set_view_matrix(const glm::mat4 &value);
   glm::mat4 view_matrix() const;
+
+  void      set_view_position(const glm::vec3 &value);
+  glm::vec3 view_position() const;
 
   void      set_projection_matrix(const glm::mat4 &value);
   glm::mat4 projection_matrix() const;
@@ -80,6 +83,7 @@ private:
   float        near_plane_{};
   float        far_plane_{};
   ViewportInfo viewport_info_{};
+  glm::vec3    view_position_{0.0f};
   glm::mat4    view_matrix_{1.0f};
   glm::mat4    projection_matrix_{1.0f};
 

@@ -32,7 +32,7 @@ class GlCubeTexture
 {
 public:
   explicit GlCubeTexture(const GlCubeTextureConfig &config);
-  GlCubeTexture(const std::vector<std::uint8_t> &hdr_data);
+  explicit GlCubeTexture(const std::vector<std::uint8_t> &hdr_data);
   ~GlCubeTexture();
 
   GLuint id() const;

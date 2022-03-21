@@ -12,8 +12,97 @@ ShadowPass::ShadowPass()
   recreate_shadow_tex_framebuffer();
 }
 
+void ShadowPass::generate_point_light_shadows(
+    const SceneRenderInfo &scene_render_info)
+{
+
+  const auto &point_lights = scene_render_info.point_lights();
+  for (std::size_t i = 0; i < point_lights.size(); ++i)
+  {
+    const auto &point_light = point_lights[i];
+    if (!point_light.cast_shadow())
+    {
+      continue;
+    }
+
+    const auto shadow_tex = point_light.shadow_tex();
+
+    if (!point_light_framebuffer_)
+    {
+      FramebufferConfig framebuffer_config{};
+      framebuffer_config.depth_attachment_ = shadow_tex;
+      point_light_framebuffer_             = std::make_shared<GlFramebuffer>();
+      point_light_framebuffer_->attach(framebuffer_config);
+    }
+    else
+    {
+      point_light_framebuffer_->set_depth_attachment(shadow_tex);
+    }
+
+    static const float aspect{1.0f};
+    static const float near{0.1f};
+    const auto far = point_light.radius();
+
+    const auto shadow_proj =
+        glm::perspective(glm::radians(90.0f), aspect, near, far);
+
+    const auto             light_pos = point_light.position();
+    std::vector<glm::mat4> shadow_transforms;
+
+    shadow_transforms.push_back(
+        shadow_proj * glm::lookAt(light_pos,
+                                  light_pos + glm::vec3(1.0, 0.0, 0.0),
+                                  glm::vec3(0.0, -1.0, 0.0)));
+    shadow_transforms.push_back(
+        shadow_proj * glm::lookAt(light_pos,
+                                  light_pos + glm::vec3(-1.0, 0.0, 0.0),
+                                  glm::vec3(0.0, -1.0, 0.0)));
+    shadow_transforms.push_back(
+        shadow_proj * glm::lookAt(light_pos,
+                                  light_pos + glm::vec3(0.0, 1.0, 0.0),
+                                  glm::vec3(0.0, 0.0, 1.0)));
+    shadow_transforms.push_back(
+        shadow_proj * glm::lookAt(light_pos,
+                                  light_pos + glm::vec3(0.0, -1.0, 0.0),
+                                  glm::vec3(0.0, 0.0, -1.0)));
+    shadow_transforms.push_back(
+        shadow_proj * glm::lookAt(light_pos,
+                                  light_pos + glm::vec3(0.0, 0.0, 1.0),
+                                  glm::vec3(0.0, -1.0, 0.0)));
+    shadow_transforms.push_back(
+        shadow_proj * glm::lookAt(light_pos,
+                                  light_pos + glm::vec3(0.0, 0.0, -1.0),
+                                  glm::vec3(0.0, -1.0, 0.0)));
+
+    glViewport(0, 0, PointLight::shadow_map_size, PointLight::shadow_map_size);
+    point_light_framebuffer_->bind();
+    glClear(GL_DEPTH_BUFFER_BIT);
+    point_light_shadow_map_shader_->bind();
+    for (unsigned i = 0; i < 6; ++i)
+    {
+      point_light_shadow_map_shader_->set_uniform("shadowMatrices[0]",
+                                                  shadow_transforms);
+    }
+
+    point_light_shadow_map_shader_->set_uniform("far_plane", far);
+    point_light_shadow_map_shader_->set_uniform("lightPos", light_pos);
+
+    // iterate through all solid meshes
+    for (const auto &mesh_info : solid_meshes_)
+    {
+      point_light_shadow_map_shader_->set_uniform("model",
+                                                  mesh_info.model_matrix_);
+
+      draw(*mesh_info.mesh_->vertex_array(), GL_TRIANGLES);
+    }
+
+    point_light_shadow_map_shader_->unbind();
+    point_light_framebuffer_->unbind();
+  }
+}
+
 void ShadowPass::execute(const SceneRenderInfo &scene_render_info,
-                         const ViewRenderInfo  &view_render_info)
+                         const ViewRenderInfo & view_render_info)
 {
   // sort in transparent and solid meshes
   const auto &meshes = scene_render_info.meshes();
@@ -36,6 +125,8 @@ void ShadowPass::execute(const SceneRenderInfo &scene_render_info,
       solid_meshes_.push_back(mesh);
     }
   }
+
+  generate_point_light_shadows(scene_render_info);
 
   calc_shadow_cascades_splits(view_render_info);
   const auto light_space_matrices =
@@ -129,7 +220,7 @@ void ShadowPass::calc_shadow_cascades_splits(
 
 std::vector<glm::mat4> ShadowPass::calc_light_space_matrices(
     const DirectionalLight &directional_light,
-    const ViewRenderInfo   &view_render_info) const
+    const ViewRenderInfo &  view_render_info) const
 {
   std::vector<glm::mat4> matrices;
   for (const auto &frustum : cascade_frustums_)
@@ -145,7 +236,7 @@ std::vector<glm::mat4> ShadowPass::calc_light_space_matrices(
 
 glm::mat4
 ShadowPass::calc_light_space_matrix(const DirectionalLight &directional_light,
-                                    const ViewRenderInfo   &view_render_info,
+                                    const ViewRenderInfo &  view_render_info,
                                     float                   near_plane,
                                     float                   far_plane) const
 {
@@ -222,7 +313,7 @@ ShadowPass::calc_light_space_matrix(const DirectionalLight &directional_light,
 
 std::vector<glm::vec4>
 ShadowPass::calc_frustum_corners(const ViewRenderInfo &view_render_info,
-                                 const glm::mat4      &projection_matrix) const
+                                 const glm::mat4 &     projection_matrix) const
 {
   const auto inv =
       glm::inverse(projection_matrix * view_render_info.view_matrix());
@@ -278,6 +369,12 @@ void ShadowPass::init_shaders()
   shadow_map_transparent_shader_->init("shaders/shadow_map_transparent.vert",
                                        "shaders/shadow_map_transparent.geom",
                                        "shaders/shadow_map_transparent.frag");
+
+  point_light_shadow_map_shader_ = std::make_shared<GlShader>();
+  point_light_shadow_map_shader_->init(
+      "shaders/learnopengl/point_light_shadow_map.vert",
+      "shaders/learnopengl/point_light_shadow_map.geom",
+      "shaders/learnopengl/point_light_shadow_map.frag");
 }
 
 void ShadowPass::set_output(Output output) { output_ = output; }

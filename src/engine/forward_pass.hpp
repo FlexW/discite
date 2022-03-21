@@ -55,6 +55,7 @@ private:
   std::shared_ptr<GlFramebuffer> scene_framebuffer_msaa_{};
 
   std::shared_ptr<GlTexture> white_texture_{};
+  std::shared_ptr<GlCubeTexture> dummy_cube_texture_{};
 
   std::shared_ptr<GlShader> depth_only_shader_;
   std::shared_ptr<GlShader> mesh_shader_{};

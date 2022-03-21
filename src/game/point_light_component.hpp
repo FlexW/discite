@@ -1,6 +1,7 @@
 #pragma once
 
 #include "math.hpp"
+#include "gl_cube_texture.hpp"
 
 namespace dc
 {
@@ -12,6 +13,9 @@ struct PointLightComponent
 
   float radius_{10.0f};
   float falloff_{0.2f};
+
+  bool                           cast_shadow_{false};
+  std::shared_ptr<GlCubeTexture> shadow_tex_{};
 
   void save(FILE *file) const;
   void read(FILE *file);

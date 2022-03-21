@@ -88,6 +88,7 @@ void CameraSystem::render(SceneRenderInfo & /*scene_render_info*/,
     view_render_info.set_fov(camera.zoom());
     view_render_info.set_near_plane(camera.near_plane());
     view_render_info.set_far_plane(camera.far_plane());
+    view_render_info.set_view_position(camera.position());
     view_render_info.set_view_matrix(camera.view_matrix());
     view_render_info.set_projection_matrix(camera.projection_matrix());
 

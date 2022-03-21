@@ -22,12 +22,15 @@ struct PointLight
 {
     // in view space
     vec3 position;
+    vec3 position_world_space;
 
     vec3 color;
     float multiplier;
 
     float radius;
     float falloff;
+
+    bool cast_shadow;
 };
 
 struct DirectionalLight
@@ -39,6 +42,8 @@ struct DirectionalLight
 
     vec3 color;
 };
+
+uniform vec3 view_position;
 
 uniform bool directional_light_shadow_enabled = false;
 uniform sampler2DArray directional_light_shadow_tex;
@@ -68,6 +73,7 @@ uniform sampler2D brdf_lut_tex;
 
 uniform int point_light_count = 0;
 uniform PointLight point_lights[MAX_POINT_LIGHTS_COUNT];
+uniform samplerCube point_light_shadow_tex;
 
 uniform bool smooth_shadows = true;
 uniform float light_size = 0.25f;
@@ -78,6 +84,16 @@ uniform DirectionalLight directional_light;
 ////////////////////////////////////////////////////////////////////////////////
 /// Shadows
 ////////////////////////////////////////////////////////////////////////////////
+
+// array of offset direction for sampling
+vec3 grid_sampling_disk[20] = vec3[]
+(
+   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1),
+   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
 
 const float shadow_fade = 1.0;
 
@@ -315,6 +331,40 @@ float calc_directional_light_shadow()
     return shadow;
 }
 
+float calc_point_light_shadow(int index)
+{
+    PointLight light = point_lights[index];
+
+     // get vector between fragment position and light position
+    vec3 fragToLight = fs_in.position_world_space - light.position_world_space;
+    // use the fragment to light vector to sample from the depth map
+    // float closestDepth = texture(depthMap, fragToLight).r;
+    // it is currently in linear range between [0,1], let's re-transform it back to original depth value
+    // closestDepth *= far_plane;
+    // now get current linear depth as the length between the fragment and light position
+    float currentDepth = length(fragToLight);
+
+    float far_plane = light.radius;
+    float shadow = 0.0;
+    float bias = 0.15;
+    int samples = 20;
+    float viewDistance = length(view_position - fs_in.position);
+    float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
+
+    for(int i = 0; i < samples; ++i)
+    {
+        float closestDepth = texture(point_light_shadow_tex, fragToLight + grid_sampling_disk[i] * diskRadius).r;
+        closestDepth *= far_plane;   // undo mapping [0;1]
+        if(currentDepth - bias > closestDepth)
+        {
+            shadow += 1.0;
+        }
+    }
+    shadow /= float(samples);
+
+    return (1.0f - shadow);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PBR based on:
 // https://learnopengl.com/PBR/IBL/Specular-IBL
@@ -528,6 +578,12 @@ vec3 calc_point_lights(vec3 f0)
 		// Cook-Torrance
 		vec3 specular_brdf = (F * D * G) / max(epsilon, 4.0 * cos_li * pbr_params.n_dot_v);
 		specular_brdf = clamp(specular_brdf, vec3(0.0f), vec3(10.0f));
+        if (light.cast_shadow)
+        {
+            float shadow = calc_point_light_shadow(i);
+            diffuse_brdf *= shadow;
+            specular_brdf *= shadow;
+        }
 
 		result += (diffuse_brdf + specular_brdf) * lradiance * cos_li;
     }

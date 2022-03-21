@@ -49,6 +49,7 @@ void ViewportPanel::on_render()
     view_render_info.set_aspect_ratio(editor_camera_.aspect_ratio());
     view_render_info.set_fov(editor_camera_.zoom());
     view_render_info.set_view_matrix(editor_camera_.view_matrix());
+    view_render_info.set_view_position(editor_camera_.position());
     view_render_info.set_viewport_info({0, 0, scene_width_, scene_height_});
 
     view_render_info.set_framebuffer(scene_framebuffer_.get());

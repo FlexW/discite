@@ -1,5 +1,4 @@
 #include "entity_panel.hpp"
-#include "profiling.hpp"
 #include "camera_component.hpp"
 #include "directional_light_component.hpp"
 #include "engine.hpp"
@@ -11,6 +10,7 @@
 #include "model_component.hpp"
 #include "point_light.hpp"
 #include "point_light_component.hpp"
+#include "profiling.hpp"
 #include "scene.hpp"
 #include "scene_panel.hpp"
 #include "sky_component.hpp"
@@ -116,7 +116,7 @@ void EntityPanel::on_render()
     ImGui::Separator();
     ImGui::Text("Model");
 
-    auto       &component = entity_.component<ModelComponent>();
+    auto &      component = entity_.component<ModelComponent>();
     std::string mesh_name;
     if (component.model_)
     {
@@ -155,6 +155,31 @@ void EntityPanel::on_render()
     imgui_input("Multiplier", point_light_component.multiplier_);
     imgui_input("Radius", point_light_component.radius_);
     imgui_input("Falloff", point_light_component.falloff_);
+    if (imgui_input("Cast shadow", point_light_component.cast_shadow_))
+    {
+      if (point_light_component.shadow_tex_)
+      {
+        point_light_component.shadow_tex_ = nullptr;
+      }
+      else
+      {
+        // TODO: At some point that should move into the scene renderer
+        GlCubeTextureConfig shadow_tex_config{};
+        shadow_tex_config.width_            = PointLight::shadow_map_size;
+        shadow_tex_config.height_           = PointLight::shadow_map_size;
+        shadow_tex_config.format            = GL_DEPTH_COMPONENT;
+        shadow_tex_config.sized_format      = GL_DEPTH_COMPONENT32F;
+        shadow_tex_config.wrap_s_           = GL_CLAMP_TO_EDGE;
+        shadow_tex_config.wrap_t_           = GL_CLAMP_TO_EDGE;
+        shadow_tex_config.wrap_r_           = GL_CLAMP_TO_EDGE;
+        shadow_tex_config.min_filter_       = GL_NEAREST;
+        shadow_tex_config.mag_filter_       = GL_NEAREST;
+        shadow_tex_config.generate_mipmaps_ = false;
+        shadow_tex_config.type_             = GL_FLOAT;
+        point_light_component.shadow_tex_ =
+            std::make_shared<GlCubeTexture>(shadow_tex_config);
+      }
+    }
   }
 
   if (entity_.has_component<SkyComponent>())

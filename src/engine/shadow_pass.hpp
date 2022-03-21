@@ -53,6 +53,9 @@ private:
   std::shared_ptr<GlShader> shadow_map_shader_{};
   std::shared_ptr<GlShader> shadow_map_transparent_shader_{};
 
+  std::shared_ptr<GlShader>      point_light_shadow_map_shader_{};
+  std::shared_ptr<GlFramebuffer> point_light_framebuffer_{};
+
   void calc_shadow_cascades_splits(const ViewRenderInfo &view_render_info);
 
   std::vector<glm::mat4>
@@ -71,6 +74,8 @@ private:
   void recreate_shadow_tex_framebuffer();
 
   void init_shaders();
+
+  void generate_point_light_shadows(const SceneRenderInfo &scene_render_info);
 };
 
 } // namespace dc

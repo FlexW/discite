@@ -79,6 +79,10 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
       point_light.set_radius(point_light_component.radius_);
       point_light.set_falloff(point_light_component.falloff_);
 
+      auto shadow_tex = point_light_component.shadow_tex_;
+      point_light.set_shadow_tex(shadow_tex);
+      point_light.set_cast_shadow(shadow_tex != nullptr);
+
       scene_render_info.add_point_light(point_light);
     }
   }
