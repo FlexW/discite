@@ -359,4 +359,11 @@ void GlShader::set_uniform(const std::string        &name,
   glUniform1fv(location, value.size(), value.data());
 }
 
+  void GlShader::set_uniform(const std::string &     name,
+                           const std::vector<int> &value)
+{
+  GET_UNIFORM_OR_RETURN(name, location)
+  glUniform1iv(location, value.size(), value.data());
+}
+
 } // namespace dc

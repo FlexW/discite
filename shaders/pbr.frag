@@ -73,7 +73,7 @@ uniform sampler2D brdf_lut_tex;
 
 uniform int point_light_count = 0;
 uniform PointLight point_lights[MAX_POINT_LIGHTS_COUNT];
-uniform samplerCube point_light_shadow_tex;
+uniform samplerCube point_light_shadow_tex[MAX_POINT_LIGHTS_COUNT];
 
 uniform bool smooth_shadows = true;
 uniform float light_size = 0.25f;
@@ -353,7 +353,7 @@ float calc_point_light_shadow(int index)
 
     for(int i = 0; i < samples; ++i)
     {
-        float closestDepth = texture(point_light_shadow_tex, fragToLight + grid_sampling_disk[i] * diskRadius).r;
+        float closestDepth = texture(point_light_shadow_tex[index], fragToLight + grid_sampling_disk[i] * diskRadius).r;
         closestDepth *= far_plane;   // undo mapping [0;1]
         if(currentDepth - bias > closestDepth)
         {

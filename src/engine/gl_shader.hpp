@@ -48,6 +48,7 @@ public:
   void set_uniform(const std::string            &name,
                    const std::vector<glm::mat4> &value);
   void set_uniform(const std::string &name, const std::vector<float> &value);
+  void set_uniform(const std::string &name, const std::vector<int> &value);
 
 private:
   struct UniformInfo

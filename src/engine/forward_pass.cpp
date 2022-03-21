@@ -473,6 +473,7 @@ void ForwardPass::execute(const SceneRenderInfo &         scene_render_info,
   const auto  point_light_count = point_lights.size() <= max_point_light_count
                                       ? static_cast<int>(point_lights.size())
                                       : max_point_light_count;
+  std::vector<GLint> point_light_shadow_maps;
   mesh_shader_->set_uniform("point_light_count", point_light_count);
   for (int i = 0; i < point_light_count; ++i)
   {
@@ -497,20 +498,27 @@ void ForwardPass::execute(const SceneRenderInfo &         scene_render_info,
     mesh_shader_->set_uniform("point_lights[" + std::to_string(i) +
                                   "].cast_shadow",
                               point_lights[i].cast_shadow());
-    // TODO: How to handle multiple point lights
+
     if (point_lights[i].cast_shadow())
     {
       point_lights[i].shadow_tex()->bind_unit(global_texture_slot);
-      mesh_shader_->set_uniform("point_light_shadow_tex", global_texture_slot);
-      ++global_texture_slot;
     }
     else
     {
       dummy_cube_texture_->bind_unit(global_texture_slot);
-      mesh_shader_->set_uniform("point_light_shadow_tex", global_texture_slot);
-      ++global_texture_slot;
     }
+    point_light_shadow_maps.push_back(global_texture_slot);
+    ++global_texture_slot;
   }
+
+  // bind rest of the cube samplers
+  for (int i = point_light_count; i < max_point_light_count; ++i)
+  {
+    dummy_cube_texture_->bind_unit(global_texture_slot);
+    point_light_shadow_maps.push_back(global_texture_slot);
+    ++global_texture_slot;
+  }
+  mesh_shader_->set_uniform("point_light_shadow_tex[0]", point_light_shadow_maps);
 
   const auto &directional_light = scene_render_info.directional_light();
   mesh_shader_->set_uniform("smooth_shadows", smooth_shadows_);
