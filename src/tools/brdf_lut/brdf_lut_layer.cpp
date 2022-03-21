@@ -38,7 +38,7 @@ gli::texture convert_lut_to_texture(const std::vector<T> &lut_data,
 namespace dc
 {
 
-void BrdfLutLayer::init() {}
+void BrdfLutLayer::init() { lut_data_.resize(buffer_size); }
 
 void BrdfLutLayer::shutdown() {}
 
@@ -46,7 +46,7 @@ void BrdfLutLayer::update(float /*delta_time*/) {}
 
 void BrdfLutLayer::render()
 {
-  GlShaderStorageBuffer dst_buffer(lut_data_, GL_MAP_READ_BIT);
+  GlShaderStorageBuffer dst_buffer(lut_data_, GL_STATIC_READ);
 
   GlShader shader{"shaders/brdf_lut.comp"};
   shader.bind();
@@ -58,11 +58,14 @@ void BrdfLutLayer::render()
   // ensure all writes by the compute shader have been completed
   glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
-  const auto lut_data = dst_buffer.map<float>(0, lut_data_.size(), GL_MAP_READ_BIT);
+  const auto lut_data =
+      dst_buffer.map<float>(0, lut_data_.size(), GL_MAP_READ_BIT);
+  DC_ASSERT(lut_data, "Could not map lut_data");
   std::memcpy(lut_data_.data(), lut_data, lut_data_.size() * sizeof(float));
   dst_buffer.unmap();
 
-  const auto lut_texture = convert_lut_to_texture(lut_data_, brdf_width, brdf_height);
+  const auto lut_texture =
+      convert_lut_to_texture(lut_data_, brdf_width, brdf_height);
   // use Pico Pixel to view https://pixelandpolygon.com/
   gli::save_ktx(lut_texture, "data/brdf_lut.ktx");
 

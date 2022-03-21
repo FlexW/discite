@@ -11,16 +11,16 @@ void PointLight::set_color(const glm::vec3 &value) { color_ = value; }
 
 glm::vec3 PointLight::color() const { return color_; }
 
-void PointLight::set_constant(float value) { constant_ = value; }
+void PointLight::set_multiplier(float value) { multiplier_ = value; }
 
-float PointLight::constant() const { return constant_; }
+float PointLight::multiplier() const { return multiplier_; }
 
-void PointLight::set_linear(float value) { linear_ = value; }
+void PointLight::set_radius(float value) { radius_ = value; }
 
-float PointLight::linear() const { return linear_; }
+float PointLight::radius() const { return radius_; }
 
-void PointLight::set_quadratic(float value) { quadratic_ = value; }
+void PointLight::set_falloff(float value) { falloff_ = value; }
 
-float PointLight::quadratic() const { return quadratic_; }
+float PointLight::falloff() const { return falloff_; }
 
 } // namespace dc

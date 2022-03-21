@@ -17,6 +17,7 @@ public:
     glCreateBuffers(1, &id_);
     glNamedBufferData(id_, data.size() * sizeof(T), data.data(), flags);
   }
+
   ~GlShaderStorageBuffer();
 
   void bind() const;

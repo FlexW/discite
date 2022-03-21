@@ -4,6 +4,7 @@
 #define CASCADES_COUNT 5
 
 const float PI = 3.141592653589793;
+const float epsilon = 0.00001;
 
 in VS_OUT
 {
@@ -23,16 +24,18 @@ struct PointLight
     vec3 position;
 
     vec3 color;
+    float multiplier;
 
-    float constant;
-    float linear;
-    float quadratic;
+    float radius;
+    float falloff;
 };
 
 struct DirectionalLight
 {
     // in view space
     vec3 direction;
+    vec3 radiance;
+    float multiplier;
 
     vec3 color;
 };
@@ -43,22 +46,20 @@ uniform mat4 light_space_matrices[CASCADES_COUNT];
 uniform float cascades_plane_distances[CASCADES_COUNT - 1];
 uniform bool show_shadow_cascades = false;
 
-uniform sampler2D in_albedo_tex;
-uniform vec4 in_albedo_color;
-uniform bool albedo_tex_enabled = false;
+uniform sampler2D albedo_tex;
+uniform vec3 albedo_color;
 
-uniform sampler2D in_roughness_tex;
-uniform vec4 in_roughness;
-uniform bool roughness_tex_enabled = false;
+uniform sampler2D metalness_roughness_tex;
+uniform float roughness;
+uniform float metalness;
 
-uniform sampler2D in_ao_tex;
+uniform sampler2D ao_tex;
 uniform bool ao_tex_enabled = false;
 
-uniform sampler2D in_emissive_tex;
-uniform bool emissive_tex_enabled = false;
-uniform vec4 in_emissive_color;
+uniform sampler2D emissive_tex;
+uniform vec3 emissive;
 
-uniform sampler2D in_normal_tex;
+uniform sampler2D normal_tex;
 uniform bool normal_tex_enabled = false;
 
 uniform samplerCube env_tex;
@@ -314,72 +315,10 @@ float calc_directional_light_shadow()
     return shadow;
 }
 
-vec3 calc_normal()
-{
-    if (normal_tex_enabled)
-    {
-        mat3 TBN = mat3(fs_in.tangent, fs_in.bitangent, fs_in.normal);
-        vec3 normal = texture(in_normal_tex, fs_in.tex_coord).rgb;
-        normal = normal * 2.0 - 1.0;
-        normal = normalize(TBN * normal);
-        return normal;
-    }
-
-    return fs_in.normal;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // PBR based on:
-// https://github.com/KhronosGroup/glTF-WebGL-PBR/blob/master/shaders/pbr-frag.glsl
+// https://learnopengl.com/PBR/IBL/Specular-IBL
 ////////////////////////////////////////////////////////////////////////////////
-
-// Encapsulate the various inputs used by the various functions in the
-// shading equation We store values in this struct to simplify the
-// integration of alternative implementations of the shading terms,
-// outlined in the Readme.MD Appendix.
-struct PbrInfo
-{
-    // cos angle between normal and light direction
-	float n_dot_l;
-
-    // cos angle between normal and view direction
-	float n_dot_v;
-
-    // cos angle between normal and half vector
-	float n_dot_h;
-
-    // cos angle between light direction and half vector
-	float l_dot_h;
-
-    // cos angle between view direction and half vector
-	float v_dot_h;
-
-    // roughness value, as authored by the model creator (input to
-    // shader)
-	float perceptual_roughness;
-
-    // full reflectance color (normal incidence angle)
-	vec3 reflectance0;
-
-    // reflectance color at grazing angle
-	vec3 reflectance90;
-
-    // roughness mapped to a more linear change in the roughness
-    // (proposed by [2])
-	float alpha_roughness;
-
-    // color contribution from diffuse lighting
-	vec3 diffuse_color;
-
-    // color contribution from specular lighting
-	vec3 specular_color;
-
-    // normal at surface point
-	vec3 n;
-
-    // vector from surface point to camera
-	vec3 v;
-};
 
 vec4 srgb_to_linear(vec4 srgb_in)
 {
@@ -387,300 +326,242 @@ vec4 srgb_to_linear(vec4 srgb_in)
 	return vec4(lin_out, srgb_in.a);
 }
 
-// Calculation of the lighting contribution from an optional Image
-// Based Light source.  Precomputed Environment Maps are required
-// uniform inputs and are computed as outlined in [1].  See our
-// README.md on Environment Maps [3] for additional discussion.
-vec3 calc_ibl_contribution(PbrInfo pbr_info, vec3 n, vec3 reflection)
+struct PbrParameters
 {
-	float mip_count = float(textureQueryLevels(env_tex));
-	float lod = pbr_info.perceptual_roughness * mip_count;
+    vec3 albedo;
+    float roughness;
+    float metalness;
 
-	// retrieve a scale and bias to F0. See [1], Figure 3
-	vec2 brdf_sample_point = clamp(vec2(pbr_info.n_dot_v,
-                                        1.0 - pbr_info.perceptual_roughness),
-                                   vec2(0.01),
-                                   vec2(0.09));
-	// vec2 brdf_sample_point = vec2(pbr_info.n_dot_v,
-    //                               1.0 - pbr_info.perceptual_roughness);
-	vec3 brdf = textureLod(brdf_lut_tex, brdf_sample_point, 0).rgb;
-	vec3 cm = vec3(1.0, 1.0, 1.0);
-	// HDR envmaps are already linear
-	vec3 diffuseLight = texture(env_irradiance_tex, n.xyz * cm).rgb;
-	vec3 specularLight = textureLod(env_tex, reflection.xyz * cm, lod).rgb;
+    vec3 emissive;
+    vec3 ao;
 
-	vec3 diffuse = diffuseLight * pbr_info.diffuse_color;
-	vec3 specular = specularLight * (pbr_info.specular_color * brdf.x + brdf.y);
+    vec3 normal;
+    vec3 view;
+    float n_dot_v;
+};
 
-	return diffuse + specular;
-}
+PbrParameters pbr_params;
 
-// Disney Implementation of diffuse from Physically-Based Shading at
-// Disney by Brent Burley. See Section 5.3.
-// http://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf
-vec3 diffuse_burley(PbrInfo pbr_info)
+void calc_albedo()
 {
-	float f90 = 2.0 * pbr_info.l_dot_h * pbr_info.l_dot_h * pbr_info.alpha_roughness - 0.5;
-
-	return (pbr_info.diffuse_color / PI)
-        * (1.0 + f90 * pow((1.0 - pbr_info.n_dot_l), 5.0))
-        * (1.0 + f90 * pow((1.0 - pbr_info.n_dot_v), 5.0));
-}
-
-// The following equation models the Fresnel reflectance term of the
-// spec equation (aka F()) Implementation of fresnel from [4],
-// Equation 15
-vec3 specular_reflection(PbrInfo pbr_info)
-{
-	return pbr_info.reflectance0
-        + (pbr_info.reflectance90 - pbr_info.reflectance0)
-        * pow(clamp(1.0 - pbr_info.v_dot_h, 0.0, 1.0), 5.0);
-}
-
-// This calculates the specular geometric attenuation (aka G()), where
-// rougher material will reflect less light back to the viewer.  This
-// implementation is based on [1] Equation 4, and we adopt their
-// modifications to alpha_roughness as input as originally proposed in
-// [2].
-float geometric_occlusion(PbrInfo pbr_info)
-{
-	float n_dot_l = pbr_info.n_dot_l;
-	float n_dot_v = pbr_info.n_dot_v;
-	float r_sqr = pbr_info.alpha_roughness * pbr_info.alpha_roughness;
-
-	float attenuation_l = 2.0 * n_dot_l
-        / (n_dot_l + sqrt(r_sqr + (1.0 - r_sqr) * (n_dot_l * n_dot_l)));
-	float attenuation_v = 2.0 * n_dot_v
-        / (n_dot_v + sqrt(r_sqr + (1.0 - r_sqr) * (n_dot_v * n_dot_v)));
-	return attenuation_l * attenuation_v;
-}
-
-// The following equation(s) model the distribution of microfacet
-// normals across the area being drawn (aka D()) Implementation from
-// "Average Irregularity Representation of a Roughened Surface for Ray
-// Reflection" by T. S. Trowbridge, and K. P. Reitz Follows the
-// distribution function recommended in the SIGGRAPH 2013 course notes
-// from EPIC Games [1], Equation 3.
-float microfacet_distribution(PbrInfo pbr_info)
-{
-	float roughness_sq = pbr_info.alpha_roughness * pbr_info.alpha_roughness;
-	float f = (pbr_info.n_dot_h * roughness_sq - pbr_info.n_dot_h) * pbr_info.n_dot_h + 1.0;
-	return roughness_sq / (PI * f * f);
-}
-
-vec3 calc_pbr_inputs_metallic_roughness(vec4 albedo,
-                                        vec3 normal,
-                                        vec4 mr_sample,
-                                        out PbrInfo pbr_info)
-{
-	float perceptual_roughness = 1.0;
-	float metallic = 1.0;
-
-	// Roughness is stored in the 'g' channel, metallic is stored in
-	// the 'b' channel.  This layout intentionally reserves the 'r'
-	// channel for (optional) occlusion map data
-	perceptual_roughness = mr_sample.g * perceptual_roughness;
-	metallic = mr_sample.b * metallic;
-
-	const float min_roughness = 0.04;
-
-	perceptual_roughness = clamp(perceptual_roughness, min_roughness, 1.0);
-	metallic = clamp(metallic, 0.0, 1.0);
-	// Roughness is authored as perceptual roughness; as is
-	// convention, convert to material roughness by squaring the
-	// perceptual roughness [2].
-	float alpha_roughness = perceptual_roughness * perceptual_roughness;
-
-	// The albedo may be defined from a base texture or a flat color
-	vec4 base_color = albedo;
-
-	vec3 f0 = vec3(0.04);
-	vec3 diffuse_color = base_color.rgb * (vec3(1.0) - f0);
-	diffuse_color *= 1.0 - metallic;
-	vec3 specular_color = mix(f0, base_color.rgb, metallic);
-
-	// Compute reflectance.
-	float reflectance = max(max(specular_color.r, specular_color.g), specular_color.b);
-
-	// For typical incident reflectance range (between 4% to 100%) set
-	// the grazing reflectance to 100% for typical fresnel effect.
-	// For very low reflectance range on highly diffuse objects (below
-	// 4%), incrementally reduce grazing reflecance to 0%.
-	float reflectance90 = clamp(reflectance * 25.0, 0.0, 1.0);
-	vec3 specular_environment_r0 = specular_color.rgb;
-	vec3 specular_environment_r90 = vec3(1.0, 1.0, 1.0) * reflectance90;
-
-	vec3 n = normalize(normal); // normal at surface point
-	vec3 v = normalize(-fs_in.position); // Vector from surface point to camera
-	vec3 reflection = -normalize(reflect(v, n));
-
-	pbr_info.n_dot_v = clamp(abs(dot(n, v)), 0.001, 1.0);
-	pbr_info.perceptual_roughness = perceptual_roughness;
-	pbr_info.reflectance0 = specular_environment_r0;
-	pbr_info.reflectance90 = specular_environment_r90;
-	pbr_info.alpha_roughness = alpha_roughness;
-	pbr_info.diffuse_color = diffuse_color;
-	pbr_info.specular_color = specular_color;
-	pbr_info.n = n;
-	pbr_info.v = v;
-
-	// Calculate lighting contribution from image based lighting source (IBL)
-	vec3 color = calc_ibl_contribution(pbr_info, n, reflection);
-
-	return color;
-}
-
-vec3 calc_pbr_point_light_contribution(inout PbrInfo pbr_info, PointLight point_light)
-{
-	vec3 n = pbr_info.n;
-	vec3 v = pbr_info.v;
-	// Vector from surface point to light
-	vec3 l = normalize(point_light.position - fs_in.position);
-    // Half vector between both l and v
-	vec3 h = normalize(l + v);
-
-    float n_dot_v = pbr_info.n_dot_v;
-    float n_dot_l = clamp(dot(n, l), 0.001, 1.0);
-    float n_dot_h = clamp(dot(n, h), 0.0, 1.0);
-    float l_dot_h = clamp(dot(l, h), 0.0, 1.0);
-    float v_dot_h = clamp(dot(v, h), 0.0, 1.0);
-
-    pbr_info.n_dot_l = n_dot_l;
-    pbr_info.n_dot_h = n_dot_h;
-    pbr_info.l_dot_h = l_dot_h;
-    pbr_info.v_dot_h = v_dot_h;
-
-    vec3 F = specular_reflection(pbr_info);
-    float G = geometric_occlusion(pbr_info);
-    float D = microfacet_distribution(pbr_info);
-
-    vec3 diffuse_contrib = (1.0 - F) * diffuse_burley(pbr_info);
-    vec3 spec_contrib = F * G * D / (4.0 * n_dot_l * n_dot_v);
-
-    float dist = length(point_light.position - fs_in.position);
-    float attenuation = 1.0 / (point_light.constant + point_light.linear * dist
-                               + point_light.quadratic * (dist * dist));
-    vec3 radiance = point_light.color * attenuation;
-
-    vec3 color = n_dot_l * radiance * (diffuse_contrib + spec_contrib);
-
-    return color;
-}
-
-vec3 calc_pbr_light_contribution(inout PbrInfo pbr_info, vec3 lightDirection, vec3 lightColor)
-{
-    vec3 n = pbr_info.n;
-    vec3 v = pbr_info.v;
-    vec3 l = normalize(lightDirection);	// Vector from surface point to light
-    vec3 h = normalize(l + v); // Half vector between both l and v
-
-    float n_dot_v = pbr_info.n_dot_v;
-    float n_dot_l = clamp(dot(n, l), 0.001, 1.0);
-    float n_dot_h = clamp(dot(n, h), 0.0, 1.0);
-    float l_dot_h = clamp(dot(l, h), 0.0, 1.0);
-    float v_dot_h = clamp(dot(v, h), 0.0, 1.0);
-
-    pbr_info.n_dot_l = n_dot_l;
-    pbr_info.n_dot_h = n_dot_h;
-    pbr_info.l_dot_h = l_dot_h;
-    pbr_info.v_dot_h = v_dot_h;
-
-    // Calculate the shading terms for the microfacet specular shading model
-    vec3 F = specular_reflection(pbr_info);
-    float G = geometric_occlusion(pbr_info);
-    float D = microfacet_distribution(pbr_info);
-
-    // Calculation of analytical lighting contribution
-    vec3 diffuse_contrib = (1.0 - F) * diffuse_burley(pbr_info);
-    vec3 spec_contrib = F * G * D / (4.0 * n_dot_l * n_dot_v);
-    // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
-
-    if (directional_light_shadow_enabled)
+    vec4 tex = texture(albedo_tex, fs_in.tex_coord);
+    if (tex.a <= 0.01f)
     {
-        float shadow = calc_directional_light_shadow();
-        diffuse_contrib *= shadow;
-        spec_contrib *= shadow;
+        discard;
     }
-
-    vec3 color = n_dot_l * lightColor * (diffuse_contrib + spec_contrib);
-
-    return color;
+    pbr_params.albedo = tex.rgb * albedo_color;
 }
 
-vec4 calc_albedo_color()
+void calc_roughness_metalness()
 {
-    if (albedo_tex_enabled)
-    {
-        vec4 albedo_texture = texture(in_albedo_tex, fs_in.tex_coord);
-        if (albedo_texture.a <= 0.01f)
-        {
-            discard;
-        }
-        return albedo_texture;
-    }
-    return in_albedo_color;
+    vec2 rm =  texture(metalness_roughness_tex, fs_in.tex_coord).gb;
+
+    pbr_params.roughness = rm.x * roughness;
+    // minimal roughness to keep specular highlight
+    pbr_params.roughness = max(pbr_params.roughness, 0.05f);
+
+    pbr_params.metalness = rm.y * metalness;
 }
 
-vec4 calc_roughness()
+void calc_emissive()
 {
-    if (roughness_tex_enabled)
-    {
-        vec4 roughness_texture = texture(in_roughness_tex, fs_in.tex_coord);
-        return roughness_texture;
-    }
-    return in_roughness;
+    pbr_params.emissive = texture(emissive_tex, fs_in.tex_coord).rgb  * emissive;
 }
 
-vec4 calc_emissive()
-{
-    if (emissive_tex_enabled)
-    {
-        vec4 emissive_texture = texture(in_emissive_tex, fs_in.tex_coord);
-        return emissive_texture;
-    }
-    return in_emissive_color;
-}
-
-vec4 calc_ao()
+void calc_ao()
 {
     if (ao_tex_enabled)
     {
-        vec4 ao_texture = texture(in_ao_tex, fs_in.tex_coord);
-        return ao_texture;
+        pbr_params.ao = texture(ao_tex, fs_in.tex_coord).rgb;
     }
-    return vec4(0.0);
+    else
+    {
+        pbr_params.ao = vec3(0.0f);
+    }
+}
+
+void calc_normal()
+{
+    if (normal_tex_enabled)
+    {
+        mat3 TBN = mat3(fs_in.tangent, fs_in.bitangent, fs_in.normal);
+        vec3 normal = texture(normal_tex, fs_in.tex_coord).rgb;
+        normal = normal * 2.0 - 1.0;
+        normal = normalize(TBN * normal);
+        pbr_params.normal = normal;
+    }
+    else
+    {
+        pbr_params.normal = normalize(fs_in.normal);
+    }
+}
+
+// GGX/Towbridge-Reitz normal distribution function.
+// Uses Disney's reparametrization of alpha = roughness^2
+float ndf_ggx(float cos_lh, float roughness)
+{
+	float alpha = roughness * roughness;
+	float alpha_sq = alpha * alpha;
+
+	float denom = (cos_lh * cos_lh) * (alpha_sq - 1.0) + 1.0;
+	return alpha_sq / (PI * denom * denom);
+}
+
+// Single term for separable Schlick-GGX below.
+float ga_schlick_g1(float cos_theta, float k)
+{
+	return cos_theta / (cos_theta * (1.0 - k) + k);
+}
+
+// Schlick-GGX approximation of geometric attenuation function using Smith's method.
+float ga_schlick_ggx(float cos_li, float n_dot_v, float roughness)
+{
+	float r = roughness + 1.0;
+	float k = (r * r) / 8.0; // Epic suggests using this roughness remapping for analytic lights.
+	return ga_schlick_g1(cos_li, k) * ga_schlick_g1(n_dot_v, k);
+}
+
+float geometry_schlick_ggx(float n_dot_v, float roughness)
+{
+	float r = (roughness + 1.0);
+	float k = (r * r) / 8.0;
+
+	float nom = n_dot_v;
+	float denom = n_dot_v * (1.0 - k) + k;
+
+	return nom / denom;
+}
+
+vec3 fresnel_schlick_roughness(vec3 f0, float cos_theta, float roughness)
+{
+    cos_theta = clamp(cos_theta, 0.0f, 1.0f);
+	return f0 + (max(vec3(1.0 - roughness), f0) - f0) * pow(1.0 - cos_theta, 5.0);
+}
+
+vec3 ibl(vec3 f0, vec3 lr)
+{
+	vec3 irradiance = texture(env_irradiance_tex, pbr_params.normal).rgb;
+	vec3 f = fresnel_schlick_roughness(f0, pbr_params.n_dot_v, pbr_params.roughness);
+	vec3 kd = (1.0 - f) * (1.0 - pbr_params.metalness);
+	vec3 diffuse_ibl = pbr_params.albedo * irradiance;
+
+    float mip_count = float(textureQueryLevels(env_tex));
+    float nov = clamp(pbr_params.n_dot_v, 0.0, 1.0);
+	vec3 r = 2.0 * dot(pbr_params.view, pbr_params.normal) * pbr_params.normal - pbr_params.view;
+
+	vec3 specular_irradiance = textureLod(env_tex,
+                                          -normalize(reflect(pbr_params.view, pbr_params.normal)),
+                                          pbr_params.roughness * mip_count).rgb;
+
+	vec2 brdf_sample_point = vec2(pbr_params.n_dot_v, 1.0 - pbr_params.roughness);
+	vec2 specular_brdf = texture(brdf_lut_tex, brdf_sample_point).rg;
+    vec3 specular_ibl = specular_irradiance * (f0 * specular_brdf.x + specular_brdf.y);
+
+    return kd * diffuse_ibl + specular_ibl;
+}
+
+vec3 calc_directional_light(vec3 f0)
+{
+    if (!directional_light_enabled)
+    {
+        return vec3(0.0f);
+    }
+
+    vec3 li = normalize(-directional_light.direction); // Vector from surface point to light
+    vec3 lradiance = directional_light.color * directional_light.multiplier;
+    vec3 lh = normalize(li + pbr_params.view); // Half vector between both l and v
+
+    float cos_li = clamp(dot(pbr_params.normal, li), 0.001, 1.0);
+    float cos_lh = clamp(dot(pbr_params.normal, lh), 0.0, 1.0);
+
+    // Calculate the shading terms for the microfacet specular shading model
+    vec3 F = fresnel_schlick_roughness(f0, dot(lh, pbr_params.view), pbr_params.roughness);
+    float D = ndf_ggx(cos_lh, pbr_params.roughness);
+    float G = ga_schlick_ggx(cos_li, pbr_params.n_dot_v, pbr_params.roughness);
+
+    vec3 kd = (1.0 - F) * (1.0 - pbr_params.metalness);
+    vec3 diffuse_brdf = kd * pbr_params.albedo;
+
+    // Cook-Torrance
+    vec3 specular_brdf = (F * D * G) / max(epsilon, 4.0 * cos_li * pbr_params.n_dot_v);
+    specular_brdf = clamp(specular_brdf, vec3(0.0f), vec3(10.0f));
+    if (directional_light_shadow_enabled)
+    {
+        float shadow = calc_directional_light_shadow();
+        diffuse_brdf *= shadow;
+        specular_brdf *= shadow;
+    }
+
+    vec3 color = (diffuse_brdf + specular_brdf) * lradiance * cos_li;
+    return color;
+}
+
+vec3 calc_point_lights(vec3 f0)
+{
+    vec3 result = vec3(0.0);
+    for (int i = 0; i < point_light_count; ++i)
+    {
+        PointLight light = point_lights[i];
+        vec3 li = normalize(light.position - fs_in.position);
+        float light_distance = length(light.position - fs_in.position);
+        vec3 lh = normalize(li + pbr_params.view);
+
+        float attenuation = clamp(1.0
+                                  - (light_distance * light_distance) / (light.radius * light.radius),
+                                  0.0,
+                                  1.0);
+        attenuation *= mix(attenuation, 1.0, light.falloff);
+
+        vec3 lradiance = light.color * light.multiplier * attenuation;
+
+		// calculate angles between surface normal and various light vectors.
+		float cos_li = max(0.0, dot(pbr_params.normal, li));
+		float cos_lh = max(0.0, dot(pbr_params.normal, lh));
+
+		vec3 F = fresnel_schlick_roughness(f0, dot(lh, pbr_params.view), pbr_params.roughness);
+		float D = ndf_ggx(cos_lh, pbr_params.roughness);
+		float G = ga_schlick_ggx(cos_li, pbr_params.n_dot_v, pbr_params.roughness);
+
+		vec3 kd = (1.0 - F) * (1.0 - pbr_params.metalness);
+		vec3 diffuse_brdf = kd * pbr_params.albedo;
+
+		// Cook-Torrance
+		vec3 specular_brdf = (F * D * G) / max(epsilon, 4.0 * cos_li * pbr_params.n_dot_v);
+		specular_brdf = clamp(specular_brdf, vec3(0.0f), vec3(10.0f));
+
+		result += (diffuse_brdf + specular_brdf) * lradiance * cos_li;
+    }
+
+    return result;
 }
 
 void main()
 {
-    vec3 normal = calc_normal();
-    vec4 albedo = calc_albedo_color();
-    vec4 ao = calc_ao();
-    vec4 roughness = calc_roughness();
-    vec4 emissive = calc_emissive();
+    calc_albedo();
+    calc_normal();
+    calc_roughness_metalness();
+    calc_emissive();
+    calc_ao();
 
-    PbrInfo pbr_info;
-    emissive.rgb = srgb_to_linear(emissive).rgb;
-    // image based lightning
-    vec3 color = calc_pbr_inputs_metallic_roughness(albedo, normal, roughness, pbr_info);
-    // directionl light source
-    if (directional_light_enabled)
-    {
-        color += calc_pbr_light_contribution(pbr_info, -directional_light.direction, directional_light.color);
-    }
-    // point lights
-    for (int i = 0; i < point_light_count; ++i)
-    {
-        color += calc_pbr_point_light_contribution(pbr_info, point_lights[i]);
-    }
+    pbr_params.view = normalize(-fs_in.position);
+    pbr_params.n_dot_v = min(max(dot(pbr_params.normal, pbr_params.view), 0.0), 1.0);
+
+	// specular reflection vector
+	vec3 lr = 2.0 * pbr_params.n_dot_v * pbr_params.normal - pbr_params.view;
+
+	// fresnel reflectance, metals use albedo
+    const vec3 fdielectric = vec3(0.04);
+	vec3 f0 = mix(fdielectric, pbr_params.albedo, pbr_params.metalness);
+
+    vec3 light_contribution = calc_directional_light(f0);
+    light_contribution += calc_point_lights(f0);
+    vec3 ibl_contribution = ibl(f0, lr);
+    vec3 color = ibl_contribution + light_contribution;
+
     // ambient occlusion
-    color = color * (ao.r < 0.01 ? 1.0 : ao.r);
+    color = color * (pbr_params.ao.r < 0.01 ? 1.0 : pbr_params.ao.r);
     // emissive
-    if (emissive_tex_enabled)
-    {
-        // color = pow(emissive.rgb + color, vec3(1.0 / 2.2));
-        color += emissive.rgb;
-    }
+    color += pbr_params.emissive.rgb;
 
     if (show_shadow_cascades)
     {
@@ -688,23 +569,23 @@ void main()
         int cascade_index = calc_cascade_index();
         if (cascade_index == 0)
         {
-            cascade_color = vec3(1.0f, 0.0f, 0.0f);
+            cascade_color = vec3(1.0f, 0.25f, 0.25f);
         }
         else if (cascade_index == 1)
         {
-            cascade_color = vec3(0.0f, 1.0f, 0.0f);
+            cascade_color = vec3(0.25f, 1.0f, 0.25f);
         }
         else if (cascade_index == 2)
         {
-            cascade_color = vec3(0.0f, 0.0f, 1.0f);
+            cascade_color = vec3(0.25f, 0.25f, 1.0f);
         }
         else if (cascade_index == 3)
         {
-            cascade_color = vec3(0.0f, 1.0f, 1.0f);
+            cascade_color = vec3(0.25f, 1.0f, 1.0f);
         }
         else if (cascade_index == 4)
         {
-            cascade_color = vec3(1.0f, 1.0f, 0.0f);
+            cascade_color = vec3(1.0f, 1.0f, 0.25f);
         }
         color *= cascade_color;
     }

@@ -14,14 +14,14 @@ class ForwardPass
 {
 public:
   using Output =
-      std::function<void(const SceneRenderInfo         &scene_render_info,
-                         const ViewRenderInfo          &view_render_info,
+      std::function<void(const SceneRenderInfo &        scene_render_info,
+                         const ViewRenderInfo &         view_render_info,
                          std::shared_ptr<GlFramebuffer> scene_framebuffer)>;
 
   ForwardPass();
 
-  void execute(const SceneRenderInfo          &scene_render_info,
-               const ViewRenderInfo           &view_render_info,
+  void execute(const SceneRenderInfo &         scene_render_info,
+               const ViewRenderInfo &          view_render_info,
                std::shared_ptr<GlTextureArray> shadow_tex_array,
                const std::vector<glm::mat4>    light_space_matrices,
                const std::vector<CascadeSplit> cascade_frustums);
@@ -31,6 +31,10 @@ public:
 private:
   // TODO: Workaround. Expose public API
   friend class RendererPanel;
+
+  bool need_generate_prefilter_map_{true};
+  std::shared_ptr<GlShader> equirectangular_to_cubemap_shader_{};
+  std::shared_ptr<GlShader> prefilter_shader_{};
 
   Output output_;
 

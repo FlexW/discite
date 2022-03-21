@@ -14,22 +14,22 @@ public:
   void      set_color(const glm::vec3 &value);
   glm::vec3 color() const;
 
-  void  set_constant(float value);
-  float constant() const;
+  void  set_multiplier(float value);
+  float multiplier() const;
 
-  void  set_linear(float value);
-  float linear() const;
+  void  set_radius(float value);
+  float radius() const;
 
-  void  set_quadratic(float value);
-  float quadratic() const;
+  void  set_falloff(float value);
+  float falloff() const;
 
 private:
   glm::vec3 position_{0.0f};
   glm::vec3 color_{1.0f};
+  float     multiplier_{1.0f};
 
-  float constant_{1.0f};
-  float linear_{0.9f};
-  float quadratic_{1.8f};
+  float radius_{10.0f};
+  float falloff_{0.2f};
 };
 
 } // namespace dc

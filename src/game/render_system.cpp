@@ -7,9 +7,9 @@
 #include "model_component.hpp"
 #include "point_light.hpp"
 #include "point_light_component.hpp"
+#include "profiling.hpp"
 #include "sky_component.hpp"
 #include "transform_component.hpp"
-#include "profiling.hpp"
 
 #include <memory>
 
@@ -74,10 +74,10 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
       point_light.set_position(transform_component.position());
 
       point_light.set_color(point_light_component.color_);
+      point_light.set_multiplier(point_light_component.multiplier_);
 
-      point_light.set_constant(point_light_component.constant_);
-      point_light.set_linear(point_light_component.linear_);
-      point_light.set_quadratic(point_light_component.quadratic_);
+      point_light.set_radius(point_light_component.radius_);
+      point_light.set_falloff(point_light_component.falloff_);
 
       scene_render_info.add_point_light(point_light);
     }
@@ -129,6 +129,7 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
       DirectionalLight directional_light{};
       directional_light.set_direction(rotation);
       directional_light.set_color(directional_light_component.color_);
+      directional_light.set_multiplier(directional_light_component.multiplier_);
 
       scene_render_info.set_directional_light(directional_light);
 

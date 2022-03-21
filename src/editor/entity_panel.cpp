@@ -143,6 +143,7 @@ void EntityPanel::on_render()
     auto &directional_light_component =
         entity_.component<DirectionalLightComponent>();
     imgui_input("Color", directional_light_component.color_);
+    imgui_input("Multiplier", directional_light_component.multiplier_);
   }
 
   if (entity_.has_component<PointLightComponent>())
@@ -151,6 +152,9 @@ void EntityPanel::on_render()
     ImGui::Text("Point light");
     auto &point_light_component = entity_.component<PointLightComponent>();
     imgui_input("Color", point_light_component.color_);
+    imgui_input("Multiplier", point_light_component.multiplier_);
+    imgui_input("Radius", point_light_component.radius_);
+    imgui_input("Falloff", point_light_component.falloff_);
   }
 
   if (entity_.has_component<SkyComponent>())

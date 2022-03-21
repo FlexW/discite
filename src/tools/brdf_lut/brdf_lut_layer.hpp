@@ -21,9 +21,8 @@ private:
   static constexpr int brdf_width{256};
   static constexpr int brdf_height{256};
 
-  static constexpr std::uint32_t  buffer_size{2 * sizeof(float) * brdf_width *
-                                             brdf_height};
-  std::vector<float>              lut_data_{buffer_size};
+  static constexpr std::uint32_t buffer_size{2 * brdf_width * brdf_height};
+  std::vector<float>             lut_data_;
 };
 
 } // namespace dc

@@ -40,7 +40,8 @@ vec3 importanceSample_GGX(vec2 Xi, float roughness, vec3 normal)
 {
 	// Maps a 2D point to a hemisphere with spread based on roughness
 	float alpha = roughness * roughness;
-	float phi = 2.0 * PI * Xi.x + random(normal.xz) * 0.1;
+	// float phi = 2.0 * PI * Xi.x + random(normal.xz) * 0.1;
+	float phi = 2.0 * PI * Xi.x;
 	float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (alpha*alpha - 1.0) * Xi.y));
 	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
 	vec3 H = vec3(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta);
@@ -74,7 +75,7 @@ vec2 BRDF(float NoV, float roughness)
 	{
 		vec2 Xi = hammersley2d(i, NUM_SAMPLES);
 		vec3 H = importanceSample_GGX(Xi, roughness, N);
-		vec3 L = 2.0 * dot(V, H) * H - V;
+		vec3 L = normalize(2.0 * dot(V, H) * H - V);
 
 		float dotNL = max(dot(N, L), 0.0);
 		float dotNV = max(dot(N, V), 0.0);
@@ -84,7 +85,11 @@ vec2 BRDF(float NoV, float roughness)
 		if (dotNL > 0.0)
 		{
 			float G = G_SchlicksmithGGX(dotNL, dotNV, roughness);
-			float G_Vis = (G * dotVH) / (dotNH * dotNV);
+			float G_Vis = 0.0f;
+			if (dotNV != 0.0f)
+			{
+				G_Vis = (G * dotVH) / (dotNH * dotNV);
+			}
 			float Fc = pow(1.0 - dotVH, 5.0);
 			LUT += vec2((1.0 - Fc) * G_Vis, Fc * G_Vis);
 		}
@@ -97,6 +102,16 @@ void main()
 	vec2 uv;
 	uv.x = float(gl_GlobalInvocationID.x) / float(BRDF_W);
 	uv.y = float(gl_GlobalInvocationID.y) / float(BRDF_H);
+
+	if (uv.x == 0.0f)
+	{
+		uv.x = 0.00009f;
+	}
+
+	if (uv.y == 0.0f)
+	{
+		uv.y = 0.00009f;
+	}
 
 	vec2 v = BRDF(uv.x, 1.0 - uv.y);
 

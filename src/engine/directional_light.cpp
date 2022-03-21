@@ -18,4 +18,8 @@ void DirectionalLight::set_color(const glm::vec3 &value) { color_ = value; }
 
 glm::vec3 DirectionalLight::color() const { return color_; }
 
+void DirectionalLight::set_multiplier(float value) { multiplier_ = value; }
+
+float DirectionalLight::multiplier() const { return multiplier_; }
+
 } // namespace dc

@@ -8,10 +8,10 @@ namespace dc
 struct PointLightComponent
 {
   glm::vec3 color_{1.0f};
+  float     multiplier_{1.0f};
 
-  float constant_{1.0f};
-  float linear_{0.9f};
-  float quadratic_{1.8f};
+  float radius_{10.0f};
+  float falloff_{0.2f};
 
   void save(FILE *file) const;
   void read(FILE *file);
