@@ -29,14 +29,14 @@ public:
   void set_directional_light(const DirectionalLight &directional_light);
   DirectionalLight directional_light() const;
 
-  void          set_env_map(const EnvionmentMap &sky);
-  EnvionmentMap env_map() const;
+  void          set_env_map(const EnvironmentMap &sky);
+  EnvironmentMap env_map() const;
 
 private:
   std::vector<MeshInfo>   meshes_;
   std::vector<PointLight> point_lights_;
   DirectionalLight        directional_light_;
-  EnvionmentMap           env_map_;
+  EnvironmentMap           env_map_;
 };
 
 struct ViewportInfo

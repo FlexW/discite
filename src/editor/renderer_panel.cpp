@@ -52,9 +52,6 @@ void RendererPanel::render_general()
     return;
   }
 
-  imgui_input("Irradiance sky box",
-              renderer->skybox_pass_->is_show_irradiance_as_skybox_);
-
   imgui_input("Exposure", renderer->hdr_pass_->exposure_);
 
   imgui_input("Bloom", renderer->is_bloom_enabled_);

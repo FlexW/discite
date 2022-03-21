@@ -32,12 +32,12 @@ DirectionalLight SceneRenderInfo::directional_light() const
   return directional_light_;
 }
 
-void SceneRenderInfo::set_env_map(const EnvionmentMap &value)
+void SceneRenderInfo::set_env_map(const EnvironmentMap &value)
 {
   env_map_ = value;
 }
 
-EnvionmentMap SceneRenderInfo::env_map() const { return env_map_; }
+EnvironmentMap SceneRenderInfo::env_map() const { return env_map_; }
 
 void ViewRenderInfo::set_view_matrix(const glm::mat4 &value)
 {

@@ -3,22 +3,16 @@
 namespace dc
 {
 
-EnvionmentMap::EnvionmentMap(
-    std::shared_ptr<GlCubeTexture> env_texture,
-    std::shared_ptr<GlCubeTexture> env_irradiance_texture)
-    : env_texture_{env_texture},
-      env_irradiance_texture_{env_irradiance_texture}
+EnvironmentMap::EnvironmentMap(const std::string &name, std::vector<std::uint8_t> data)
+    : name_{name},
+      data_{std::move(data)}
 {
 }
 
-std::shared_ptr<GlCubeTexture> EnvionmentMap::env_texture() const
-{
-  return env_texture_;
-}
+std::string EnvironmentMap::name() const { return name_; }
 
-std::shared_ptr<GlCubeTexture> EnvionmentMap::env_irradiance_texture() const
-{
-  return env_irradiance_texture_;
-}
+std::vector<std::uint8_t> EnvironmentMap::data() const { return data_; }
+
+void EnvironmentMap::release_data() { data_ = {}; }
 
 } // namespace dc

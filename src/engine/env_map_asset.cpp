@@ -13,7 +13,7 @@ namespace dc
 {
 
 EnvMapAssetHandle::EnvMapAssetHandle(const std::filesystem::path &file_path,
-                                     const Asset                 &asset)
+                                     const Asset &                asset)
     : AssetHandle(asset)
 {
   try
@@ -21,19 +21,16 @@ EnvMapAssetHandle::EnvMapAssetHandle(const std::filesystem::path &file_path,
     EnvironmentMapDescription env_map_description{};
     env_map_description.read(file_path);
 
-    if (env_map_description.env_irr_map_data_.empty() ||
-        env_map_description.env_map_data_.empty())
+    if (env_map_description.env_map_data_.empty())
     {
       throw std::runtime_error("Env map " + file_path.string() +
                                " data is empty");
     }
 
-    auto env_map =
-        std::make_shared<GlCubeTexture>(env_map_description.env_map_data_);
-    auto env_irr_map =
-        std::make_shared<GlCubeTexture>(env_map_description.env_irr_map_data_);
-
-    env_map_ = std::make_shared<EnvionmentMap>(env_map, env_irr_map);
+    env_map_ =
+        std::make_shared<EnvironmentMap>(asset.id(),
+                                         env_map_description.env_map_data_);
+    ;
   }
   catch (const std::runtime_error &error)
   {
@@ -45,7 +42,7 @@ EnvMapAssetHandle::EnvMapAssetHandle(const std::filesystem::path &file_path,
 
 bool EnvMapAssetHandle::is_ready() const { return env_map_ != nullptr; }
 
-std::shared_ptr<EnvionmentMap> EnvMapAssetHandle::get() const
+std::shared_ptr<EnvironmentMap> EnvMapAssetHandle::get() const
 {
   return env_map_;
 }

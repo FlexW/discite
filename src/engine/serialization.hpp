@@ -120,7 +120,6 @@ struct MeshDescription
 struct EnvironmentMapDescription
 {
   std::vector<std::uint8_t> env_map_data_;
-  std::vector<std::uint8_t> env_irr_map_data_;
 
   void             save(const std::filesystem::path &file_path,
                         const AssetDescription      &asset_description) const;

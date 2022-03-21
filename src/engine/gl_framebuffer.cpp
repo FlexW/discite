@@ -65,7 +65,8 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
         renderbuffer_config.width_        = color_attachment.width_;
         renderbuffer_config.height_       = color_attachment.height_;
         renderbuffer_config.msaa_         = color_attachment.msaa_;
-        auto renderbuffer    = std::make_shared<GlRenderbuffer>(renderbuffer_config);
+        auto renderbuffer =
+            std::make_shared<GlRenderbuffer>(renderbuffer_config);
 
         const auto target = GL_COLOR_ATTACHMENT0 + i;
         glNamedFramebufferRenderbuffer(id_,
@@ -131,7 +132,7 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
         texture_config.mag_filter_   = GL_LINEAR;
         texture_config.msaa_         = depth_attachment.msaa_;
 
-        auto texture         = std::make_shared<GlTexture>(texture_config);
+        auto texture = std::make_shared<GlTexture>(texture_config);
         glNamedFramebufferTexture(id_, GL_DEPTH_ATTACHMENT, texture->id(), 0);
         color_attachments_.push_back(std::move(texture));
         break;
@@ -143,7 +144,8 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
         renderbuffer_config.width_        = depth_attachment.width_;
         renderbuffer_config.height_       = depth_attachment.height_;
         renderbuffer_config.msaa_         = depth_attachment.msaa_;
-        auto renderbuffer    = std::make_shared<GlRenderbuffer>(renderbuffer_config);
+        auto renderbuffer =
+            std::make_shared<GlRenderbuffer>(renderbuffer_config);
 
         glNamedFramebufferRenderbuffer(id_,
                                        GL_DEPTH_ATTACHMENT,
@@ -192,7 +194,8 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
         renderbuffer_config.height_       = stencil_attachment.height_;
         renderbuffer_config.msaa_         = stencil_attachment.msaa_;
 
-        auto renderbuffer = std::make_shared<GlRenderbuffer>(renderbuffer_config);
+        auto renderbuffer =
+            std::make_shared<GlRenderbuffer>(renderbuffer_config);
 
         glNamedFramebufferRenderbuffer(id_,
                                        GL_STENCIL_ATTACHMENT,
@@ -263,7 +266,53 @@ Attachment GlFramebuffer::color_attachment(std::size_t index) const
   return color_attachments_[index];
 }
 
+void GlFramebuffer::set_color_attachment(std::size_t                index,
+                                         std::shared_ptr<GlTexture> texture)
+{
+  DC_ASSERT(index <= color_attachments_.size(), "Invalid index");
+
+  if (index < color_attachments_.size())
+  {
+    color_attachments_[index] = texture;
+  }
+  else if (index == color_attachments_.size())
+  {
+    color_attachments_.push_back(texture);
+  }
+  else
+  {
+    return;
+  }
+
+  glNamedFramebufferTexture(id_,
+                            GL_COLOR_ATTACHMENT0 + index,
+                            texture->id(),
+                            0);
+  glNamedFramebufferDrawBuffer(id_, GL_COLOR_ATTACHMENT0);
+  glNamedFramebufferReadBuffer(id_, GL_COLOR_ATTACHMENT0);
+}
+
+void GlFramebuffer::set_color_attachment(std::size_t                    index,
+                                         std::shared_ptr<GlCubeTexture> texture,
+                                         int                            face,
+                                         GLuint                         mip)
+{
+  glNamedFramebufferTextureLayer(id_,
+                                 GL_COLOR_ATTACHMENT0 + index,
+                                 texture->id(),
+                                 mip,
+                                 face);
+  glNamedFramebufferDrawBuffer(id_, GL_COLOR_ATTACHMENT0);
+  glNamedFramebufferReadBuffer(id_, GL_COLOR_ATTACHMENT0);
+}
+
 Attachment GlFramebuffer::depth_attachment() const { return depth_attachment_; }
+
+void GlFramebuffer::set_depth_attachment(std::shared_ptr<GlRenderbuffer> value)
+{
+  glNamedFramebufferRenderbuffer(id_, GL_DEPTH_ATTACHMENT, value->id(), 0);
+  depth_attachment_ = value;
+}
 
 Attachment GlFramebuffer::stencil_attachment() const
 {

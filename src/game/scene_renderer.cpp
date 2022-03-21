@@ -24,11 +24,13 @@ SceneRenderer::SceneRenderer()
   forward_pass_->set_output(
       [this](const SceneRenderInfo &        scene_render_info,
              const ViewRenderInfo &         view_render_info,
-             std::shared_ptr<GlFramebuffer> scene_framebuffer)
+             std::shared_ptr<GlFramebuffer> scene_framebuffer,
+             std::shared_ptr<GlCubeTexture> sky_irradiance_map)
       {
         skybox_pass_->execute(scene_render_info,
                               view_render_info,
-                              scene_framebuffer);
+                              scene_framebuffer,
+                              sky_irradiance_map);
       });
 
   bloom_pass_->set_output(

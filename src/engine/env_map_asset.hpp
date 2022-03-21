@@ -17,10 +17,10 @@ public:
 
   bool is_ready() const override;
 
-  std::shared_ptr<EnvionmentMap> get() const;
+  std::shared_ptr<EnvironmentMap> get() const;
 
 private:
-  std::shared_ptr<EnvionmentMap> env_map_{};
+  std::shared_ptr<EnvironmentMap> env_map_{};
 };
 
 std::shared_ptr<AssetHandle>

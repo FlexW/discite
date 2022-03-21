@@ -209,7 +209,6 @@ void EnvironmentMapDescription::save(
   asset_description.write(file);
 
   write_vector(file, env_map_data_);
-  write_vector(file, env_irr_map_data_);
 }
 
 AssetDescription
@@ -226,7 +225,6 @@ EnvironmentMapDescription::read(const std::filesystem::path &file_path)
   asset_description.read(file);
 
   read_vector(file, env_map_data_);
-  read_vector(file, env_irr_map_data_);
 
   return asset_description;
 }

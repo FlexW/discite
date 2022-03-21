@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gl.hpp"
+#include "gl_cube_texture.hpp"
 #include "gl_renderbuffer.hpp"
 #include "gl_texture.hpp"
 #include "gl_texture_array.hpp"
@@ -60,7 +61,15 @@ public:
   void attach(const FramebufferConfig &config);
 
   Attachment color_attachment(std::size_t index) const;
+  void       set_color_attachment(std::size_t                index,
+                                  std::shared_ptr<GlTexture> texture);
+  void       set_color_attachment(std::size_t                    index,
+                                  std::shared_ptr<GlCubeTexture> texture,
+                                  int                            face,
+                                  GLuint                         mip = 0);
+
   Attachment depth_attachment() const;
+  void       set_depth_attachment(std::shared_ptr<GlRenderbuffer> value);
   Attachment stencil_attachment() const;
 
   GLuint id() const;

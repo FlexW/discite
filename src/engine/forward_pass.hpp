@@ -1,6 +1,7 @@
 #pragma once
 
 #include "frame_data.hpp"
+#include "gl_cube_texture.hpp"
 #include "gl_framebuffer.hpp"
 #include "gl_shader.hpp"
 #include "gl_texture.hpp"
@@ -16,7 +17,8 @@ public:
   using Output =
       std::function<void(const SceneRenderInfo &        scene_render_info,
                          const ViewRenderInfo &         view_render_info,
-                         std::shared_ptr<GlFramebuffer> scene_framebuffer)>;
+                         std::shared_ptr<GlFramebuffer> scene_framebuffer,
+                         std::shared_ptr<GlCubeTexture> sky_irradiance_map)>;
 
   ForwardPass();
 
@@ -32,9 +34,18 @@ private:
   // TODO: Workaround. Expose public API
   friend class RendererPanel;
 
-  bool need_generate_prefilter_map_{true};
+  struct EnvMapData
+  {
+    std::shared_ptr<GlCubeTexture> irradiance_tex_{};
+    std::shared_ptr<GlCubeTexture> prefilter_tex_{};
+  };
+
+  std::unordered_map<std::string, EnvMapData> env_maps_;
+
+  bool                      need_generate_prefilter_map_{true};
   std::shared_ptr<GlShader> equirectangular_to_cubemap_shader_{};
   std::shared_ptr<GlShader> prefilter_shader_{};
+  std::shared_ptr<GlShader> irradiance_shader_{};
 
   Output output_;
 
@@ -58,6 +69,9 @@ private:
 
   void init_shaders();
   void recreate_scene_framebuffer(int width, int height);
+
+  EnvMapData env_map(EnvironmentMap &env_map);
+  EnvMapData generate_env_map(const EnvironmentMap &env_map);
 };
 
 } // namespace dc

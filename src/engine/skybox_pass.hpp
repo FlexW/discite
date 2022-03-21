@@ -13,16 +13,17 @@ class SkyboxPass
 {
 public:
   using Output =
-      std::function<void(const SceneRenderInfo         &scene_render_info,
-                         const ViewRenderInfo          &view_render_info,
+      std::function<void(const SceneRenderInfo &        scene_render_info,
+                         const ViewRenderInfo &         view_render_info,
                          std::shared_ptr<GlFramebuffer> scene_framebuffer)>;
 
   SkyboxPass();
   ~SkyboxPass();
 
-  void execute(const SceneRenderInfo         &scene_render_info,
-               const ViewRenderInfo          &view_render_info,
-               std::shared_ptr<GlFramebuffer> scene_framebuffer);
+  void execute(const SceneRenderInfo &        scene_render_info,
+               const ViewRenderInfo &         view_render_info,
+               std::shared_ptr<GlFramebuffer> scene_framebuffer,
+               std::shared_ptr<GlCubeTexture> sky_irradiance_map);
 
   void set_output(Output output);
 
@@ -33,7 +34,6 @@ private:
   Output output_;
 
   std::shared_ptr<GlShader> sky_box_shader_{};
-  bool                      is_show_irradiance_as_skybox_{true};
 
   GLuint cube_vertex_array_{0};
   GLuint cube_vertex_buffer_{0};

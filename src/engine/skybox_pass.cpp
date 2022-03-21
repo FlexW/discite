@@ -19,12 +19,12 @@ SkyboxPass::~SkyboxPass()
   }
 }
 
-void SkyboxPass::execute(const SceneRenderInfo         &scene_render_info,
-                         const ViewRenderInfo          &view_render_info,
-                         std::shared_ptr<GlFramebuffer> scene_framebuffer)
+void SkyboxPass::execute(const SceneRenderInfo &        scene_render_info,
+                         const ViewRenderInfo &         view_render_info,
+                         std::shared_ptr<GlFramebuffer> scene_framebuffer,
+                         std::shared_ptr<GlCubeTexture> sky_irradiance_map)
 {
-  const auto &sky = scene_render_info.env_map();
-  if (!sky.env_texture() || !sky.env_irradiance_texture())
+  if (!sky_irradiance_map)
   {
     // can not render anything without them
     if (output_)
@@ -37,14 +37,7 @@ void SkyboxPass::execute(const SceneRenderInfo         &scene_render_info,
   scene_framebuffer->bind();
 
   sky_box_shader_->bind();
-  if (is_show_irradiance_as_skybox_)
-  {
-    sky.env_irradiance_texture()->bind_unit(0);
-  }
-  else
-  {
-    sky.env_texture()->bind_unit(0);
-  }
+  sky_irradiance_map->bind_unit(0);
   sky_box_shader_->set_uniform("env_tex", 0);
   sky_box_shader_->set_uniform("projection_matrix",
                                view_render_info.projection_matrix());

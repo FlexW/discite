@@ -5,19 +5,21 @@
 namespace dc
 {
 
-class EnvionmentMap
+class EnvironmentMap
 {
 public:
-  EnvionmentMap() = default;
-  EnvionmentMap(std::shared_ptr<GlCubeTexture> env_texture,
-                std::shared_ptr<GlCubeTexture> env_irradiance_texture);
+  EnvironmentMap() = default;
+  EnvironmentMap(const std::string &name, std::vector<std::uint8_t> data);
 
-  std::shared_ptr<GlCubeTexture> env_texture() const;
-  std::shared_ptr<GlCubeTexture> env_irradiance_texture() const;
+  std::string name() const;
+
+  std::vector<std::uint8_t> data() const;
+
+  void release_data();
 
 private:
-  std::shared_ptr<GlCubeTexture> env_texture_{};
-  std::shared_ptr<GlCubeTexture> env_irradiance_texture_{};
+  std::string               name_;
+  std::vector<std::uint8_t> data_{};
 };
 
 } // namespace dc
