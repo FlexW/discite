@@ -22,4 +22,8 @@ void DirectionalLight::set_multiplier(float value) { multiplier_ = value; }
 
 float DirectionalLight::multiplier() const { return multiplier_; }
 
+void DirectionalLight::set_cast_shadow(bool value) { cast_shadow_ = value; }
+
+bool DirectionalLight::cast_shadow() const { return cast_shadow_; }
+
 } // namespace dc

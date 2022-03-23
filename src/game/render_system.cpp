@@ -79,7 +79,7 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
       point_light.set_radius(point_light_component.radius_);
       point_light.set_falloff(point_light_component.falloff_);
 
-      auto shadow_tex = point_light_component.shadow_tex_;
+      auto shadow_tex = point_light_component.shadow_tex();
       point_light.set_shadow_tex(shadow_tex);
       point_light.set_cast_shadow(shadow_tex != nullptr);
 
@@ -134,6 +134,8 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
       directional_light.set_direction(rotation);
       directional_light.set_color(directional_light_component.color_);
       directional_light.set_multiplier(directional_light_component.multiplier_);
+      directional_light.set_cast_shadow(
+          directional_light_component.cast_shadow_);
 
       scene_render_info.set_directional_light(directional_light);
 

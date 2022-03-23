@@ -468,7 +468,7 @@ void ForwardPass::execute(const SceneRenderInfo &         scene_render_info,
   mesh_shader_->set_uniform("env_irradiance_tex", global_texture_slot);
   ++global_texture_slot;
 
-  const int   max_point_light_count{5};
+  const int   max_point_light_count{100};
   const auto &point_lights      = scene_render_info.point_lights();
   const auto  point_light_count = point_lights.size() <= max_point_light_count
                                       ? static_cast<int>(point_lights.size())
@@ -518,7 +518,8 @@ void ForwardPass::execute(const SceneRenderInfo &         scene_render_info,
     point_light_shadow_maps.push_back(global_texture_slot);
     ++global_texture_slot;
   }
-  mesh_shader_->set_uniform("point_light_shadow_tex[0]", point_light_shadow_maps);
+  mesh_shader_->set_uniform("point_light_shadow_tex[0]",
+                            point_light_shadow_maps);
 
   const auto &directional_light = scene_render_info.directional_light();
   mesh_shader_->set_uniform("smooth_shadows", smooth_shadows_);
@@ -534,7 +535,7 @@ void ForwardPass::execute(const SceneRenderInfo &         scene_render_info,
                             directional_light.multiplier());
 
   mesh_shader_->set_uniform("directional_light_shadow_enabled",
-                            is_shadows_enabled_);
+                            directional_light.cast_shadow());
 
   {
     mesh_shader_->set_uniform("light_space_matrices[0]", light_space_matrices);

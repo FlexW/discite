@@ -67,12 +67,6 @@ void RendererPanel::render_shadows()
     return;
   }
 
-  ImGui::Checkbox("Enable shadows",
-                  &renderer->forward_pass_->is_shadows_enabled_);
-  if (!renderer->forward_pass_->is_shadows_enabled_)
-  {
-    return;
-  }
   ImGui::Checkbox("Show cascades",
                   &renderer->forward_pass_->show_shadow_cascades_);
 

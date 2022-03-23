@@ -1,6 +1,6 @@
 #version 460 core
 
-#define MAX_POINT_LIGHTS_COUNT 5
+#define MAX_POINT_LIGHTS_COUNT 100
 #define CASCADES_COUNT 5
 
 const float PI = 3.141592653589793;

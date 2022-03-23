@@ -66,7 +66,6 @@ private:
   float shadow_bias_min_{0.0f};
   bool  smooth_shadows_{true};
   bool  show_shadow_cascades_{false};
-  bool  is_shadows_enabled_{true};
 
   void init_shaders();
   void recreate_scene_framebuffer(int width, int height);
