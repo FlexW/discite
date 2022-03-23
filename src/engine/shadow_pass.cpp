@@ -116,7 +116,13 @@ void ShadowPass::execute(const SceneRenderInfo &scene_render_info,
   // sort into solid and transparent geometry
   for (const auto &mesh : meshes)
   {
-    if (mesh.mesh_->material()->is_transparent())
+    const auto material = mesh.mesh_->material();
+    if (!material)
+    {
+      continue;
+    }
+
+    if (material->is_transparent())
     {
       transparent_meshes_.push_back(mesh);
     }

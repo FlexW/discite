@@ -15,8 +15,6 @@ public:
 
   std::vector<std::uint8_t> data() const;
 
-  void release_data();
-
 private:
   std::string               name_;
   std::vector<std::uint8_t> data_{};

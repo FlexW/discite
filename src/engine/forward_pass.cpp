@@ -430,9 +430,15 @@ void ForwardPass::execute(const SceneRenderInfo &         scene_render_info,
                                   view_render_info.projection_matrix());
   for (const auto &mesh : scene_render_info.meshes())
   {
+    const auto material = mesh.mesh_->material();
+    if (!material)
+    {
+      continue;
+    }
+
     depth_only_shader_->set_uniform("model_matrix", mesh.model_matrix_);
 
-    const auto albedo_tex = mesh.mesh_->material()->albedo_texture();
+    const auto albedo_tex = material->albedo_texture();
     if (albedo_tex && albedo_tex->format() == GL_RGBA)
     {
       albedo_tex->bind_unit(1);
@@ -557,11 +563,15 @@ void ForwardPass::execute(const SceneRenderInfo &         scene_render_info,
   // iterate through all meshes
   for (const auto &mesh : scene_render_info.meshes())
   {
+    const auto material = mesh.mesh_->material();
+    if (!material)
+    {
+      continue;
+    }
+
     mesh_shader_->set_uniform("model_matrix", mesh.model_matrix_);
 
     int texture_slot = global_texture_slot;
-
-    const auto material = mesh.mesh_->material();
     if (material->albedo_texture())
     {
       const auto albedo_texture = material->albedo_texture();
@@ -962,7 +972,7 @@ ForwardPass::generate_env_map(const EnvironmentMap &env_map)
   return env_map_data;
 }
 
-ForwardPass::EnvMapData ForwardPass::env_map(EnvironmentMap &env_map)
+ForwardPass::EnvMapData ForwardPass::env_map(const EnvironmentMap &env_map)
 {
   const auto name = env_map.name();
   const auto iter = env_maps_.find(name);
@@ -971,8 +981,7 @@ ForwardPass::EnvMapData ForwardPass::env_map(EnvironmentMap &env_map)
     try
     {
       const auto env_map_data = generate_env_map(env_map);
-      env_map.release_data();
-      env_maps_[name] = env_map_data;
+      env_maps_[name]         = env_map_data;
       return env_map_data;
     }
     catch (const std::runtime_error &error)

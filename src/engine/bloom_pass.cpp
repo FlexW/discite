@@ -20,14 +20,15 @@ void BloomPass::execute(const SceneRenderInfo &        scene_render_info,
       scene_framebuffer->color_attachment(0));
 
   float lod{0.0f};
-  float mode{0}; // 0 = prefilter, 1 = downsample, 2 = firstsample, 3 = upsample
+  int   mode{0}; // 0 = prefilter, 1 = downsample, 2 = firstsample, 3 = upsample
 
   // prefilter
   bloom_shader_->bind();
   bloom_shader_->set_uniform(
       "Params",
       glm::vec4{threshold_, threshold_ - knee_, knee_ * 2.0f, 0.25f / knee_});
-  bloom_shader_->set_uniform("Mode", 0);
+  mode = 0;
+  bloom_shader_->set_uniform("Mode", mode);
   bloom_shader_->set_uniform("LOD", 0.0f);
 
   glBindImageTexture(0,
@@ -50,9 +51,10 @@ void BloomPass::execute(const SceneRenderInfo &        scene_render_info,
   glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
   // downsample
-  bloom_shader_->set_uniform("Mode", 1);
+  mode = 1;
+  bloom_shader_->set_uniform("Mode", mode);
   const auto mips = bloom_textures_[0]->mipmap_levels() - 2;
-  for (int i = 1; i < mips; ++i)
+  for (GLuint i = 1; i < mips; ++i)
   {
     glBindImageTexture(0,
                        bloom_views_[0][i]->id(),
@@ -80,7 +82,8 @@ void BloomPass::execute(const SceneRenderInfo &        scene_render_info,
   // upsample first
   --lod;
   bloom_shader_->set_uniform("LOD", lod);
-  bloom_shader_->set_uniform("Mode", 2);
+  mode = 2;
+  bloom_shader_->set_uniform("Mode", mode);
 
   work_groups_x *= 2;
   work_groups_y *= 2;
@@ -106,7 +109,8 @@ void BloomPass::execute(const SceneRenderInfo &        scene_render_info,
   glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
   // upsample
-  bloom_shader_->set_uniform("Mode", 3);
+  mode = 3;
+  bloom_shader_->set_uniform("Mode", mode);
 
   for (int mip = mips - 3; mip >= 0; --mip)
   {

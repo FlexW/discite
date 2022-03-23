@@ -70,7 +70,7 @@ private:
   void init_shaders();
   void recreate_scene_framebuffer(int width, int height);
 
-  EnvMapData env_map(EnvironmentMap &env_map);
+  EnvMapData env_map(const EnvironmentMap &env_map);
   EnvMapData generate_env_map(const EnvironmentMap &env_map);
 };
 

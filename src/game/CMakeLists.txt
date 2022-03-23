@@ -1,3 +1,5 @@
+find_package(Mono REQUIRED)
+
 add_library(game)
 set_warnings_as_errors(game)
 
@@ -27,4 +29,9 @@ target_sources(game PRIVATE
 target_link_libraries(game PUBLIC
   engine
   EnTT::EnTT
+  ${MONO_LIBRARIES}
+  )
+
+target_include_directories(game PUBLIC
+  ${MONO_INCLUDE_DIRS}
   )
