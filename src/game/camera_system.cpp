@@ -1,21 +1,23 @@
 #include "camera_system.hpp"
-#include "profiling.hpp"
 #include "camera_component.hpp"
 #include "engine.hpp"
+#include "game_layer.hpp"
 #include "log.hpp"
+#include "profiling.hpp"
 #include "transform_component.hpp"
 #include "window.hpp"
 
 namespace dc
 {
 
-CameraSystem::CameraSystem(std::weak_ptr<Scene> scene) : scene_{scene} {}
-
-CameraSystem::~CameraSystem() { shutdown(); }
-
-void CameraSystem::shutdown() {}
-
-void CameraSystem::init() {}
+void CameraSystem::init()
+{
+  const auto game_layer = Engine::instance()->layer_stack()->layer<GameLayer>();
+  if (game_layer)
+  {
+    scene_ = game_layer->scene()->get();
+  }
+}
 
 void CameraSystem::update(float delta_time)
 {
@@ -163,8 +165,17 @@ bool CameraSystem::on_event(const Event &event)
   {
     return on_window_resize(dynamic_cast<const WindowResizeEvent &>(event));
   }
+  else if (event_id == SceneLoadedEvent::id)
+  {
+    on_scene_loaded(dynamic_cast<const SceneLoadedEvent &>(event));
+  }
 
   return false;
+}
+
+void CameraSystem::on_scene_loaded(const SceneLoadedEvent &event)
+{
+  scene_ = event.scene_;
 }
 
 } // namespace dc

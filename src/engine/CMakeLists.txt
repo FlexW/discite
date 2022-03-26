@@ -21,6 +21,8 @@ target_include_directories(engine PUBLIC .)
 
 target_sources(engine PRIVATE
   math.cpp
+  util.cpp
+  filesystem.cpp
   event.cpp
   event_manager.cpp
   window.cpp

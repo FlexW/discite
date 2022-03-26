@@ -46,12 +46,14 @@ void MeshImporterLayer::init()
 
 void MeshImporterLayer::shutdown() {}
 
-void MeshImporterLayer::update(float /*delta_time*/)
+bool MeshImporterLayer::update(float /*delta_time*/)
 {
   Engine::instance()->set_close(true);
+
+  return false;
 }
 
-void MeshImporterLayer::render() {}
+bool MeshImporterLayer::render() { return false; }
 
 bool MeshImporterLayer::on_event(const Event & /*event*/) { return false; }
 

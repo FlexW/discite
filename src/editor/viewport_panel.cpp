@@ -1,10 +1,12 @@
 #include "viewport_panel.hpp"
-#include "profiling.hpp"
 #include "engine.hpp"
+#include "event.hpp"
+#include "game_layer.hpp"
 #include "gl_framebuffer.hpp"
 #include "gl_texture.hpp"
 #include "imgui.h"
 #include "imgui_panel.hpp"
+#include "profiling.hpp"
 #include "relationship_component.hpp"
 #include "scene.hpp"
 #include "scene_panel.hpp"
@@ -18,6 +20,10 @@
 namespace dc
 {
 
+EventId PlaySceneEvent::id{0xb20f905e};
+
+PlaySceneEvent::PlaySceneEvent(bool play) : Event{id}, play_{play} {}
+
 ViewportPanel::ViewportPanel() : ImGuiPanel{"Viewport"}
 {
   editor_camera_.set_enable_acceleration(true);
@@ -29,18 +35,27 @@ void ViewportPanel::on_render()
 {
   DC_PROFILE_SCOPE("ViewportPanel::on_render()");
 
+  const std::string play_button_text{is_playing_ ? "Stop" : "Play"};
+  if (ImGui::Button(play_button_text.c_str()))
+  {
+    is_playing_ = !is_playing_;
+
+    const auto play_scene_event = std::make_shared<PlaySceneEvent>(is_playing_);
+    Engine::instance()->event_manager()->queue_event(play_scene_event);
+  }
+
   const auto viewport_size = calc_viewport_size();
   account_for_window_size_changes(viewport_size.x, viewport_size.y);
 
-  const auto scene    = scene_.lock();
-  const auto renderer = renderer_.lock();
-  if (scene)
+  const auto game_layer = Engine::instance()->layer_stack()->layer<GameLayer>();
+  const auto renderer   = game_layer->renderer();
+  if (game_layer && renderer)
   {
     DC_PROFILE_SCOPE("ViewportPanel::on_render() - render scene");
 
     SceneRenderInfo scene_render_info{};
     ViewRenderInfo  view_render_info{};
-    scene->render(scene_render_info, view_render_info);
+    game_layer->systems_context()->render(scene_render_info, view_render_info);
 
     // set editor camera information
     view_render_info.set_projection_matrix(editor_camera_.projection_matrix());
@@ -379,11 +394,6 @@ void ViewportPanel::rotate_editor_camera(double offset_x, double offset_y)
   }
 
   editor_camera_.update_rotation(offset_x, offset_y);
-}
-
-void ViewportPanel::set_renderer(std::shared_ptr<SceneRenderer> renderer)
-{
-  renderer_ = renderer;
 }
 
 } // namespace dc

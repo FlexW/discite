@@ -1,6 +1,7 @@
 #include "scene.hpp"
 #include "camera_component.hpp"
 #include "directional_light_component.hpp"
+#include "engine.hpp"
 #include "entity.hpp"
 #include "event.hpp"
 #include "guid_component.hpp"
@@ -12,6 +13,8 @@
 #include "profiling.hpp"
 #include "relationship_component.hpp"
 #include "render_system.hpp"
+#include "scene_events.hpp"
+#include "script/script_component.hpp"
 #include "serialization.hpp"
 #include "sky_component.hpp"
 #include "transform_component.hpp"
@@ -24,73 +27,17 @@
 namespace dc
 {
 
-EventId SceneLoadedEvent::id = 0x87a8e8c9;
-
-SceneLoadedEvent::SceneLoadedEvent(std::shared_ptr<Scene> scene)
-    : Event{id},
-      scene_{scene}
-{
-}
-
-EventId SceneUnloadedEvent::id = 0xa26517c8;
-
-SceneUnloadedEvent::SceneUnloadedEvent(std::shared_ptr<Scene> scene)
-    : Event{id},
-      scene_{scene}
-{
-}
-
 std::shared_ptr<Scene> Scene::create()
 {
   return std::shared_ptr<Scene>(new Scene);
 }
 
-void Scene::init_systems()
+Scene::Scene()
 {
-  systems_.emplace_back(std::make_unique<RenderSystem>(shared_from_this()));
-}
-
-void Scene::init()
-{
-  init_systems();
-
-  for (const auto &system : systems_)
-  {
-    system->init();
-  }
-}
-
-void Scene::update(float delta_time)
-{
-  DC_PROFILE_SCOPE("Scene::update()");
-
-  for (const auto &system : systems_)
-  {
-    system->update(delta_time);
-  }
-}
-
-void Scene::render(SceneRenderInfo &scene_render_info,
-                   ViewRenderInfo & view_render_info)
-{
-  DC_PROFILE_SCOPE("Scene::render()");
-
-  for (const auto &system : systems_)
-  {
-    system->render(scene_render_info, view_render_info);
-  }
-}
-
-bool Scene::on_event(const Event &event)
-{
-  DC_PROFILE_SCOPE("Scene::on_event()");
-
-  for (const auto &system : systems_)
-  {
-    system->on_event(event);
-  }
-
-  return false;
+  registry_.on_construct<ScriptComponent>()
+      .connect<&Scene::on_construct_script_component>(this);
+  registry_.on_destroy<ScriptComponent>()
+      .connect<&Scene::on_destroy_script_component>(this);
 }
 
 Entity Scene::create_entity(const std::string &name)
@@ -279,6 +226,20 @@ AssetDescription Scene::read(const std::filesystem::path &file_path)
   }
 
   return asset_description;
+}
+
+void Scene::on_construct_script_component(entt::registry & /*registry*/,
+                                          entt::entity entity)
+{
+  ScriptComponentConstructEvent event{Entity{entity, shared_from_this()}};
+  Engine::instance()->event_manager()->fire_event(event);
+}
+
+void Scene::on_destroy_script_component(entt::registry & /*registry*/,
+                                        entt::entity entity)
+{
+  ScriptComponentDestroyEvent event{Entity{entity, shared_from_this()}};
+  Engine::instance()->event_manager()->fire_event(event);
 }
 
 } // namespace dc

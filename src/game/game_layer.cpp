@@ -11,7 +11,9 @@
 #include "scene.hpp"
 #include "scene_asset.hpp"
 #include "scene_renderer.hpp"
+#include "script/script_system.hpp"
 #include "sky_component.hpp"
+#include "systems_context.hpp"
 #include "transform_component.hpp"
 
 #include <memory>
@@ -19,17 +21,20 @@
 namespace
 {
 
-void scene_add_systems(std::shared_ptr<dc::Scene> scene)
+void add_systems(dc::SystemsContext &system_context)
 {
   // add systems, order matters
-  scene->create_system<dc::CameraSystem>(scene);
-  scene->create_system<dc::RenderSystem>(scene);
+  system_context.add_system<dc::ScriptSystem>();
+  system_context.add_system<dc::CameraSystem>();
+  system_context.add_system<dc::RenderSystem>();
 }
 
 } // namespace
 
 namespace dc
 {
+
+GameLayer::GameLayer() { add_systems(systems_context_); }
 
 void GameLayer::register_asset_loaders()
 {
@@ -40,78 +45,61 @@ void GameLayer::register_asset_loaders()
 void GameLayer::init()
 {
   renderer_ = std::make_unique<SceneRenderer>();
+  systems_context_.init();
+  scene_manager_.init();
 
-  is_init_ = true;
-  // TODO: Maybe load a main scene in case there is nothing loaded yet
-  if (scene_ && scene_->is_ready())
+  if (!scene_manager_.active_scene())
   {
-    set_scene(scene_);
+    // TODO: Load main scene from config file
+    scene_manager_.load_scene("scenes/sponza.dcscn");
   }
 }
 
-void GameLayer::shutdown() {}
+void GameLayer::shutdown() { systems_context_.shutdown(); }
 
-void GameLayer::update(float delta_time)
+bool GameLayer::update(float delta_time)
 {
   DC_PROFILE_SCOPE("GameLayer::update()");
+  systems_context_.update(delta_time);
 
-  if (scene_ && scene_->is_ready())
-  {
-    scene_->get()->update(delta_time);
-  }
+  return false;
 }
 
-void GameLayer::render()
+bool GameLayer::render()
 {
   DC_PROFILE_SCOPE("GameLayer::render()");
 
   SceneRenderInfo scene_render_info{};
   ViewRenderInfo  view_render_info{};
-  if (scene_ && scene_->is_ready())
-  {
-    scene_->get()->render(scene_render_info, view_render_info);
-  }
+  systems_context_.render(scene_render_info, view_render_info);
+
   const auto window = Engine::instance()->window();
   view_render_info.set_viewport_info({0, 0, window->width(), window->height()});
 
   renderer_->render(scene_render_info, view_render_info);
+
+  return false;
 }
 
 std::shared_ptr<SceneRenderer> GameLayer::renderer() const { return renderer_; }
 
+SystemsContext *GameLayer::systems_context() { return &systems_context_; }
+
 bool GameLayer::on_event(const Event &event)
 {
   DC_PROFILE_SCOPE("GameLayer::on_event()");
-
-  if (scene_ && scene_->is_ready())
-  {
-    return scene_->get()->on_event(event);
-  }
+  systems_context_.on_event(event);
   return false;
 }
 
 void GameLayer::set_scene(std::shared_ptr<SceneAssetHandle> value)
 {
-  if (!is_init_)
-  {
-    scene_ = value;
-    return;
-  }
-
-  if (scene_)
-  {
-    const auto event = std::make_shared<SceneUnloadedEvent>(scene_->get());
-    Engine::instance()->event_manager()->publish(event);
-  }
-
-  scene_ = value;
-  scene_add_systems(scene_->get());
-
-  const auto scene_loaded_event =
-      std::make_shared<SceneLoadedEvent>(scene_->get());
-  Engine::instance()->event_manager()->publish(scene_loaded_event);
+  scene_manager_.load_scene(value);
 }
 
-std::shared_ptr<SceneAssetHandle> GameLayer::scene() const { return scene_; }
+std::shared_ptr<SceneAssetHandle> GameLayer::scene() const
+{
+  return scene_manager_.active_scene();
+}
 
 } // namespace dc

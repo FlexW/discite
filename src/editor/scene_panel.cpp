@@ -97,7 +97,7 @@ void ScenePanel::draw_entity_node(Entity entity)
   {
     selected_entity_ = entity;
     const auto event = std::make_shared<EntitySelectedEvent>(selected_entity_);
-    Engine::instance()->event_manager()->publish(event);
+    Engine::instance()->event_manager()->queue_event(event);
   }
 
   if (opened)

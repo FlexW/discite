@@ -1,0 +1,21 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AssemblyName>Game</AssemblyName>
+    <OutputPath>../../scripts/</OutputPath>
+    <OutputType>Library</OutputType>
+    <LibPath>../../../bin/clang_debug/</LibPath>
+    <RuntimeAssembly>DisciteRuntime.dll</RuntimeAssembly>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="$(RuntimeAssembly)" />
+    <Compile Include="*.cs" />
+  </ItemGroup>
+  <Target Name="Build" Inputs="@(Compile)" Outputs="$(OutputPath)$(AssemblyName).dll">
+    <MakeDir Directories="$(OutputPath)" Condition="!Exists('$(OutputPath)')" />
+    <Csc Sources="@(Compile)" References="@(Reference)" AdditionalLibPaths="$(LibPath)" OutputAssembly="$(OutputPath)$(AssemblyName).dll" TargetType="library"/>
+  </Target>
+  <Target Name="Clean" >
+    <Delete Files="$(OutputPath)$(AssemblyName).dll" />
+  </Target>
+  <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+</Project>

@@ -45,8 +45,7 @@ private:
   std::unique_ptr<Config>       config_{std::make_unique<Config>()};
   LayerStack                    layer_stack_;
   std::shared_ptr<Window>       window_;
-  std::unique_ptr<EventManager> event_manager_{
-      std::make_unique<EventManager>()};
+  std::unique_ptr<EventManager> event_manager_{};
   std::unique_ptr<AssetCache> asset_cache_{std::make_unique<AssetCache>()};
   std::unique_ptr<AssetImporterManager> asset_importer_manager_{
       std::make_unique<AssetImporterManager>()};
@@ -55,7 +54,7 @@ private:
 
   bool is_close_{false};
 
-  Engine()               = default;
+  Engine();
   Engine(const Engine &) = delete;
   Engine(Engine &&)      = delete;
   Engine &operator=(const Engine &) = delete;

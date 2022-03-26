@@ -42,9 +42,9 @@ void BrdfLutLayer::init() { lut_data_.resize(buffer_size); }
 
 void BrdfLutLayer::shutdown() {}
 
-void BrdfLutLayer::update(float /*delta_time*/) {}
+bool BrdfLutLayer::update(float /*delta_time*/) { return false; }
 
-void BrdfLutLayer::render()
+bool BrdfLutLayer::render()
 {
   GlShaderStorageBuffer dst_buffer(lut_data_, GL_STATIC_READ);
 
@@ -70,6 +70,8 @@ void BrdfLutLayer::render()
   gli::save_ktx(lut_texture, "data/brdf_lut.ktx");
 
   Engine::instance()->set_close(true);
+
+  return false;
 }
 
 bool BrdfLutLayer::on_event(const Event & /*event*/) { return false; }

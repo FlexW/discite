@@ -11,6 +11,11 @@ const std::string whitespace = " \n\r\t\f\v";
 namespace dc
 {
 
+bool contains(const std::string &str, char character)
+{
+  return str.find(character) != std::string::npos;
+}
+
 std::string string_trim_left(const std::string &str)
 {
   const auto start = str.find_first_not_of(whitespace);

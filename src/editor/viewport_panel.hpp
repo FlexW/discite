@@ -6,6 +6,7 @@
 #include "gl_framebuffer.hpp"
 #include "imgui_panel.hpp"
 #include "scene.hpp"
+#include "scene_events.hpp"
 #include "scene_panel.hpp"
 #include "scene_renderer.hpp"
 #include "window.hpp"
@@ -17,6 +18,16 @@
 namespace dc
 {
 
+class PlaySceneEvent : public Event
+{
+public:
+  static EventId id;
+
+  bool play_{true};
+
+  explicit PlaySceneEvent(bool play);
+};
+
 class ViewportPanel : public ImGuiPanel
 {
 public:
@@ -25,11 +36,11 @@ public:
   void update(float delta_time) override;
   bool on_event(const Event &event) override;
 
-  void set_renderer(std::shared_ptr<SceneRenderer> renderer);
-
 private:
   Camera editor_camera_;
   bool   is_move_editor_camara_{false};
+
+  bool is_playing_{false};
 
   int scene_width_{0};
   int scene_height_{0};
@@ -37,8 +48,6 @@ private:
   Entity              selected_entity_;
   bool                is_show_gizmo_{false};
   ImGuizmo::OPERATION guizmo_operation_{ImGuizmo::OPERATION::TRANSLATE};
-
-  std::weak_ptr<SceneRenderer> renderer_{};
 
   std::weak_ptr<Scene>           scene_{};
   std::shared_ptr<GlFramebuffer> scene_framebuffer_{};

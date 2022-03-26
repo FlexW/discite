@@ -2,6 +2,7 @@
 #include "asset_importer_manager.hpp"
 #include "cmd_args_parser.hpp"
 #include "env_map_asset.hpp"
+#include "event_manager.hpp"
 #include "log.hpp"
 #include "material_asset.hpp"
 #include "mesh_asset.hpp"
@@ -23,6 +24,12 @@ Engine *Engine::instance()
 {
   static auto unique = std::unique_ptr<Engine>(new Engine);
   return unique.get();
+}
+
+Engine::Engine()
+{
+  event_manager_ = std::make_unique<EventManager>(
+      [this](const Event &event) { layer_stack_.on_event(event); });
 }
 
 int Engine::run(int argc, char *argv[], bool show_window)
@@ -178,8 +185,7 @@ void Engine::main_loop()
         DC_PROFILE_SCOPE("Engine::main_loop() - Dispatch events");
         DC_TIME_SCOPE_PERF("Dispatch events");
         window_->dispatch_events();
-        event_manager_->dispatch([this](const Event &event)
-                                 { layer_stack_.on_event(event); });
+        event_manager_->dispatch_events();
       }
 
       // calculate delta time

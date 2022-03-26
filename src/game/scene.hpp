@@ -1,6 +1,5 @@
 #pragma once
 
-#include "entt/entity/fwd.hpp"
 #include "event.hpp"
 #include "serialization.hpp"
 #include "system.hpp"
@@ -16,52 +15,11 @@ namespace dc
 {
 
 class Entity;
-class Scene;
-
-/**
- * Event gets fired after the scene has been loaded
- */
-class SceneLoadedEvent : public Event
-{
-public:
-  static EventId id;
-
-  std::shared_ptr<Scene> scene_;
-
-  SceneLoadedEvent(std::shared_ptr<Scene> scene);
-};
-
-/**
- * Event gets fired after the scene got unloaded
- */
-class SceneUnloadedEvent : public Event
-{
-public:
-  static EventId id;
-
-  std::shared_ptr<Scene> scene_;
-
-  SceneUnloadedEvent(std::shared_ptr<Scene> scene);
-};
 
 class Scene : public std::enable_shared_from_this<Scene>
 {
 public:
   static std::shared_ptr<Scene> create();
-
-  void init();
-  void update(float delta_time);
-  void render(SceneRenderInfo &scene_render_info,
-              ViewRenderInfo  &view_render_info);
-
-  bool on_event(const Event &event);
-
-  template <typename TSystem, typename... TArgs>
-  void create_system(TArgs &&...args)
-  {
-    systems_.emplace_back(
-        std::make_unique<TSystem>(std::forward<TArgs>(args)...));
-  }
 
   Entity create_entity(const std::string &name);
   Entity create_entity(const std::string &name, Uuid uuid);
@@ -84,12 +42,16 @@ private:
   friend Entity;
 
   std::unordered_map<Uuid, entt::entity> uuid_to_entity_map_;
-  entt::registry                       registry_;
-  std::vector<std::unique_ptr<System>> systems_;
+  entt::registry                         registry_;
 
-  Scene() = default;
+  Scene();
 
   void init_systems();
+
+  void on_construct_script_component(entt::registry &registry,
+                                     entt::entity    entity);
+  void on_destroy_script_component(entt::registry &registry,
+                                   entt::entity    entity);
 };
 
 } // namespace dc

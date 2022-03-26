@@ -46,12 +46,13 @@ void SceneImporterLayer::init()
 
 void SceneImporterLayer::shutdown() {}
 
-void SceneImporterLayer::update(float /*delta_time*/)
+bool SceneImporterLayer::update(float /*delta_time*/)
 {
   Engine::instance()->set_close(true);
+  return false;
 }
 
-void SceneImporterLayer::render() {}
+bool SceneImporterLayer::render() { return false; }
 
 bool SceneImporterLayer::on_event(const Event & /*event*/) { return false; }
 

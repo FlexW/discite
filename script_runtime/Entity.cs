@@ -1,14 +1,19 @@
-using System;
-
 namespace Dc
 {
-
-    class Entity
+    public abstract class Entity
     {
-        void OnUpdate(float delta_time)
+        protected Entity()
         {
-            Console.WriteLine("Hello from C#");
+            id = 0;
         }
-    };
 
+        internal Entity(ulong id)
+        {
+            this.id = id;
+        }
+
+        public ulong id { get; private set;  }
+
+        public abstract void OnUpdate(float delta_time);
+    };
 }

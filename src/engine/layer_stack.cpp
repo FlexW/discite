@@ -46,7 +46,10 @@ void LayerStack::update(float delta_time)
 {
   for (const auto &layer : layers_)
   {
-    layer->update(delta_time);
+    if (layer->update(delta_time))
+    {
+      return;
+    }
   }
 }
 
@@ -54,7 +57,10 @@ void LayerStack::render()
 {
   for (const auto &layer : layers_)
   {
-    layer->render();
+    if (layer->render())
+    {
+      return;
+    }
   }
 }
 

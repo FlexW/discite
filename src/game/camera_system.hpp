@@ -2,6 +2,7 @@
 
 #include "event.hpp"
 #include "scene.hpp"
+#include "scene_events.hpp"
 #include "system.hpp"
 #include "window.hpp"
 
@@ -11,10 +12,8 @@ namespace dc
 class CameraSystem : public System
 {
 public:
-  CameraSystem(std::weak_ptr<Scene> scene);
-  ~CameraSystem() override;
-
   void init() override;
+
   void update(float delta_time) override;
 
   void render(SceneRenderInfo &scene_render_info,
@@ -25,10 +24,9 @@ public:
 private:
   std::weak_ptr<Scene> scene_{};
 
-  void shutdown();
-
   bool on_mouse_movement(const MouseMovementEvent &event);
   bool on_window_resize(const WindowResizeEvent &event);
+  void on_scene_loaded(const SceneLoadedEvent &event);
 };
 
 } // namespace dc

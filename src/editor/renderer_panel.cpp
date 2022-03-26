@@ -1,4 +1,6 @@
 #include "renderer_panel.hpp"
+#include "engine.hpp"
+#include "game_layer.hpp"
 #include "imgui.hpp"
 #include "imgui_panel.hpp"
 #include "profiling.hpp"
@@ -46,7 +48,12 @@ void RendererPanel::on_render()
 
 void RendererPanel::render_general()
 {
-  const auto renderer = renderer_.lock();
+  const auto game_layer = Engine::instance()->layer_stack()->layer<GameLayer>();
+  if (!game_layer)
+  {
+    return;
+  }
+  const auto renderer = game_layer->renderer();
   if (!renderer)
   {
     return;
@@ -61,7 +68,12 @@ void RendererPanel::render_general()
 
 void RendererPanel::render_shadows()
 {
-  const auto renderer = renderer_.lock();
+  const auto game_layer = Engine::instance()->layer_stack()->layer<GameLayer>();
+  if (!game_layer)
+  {
+    return;
+  }
+  const auto renderer = game_layer->renderer();
   if (!renderer)
   {
     return;
@@ -132,11 +144,6 @@ void RendererPanel::render_shadows()
       debug_quad_framebuffer_->color_attachment(0));
   ImGui::Text("Cascades");
   ImGui::Image(reinterpret_cast<void *>(tex->id()), {area.x, area.x});
-}
-
-void RendererPanel::set_renderer(std::shared_ptr<SceneRenderer> renderer)
-{
-  renderer_ = renderer;
 }
 
 void RendererPanel::recreate_debug_quad_framebuffer(int new_width,

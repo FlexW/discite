@@ -11,7 +11,8 @@ class System
 public:
   virtual ~System() = default;
 
-  virtual void init()                   = 0;
+  virtual void init() = 0;
+  virtual void shutdown() {}
   virtual void update(float delta_time) = 0;
 
   virtual void render(SceneRenderInfo &scene_render_info,

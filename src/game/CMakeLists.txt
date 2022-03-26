@@ -8,6 +8,7 @@ target_include_directories(game PUBLIC .)
 target_sources(game PRIVATE
   game_layer.cpp
   scene.cpp
+  scene_events.cpp
   render_system.cpp
   camera_system.cpp
   camera_component.cpp
@@ -24,6 +25,8 @@ target_sources(game PRIVATE
   sky_component.cpp
   scene_asset.cpp
   guid_component.cpp
+  systems_context.cpp
+  scene_manager.cpp
   )
 
 target_link_libraries(game PUBLIC
@@ -32,6 +35,8 @@ target_link_libraries(game PUBLIC
   ${MONO_LIBRARIES}
   )
 
-target_include_directories(game PUBLIC
+target_include_directories(game SYSTEM PUBLIC
   ${MONO_INCLUDE_DIRS}
   )
+
+add_subdirectory(script)

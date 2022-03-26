@@ -1,8 +1,10 @@
 #include "render_system.hpp"
 #include "directional_light.hpp"
 #include "directional_light_component.hpp"
+#include "engine.hpp"
 #include "entity.hpp"
 #include "frame_data.hpp"
+#include "game_layer.hpp"
 #include "log.hpp"
 #include "model_component.hpp"
 #include "point_light.hpp"
@@ -16,9 +18,14 @@
 namespace dc
 {
 
-RenderSystem::RenderSystem(std::weak_ptr<Scene> scene) : scene_{scene} {}
-
-void RenderSystem::init() {}
+void RenderSystem::init()
+{
+  const auto game_layer = Engine::instance()->layer_stack()->layer<GameLayer>();
+  if (game_layer)
+  {
+    scene_ = game_layer->scene()->get();
+  }
+}
 
 void RenderSystem::update(float /*delta_time*/) {}
 
@@ -147,6 +154,22 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
       found = true;
     }
   }
+}
+
+bool RenderSystem::on_event(const Event &event)
+{
+  const auto event_id = event.id();
+  if (event_id == SceneLoadedEvent::id)
+  {
+    on_scene_loaded(dynamic_cast<const SceneLoadedEvent &>(event));
+  }
+
+  return false;
+}
+
+void RenderSystem::on_scene_loaded(const SceneLoadedEvent &event)
+{
+  scene_ = event.scene_;
 }
 
 } // namespace dc

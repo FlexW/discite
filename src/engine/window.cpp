@@ -900,7 +900,7 @@ void Window::monitor_callback(GLFWmonitor *m, int event)
 {
   const auto monitor       = std::make_shared<Monitor>(m);
   const auto monitor_event = std::make_shared<MonitorEvent>(monitor, event);
-  Engine::instance()->event_manager()->publish(monitor_event);
+  Engine::instance()->event_manager()->queue_event(monitor_event);
 }
 
 void Window::char_callback(GLFWwindow *w, unsigned int character)
@@ -934,25 +934,25 @@ void Window::window_focus_callback(GLFWwindow *w, int focused)
 void Window::on_char(char character)
 {
   const auto event = std::make_shared<CharEvent>(character);
-  Engine::instance()->event_manager()->publish(event);
+  Engine::instance()->event_manager()->queue_event(event);
 }
 
 void Window::on_scroll(double xoffset, double yoffset)
 {
   const auto event = std::make_shared<ScrollEvent>(xoffset, yoffset);
-  Engine::instance()->event_manager()->publish(event);
+  Engine::instance()->event_manager()->queue_event(event);
 }
 
 void Window::on_cursor_enter(int entered)
 {
   const auto event = std::make_shared<CursorEnterEvent>(entered);
-  Engine::instance()->event_manager()->publish(event);
+  Engine::instance()->event_manager()->queue_event(event);
 }
 
 void Window::on_window_focus(int focused)
 {
   const auto event = std::make_shared<WindowFocusEvent>(focused);
-  Engine::instance()->event_manager()->publish(event);
+  Engine::instance()->event_manager()->queue_event(event);
 }
 
 void Window::on_window_framebuffer_size(int width, int height)
@@ -961,7 +961,7 @@ void Window::on_window_framebuffer_size(int width, int height)
   window_height_ = height;
 
   const auto event = std::make_shared<WindowResizeEvent>(width, height);
-  Engine::instance()->event_manager()->publish(event);
+  Engine::instance()->event_manager()->queue_event(event);
 }
 
 void Window::on_window_close()
@@ -969,7 +969,7 @@ void Window::on_window_close()
   glfwSetWindowShouldClose(window_, GLFW_TRUE);
 
   const auto event = std::make_shared<WindowCloseEvent>();
-  Engine::instance()->event_manager()->publish(event);
+  Engine::instance()->event_manager()->queue_event(event);
 }
 
 void Window::on_key(int key, int scancode, int action, int mods)
@@ -1000,7 +1000,7 @@ void Window::on_key(int key, int scancode, int action, int mods)
   {
     event->num_lock_pressed_ = true;
   }
-  Engine::instance()->event_manager()->publish(event);
+  Engine::instance()->event_manager()->queue_event(event);
 }
 
 void Window::on_mouse_button(int button, int action, int /*mods*/)
@@ -1008,7 +1008,7 @@ void Window::on_mouse_button(int button, int action, int /*mods*/)
   const auto event =
       std::make_shared<MouseButtonEvent>(to_mouse_button(button),
                                          to_mouse_button_action(action));
-  Engine::instance()->event_manager()->publish(event);
+  Engine::instance()->event_manager()->queue_event(event);
 }
 
 void Window::on_mouse_movement(double x, double y)
@@ -1034,7 +1034,7 @@ void Window::on_mouse_movement(double x, double y)
 
   const auto event =
       std::make_shared<MouseMovementEvent>(x, y, x_offset, y_offset);
-  Engine::instance()->event_manager()->publish(event);
+  Engine::instance()->event_manager()->queue_event(event);
 }
 
 KeyAction Window::key(Key value) const

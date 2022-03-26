@@ -4,6 +4,7 @@
 #include "event.hpp"
 #include "imgui_panel.hpp"
 #include "scene.hpp"
+#include "scene_events.hpp"
 
 #include <memory>
 

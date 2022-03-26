@@ -1,10 +1,11 @@
 #include "editor_layer.hpp"
 #include "dockspace_panel.hpp"
-#include "profiling.hpp"
 #include "engine.hpp"
 #include "entity_panel.hpp"
+#include "game_layer.hpp"
 #include "imgui_layer.hpp"
 #include "performance_panel.hpp"
+#include "profiling.hpp"
 #include "renderer_panel.hpp"
 #include "scene_asset.hpp"
 #include "scene_panel.hpp"
@@ -24,11 +25,11 @@ void EditorLayer::init()
 
   const auto dockspace_panel = std::make_shared<DockspacePanel>();
 
-  const auto renderer_panel = std::make_shared<RendererPanel>();
-  renderer_panel->set_renderer(game_layer_->renderer());
+  const auto game_layer = Engine::instance()->layer_stack()->layer<GameLayer>();
+  DC_ASSERT(game_layer, "Game layer not loaded");
 
+  const auto renderer_panel = std::make_shared<RendererPanel>();
   const auto viewport_panel = std::make_shared<ViewportPanel>();
-  viewport_panel->set_renderer(game_layer_->renderer());
 
   const auto scene_panel       = std::make_shared<ScenePanel>();
   const auto entity_panel      = std::make_shared<EntityPanel>();
@@ -46,21 +47,32 @@ void EditorLayer::init()
 
 void EditorLayer::shutdown() {}
 
-void EditorLayer::update(float /*delta_time*/) {}
+bool EditorLayer::update(float delta_time)
+{
+  if (is_playing_)
+  {
+    if (const auto game_layer =
+            Engine::instance()->layer_stack()->layer<GameLayer>();
+        game_layer)
+    {
+      game_layer->update(delta_time);
+    }
+  }
+  return false;
+}
 
-void EditorLayer::render() {}
+bool EditorLayer::render() { return false; }
 
 void EditorLayer::setup_game()
 {
-  assert(!game_layer_);
-
-  game_layer_ = std::make_unique<GameLayer>();
-  game_layer_->register_asset_loaders();
-  // TODO: Set a default scene
-  game_layer_->set_scene(std::dynamic_pointer_cast<SceneAssetHandle>(
-      Engine::instance()->asset_cache()->load_asset(
-          Asset{"scenes/sponza.dcscn"})));
-  game_layer_->init();
+  const auto game_layer = Engine::instance()->layer_stack()->layer<GameLayer>();
+  DC_ASSERT(game_layer, "Game layer not loaded");
+  if (game_layer)
+  {
+    game_layer->set_scene(std::dynamic_pointer_cast<SceneAssetHandle>(
+        Engine::instance()->asset_cache()->load_asset(
+            Asset{"scenes/sponza.dcscn"})));
+  }
 }
 
 void EditorLayer::set_capture_mouse(bool value)
@@ -78,6 +90,10 @@ bool EditorLayer::on_event(const Event &event)
   {
     return on_key_event(dynamic_cast<const KeyEvent &>(event));
   }
+  else if (event_id == PlaySceneEvent::id)
+  {
+    return on_play_scene_event(dynamic_cast<const PlaySceneEvent &>(event));
+  }
 
   return false;
 }
@@ -88,12 +104,22 @@ bool EditorLayer::on_key_event(const KeyEvent &event)
 
   if (event.key_ == Key::S && event.ctrl_pressed_)
   {
-    const auto scene = game_layer_->scene();
+    const auto game_layer =
+        Engine::instance()->layer_stack()->layer<GameLayer>();
+    DC_ASSERT(game_layer, "Game layer not loaded");
+    const auto scene = game_layer->scene();
     if (scene && scene->is_ready())
     {
       scene->save();
     }
   }
+
+  return false;
+}
+
+bool EditorLayer::on_play_scene_event(const PlaySceneEvent &event)
+{
+  is_playing_ = event.play_;
 
   return false;
 }

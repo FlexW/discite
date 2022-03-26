@@ -40,8 +40,6 @@ public:
         return l;
       }
     }
-    // that's for sure a programming mistake
-    DC_FAIL("No layer of that type");
     return nullptr;
   }
 

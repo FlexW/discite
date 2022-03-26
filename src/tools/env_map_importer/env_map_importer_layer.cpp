@@ -50,7 +50,7 @@ void EnvMapImporter::init() {}
 
 void EnvMapImporter::shutdown() {}
 
-void EnvMapImporter::update(float /*delta_time*/)
+bool EnvMapImporter::update(float /*delta_time*/)
 {
   const auto base_directory = Engine::instance()->base_directory();
 
@@ -81,9 +81,11 @@ void EnvMapImporter::update(float /*delta_time*/)
   }
 
   Engine::instance()->set_close(true);
+
+  return false;
 }
 
-void EnvMapImporter::render() {}
+bool EnvMapImporter::render() { return false; }
 
 bool EnvMapImporter::on_event(const Event & /*event*/) { return false; }
 

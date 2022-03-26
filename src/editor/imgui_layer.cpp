@@ -59,7 +59,7 @@ void ImGuiLayer::shutdown()
   ImGui::DestroyContext();
 }
 
-void ImGuiLayer::update(float delta_time)
+bool ImGuiLayer::update(float delta_time)
 {
   DC_PROFILE_SCOPE("ImGuiLayer::update()");
 
@@ -67,9 +67,11 @@ void ImGuiLayer::update(float delta_time)
   {
     panel->update(delta_time);
   }
+
+  return true;
 }
 
-void ImGuiLayer::render()
+bool ImGuiLayer::render()
 {
   DC_PROFILE_SCOPE("ImGuiLayer::render()");
   DC_TIME_SCOPE_PERF("Imgui render");
@@ -102,6 +104,8 @@ void ImGuiLayer::render()
     ImGui::RenderPlatformWindowsDefault();
     glfwMakeContextCurrent(backup_current_context);
   }
+
+  return true;
 }
 
 bool ImGuiLayer::on_event(const Event &event)

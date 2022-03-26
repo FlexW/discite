@@ -12,7 +12,9 @@
 #include "point_light_component.hpp"
 #include "profiling.hpp"
 #include "scene.hpp"
+#include "scene_events.hpp"
 #include "scene_panel.hpp"
+#include "script/script_component.hpp"
 #include "sky_component.hpp"
 #include "transform_component.hpp"
 
@@ -106,6 +108,10 @@ void EntityPanel::on_render()
       {
         entity_.add_component<SkyComponent>();
       }
+      if (ImGui::Selectable("Script"))
+      {
+        entity_.add_component<ScriptComponent>();
+      }
       ImGui::EndPopup();
     }
   }
@@ -181,6 +187,21 @@ void EntityPanel::on_render()
           Asset{environment_name});
       component.environment_ =
           std::dynamic_pointer_cast<EnvMapAssetHandle>(env_map_handle);
+    }
+  }
+
+  if (entity_.has_component<ScriptComponent>())
+  {
+    ImGui::Separator();
+    ImGui::Text("Script");
+
+    auto &component = entity_.component<ScriptComponent>();
+    if (imgui_input("Module",
+                    component.module_name_,
+                    ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+      ScriptComponentConstructEvent event{entity_};
+      Engine::instance()->event_manager()->fire_event(event);
     }
   }
 }
