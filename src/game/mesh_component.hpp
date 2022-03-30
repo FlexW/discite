@@ -5,7 +5,7 @@
 namespace dc
 {
 
-struct ModelComponent
+struct MeshComponent
 {
   std::shared_ptr<MeshAssetHandle> model_{};
 

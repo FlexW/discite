@@ -1,12 +1,11 @@
 #include "scene_asset_importer.hpp"
-#include "assimp/matrix4x4.h"
 #include "engine.hpp"
 #include "entity.hpp"
 #include "importer.hpp"
 #include "log.hpp"
 #include "mesh_asset.hpp"
 #include "mesh_asset_importer.hpp"
-#include "model_component.hpp"
+#include "mesh_component.hpp"
 #include "scene.hpp"
 #include "serialization.hpp"
 
@@ -15,6 +14,7 @@
 #include <assimp/material.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+
 #include <filesystem>
 #include <memory>
 #include <set>
@@ -76,7 +76,7 @@ std::string load_mesh(const aiScene   *ai_scene,
   auto mesh_asset_handle = std::dynamic_pointer_cast<MeshAssetHandle>(
       Engine::instance()->asset_cache()->load_asset(
           Asset{mesh_asset_handle_name.string()}));
-  entity.add_component<ModelComponent>(mesh_asset_handle);
+  entity.add_component<MeshComponent>(mesh_asset_handle);
 
   return mesh_asset_handle_name.string();
 }

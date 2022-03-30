@@ -7,7 +7,7 @@
 #include "imgui.h"
 #include "imgui.hpp"
 #include "imgui_panel.hpp"
-#include "model_component.hpp"
+#include "mesh_component.hpp"
 #include "point_light.hpp"
 #include "point_light_component.hpp"
 #include "profiling.hpp"
@@ -90,7 +90,7 @@ void EntityPanel::on_render()
     {
       if (ImGui::Selectable("Model"))
       {
-        entity_.add_component<ModelComponent>();
+        entity_.add_component<MeshComponent>();
       }
       if (ImGui::Selectable("Camera"))
       {
@@ -117,12 +117,12 @@ void EntityPanel::on_render()
   }
 
   // render other components information
-  if (entity_.has_component<ModelComponent>())
+  if (entity_.has_component<MeshComponent>())
   {
     ImGui::Separator();
     ImGui::Text("Model");
 
-    auto &      component = entity_.component<ModelComponent>();
+    auto       &component = entity_.component<MeshComponent>();
     std::string mesh_name;
     if (component.model_)
     {

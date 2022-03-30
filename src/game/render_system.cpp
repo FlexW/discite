@@ -6,7 +6,7 @@
 #include "frame_data.hpp"
 #include "game_layer.hpp"
 #include "log.hpp"
-#include "model_component.hpp"
+#include "mesh_component.hpp"
 #include "point_light.hpp"
 #include "point_light_component.hpp"
 #include "profiling.hpp"
@@ -48,11 +48,11 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
   {
     DC_PROFILE_SCOPE("RenderSystem::render() - Process meshes");
 
-    auto view = scene->all_entities_with<TransformComponent, ModelComponent>();
+    auto view = scene->all_entities_with<TransformComponent, MeshComponent>();
     for (const auto entity : view)
     {
       const auto &transform_component = view.get<TransformComponent>(entity);
-      const auto &model_component     = view.get<ModelComponent>(entity);
+      const auto &model_component     = view.get<MeshComponent>(entity);
 
       const auto &model = model_component.model_;
       if (!model || !model->is_ready())

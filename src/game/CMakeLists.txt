@@ -16,7 +16,7 @@ target_sources(game PRIVATE
   entity.cpp
   transform_component.cpp
   scene_asset_importer.cpp
-  model_component.cpp
+  mesh_component.cpp
   guid_component.cpp
   name_component.cpp
   relationship_component.cpp

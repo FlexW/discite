@@ -7,7 +7,7 @@
 #include "guid_component.hpp"
 #include "log.hpp"
 #include "mesh.hpp"
-#include "model_component.hpp"
+#include "mesh_component.hpp"
 #include "name_component.hpp"
 #include "point_light_component.hpp"
 #include "profiling.hpp"
@@ -124,10 +124,10 @@ void Scene::save(const std::filesystem::path &file_path,
     entity.component<TransformComponent>().save(file);
     entity.component<RelationshipComponent>().save(file);
 
-    if (entity.has_component<ModelComponent>())
+    if (entity.has_component<MeshComponent>())
     {
       write_string(file, "*model*");
-      entity.component<ModelComponent>().save(file);
+      entity.component<MeshComponent>().save(file);
     }
 
     if (entity.has_component<SkyComponent>())
@@ -204,9 +204,9 @@ AssetDescription Scene::read(const std::filesystem::path &file_path)
     {
       if (marker == "*model*")
       {
-        ModelComponent component{};
+        MeshComponent component{};
         component.read(file);
-        entity.add_component<ModelComponent>(std::move(component));
+        entity.add_component<MeshComponent>(std::move(component));
       }
       else if (marker == "*pointlight*")
       {

@@ -1,4 +1,4 @@
-#include "model_component.hpp"
+#include "mesh_component.hpp"
 #include "engine.hpp"
 #include "mesh_asset.hpp"
 #include "serialization.hpp"
@@ -8,7 +8,7 @@
 namespace dc
 {
 
-void ModelComponent::save(FILE *file) const
+void MeshComponent::save(FILE *file) const
 {
   std::string mesh_asset_name;
   if (model_)
@@ -18,7 +18,7 @@ void ModelComponent::save(FILE *file) const
   write_string(file, mesh_asset_name);
 }
 
-void ModelComponent::read(FILE *file)
+void MeshComponent::read(FILE *file)
 {
   std::string mesh_asset_name;
   read_string(file, mesh_asset_name);
