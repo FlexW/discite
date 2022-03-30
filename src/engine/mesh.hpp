@@ -1,6 +1,5 @@
 #pragma once
 
-#include "asset_handle.hpp"
 #include "gl_vertex_array.hpp"
 #include "material.hpp"
 #include "material_asset.hpp"
@@ -25,14 +24,14 @@ struct Vertex
   glm::vec2 tex_coords;
 };
 
-class Mesh
+class SubMesh
 {
 public:
-  Mesh(std::unique_ptr<GlVertexArray>       vertex_array,
-       std::shared_ptr<MaterialAssetHandle> material);
+  SubMesh(std::unique_ptr<GlVertexArray>       vertex_array,
+          std::shared_ptr<MaterialAssetHandle> material);
 
-  Mesh(Mesh &&other);
-  void operator=(Mesh &&other);
+  SubMesh(SubMesh &&other);
+  void operator=(SubMesh &&other);
 
   GlVertexArray *vertex_array() const;
   Material      *material() const;
@@ -41,22 +40,22 @@ private:
   std::unique_ptr<GlVertexArray> vertex_array_;
   std::shared_ptr<MaterialAssetHandle> material_;
 
-  Mesh(const Mesh &) = delete;
-  void operator=(const Mesh &) = delete;
+  SubMesh(const SubMesh &) = delete;
+  void operator=(const SubMesh &) = delete;
 };
 
-class Model
+class Mesh
 {
 public:
-  Model() = default;
-  Model(Model &&other);
-  void operator=(Model &&other);
+  Mesh() = default;
+  Mesh(Mesh &&other);
+  void operator=(Mesh &&other);
 
-  void                set_meshes(std::vector<std::unique_ptr<Mesh>> meshes);
-  std::vector<Mesh *> meshes() const;
+  void set_meshes(std::vector<std::unique_ptr<SubMesh>> meshes);
+  std::vector<SubMesh *> meshes() const;
 
 private:
-  std::vector<std::unique_ptr<Mesh>> meshes_;
+  std::vector<std::unique_ptr<SubMesh>> meshes_;
 };
 
 } // namespace dc

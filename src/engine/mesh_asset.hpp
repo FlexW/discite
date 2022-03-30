@@ -17,10 +17,10 @@ public:
 
   bool is_ready() const override;
 
-  std::shared_ptr<Model> get() const;
+  std::shared_ptr<Mesh> get() const;
 
 private:
-  std::shared_ptr<Model> model_{};
+  std::shared_ptr<Mesh> model_{};
 };
 
 std::shared_ptr<AssetHandle>

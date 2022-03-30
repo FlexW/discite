@@ -24,14 +24,14 @@
 namespace dc
 {
 
-Mesh::Mesh(std::unique_ptr<GlVertexArray>       vertex_array,
-           std::shared_ptr<MaterialAssetHandle> material)
+SubMesh::SubMesh(std::unique_ptr<GlVertexArray>       vertex_array,
+                 std::shared_ptr<MaterialAssetHandle> material)
     : vertex_array_{std::move(vertex_array)},
       material_{material}
 {
 }
 
-Mesh::Mesh(Mesh &&other)
+SubMesh::SubMesh(SubMesh &&other)
     : vertex_array_{std::move(other.vertex_array_)},
       material_{std::move(other.material_)}
 {
@@ -39,7 +39,7 @@ Mesh::Mesh(Mesh &&other)
   other.material_     = nullptr;
 }
 
-void Mesh::operator=(Mesh &&other)
+void SubMesh::operator=(SubMesh &&other)
 {
   vertex_array_       = std::move(other.vertex_array_);
   other.vertex_array_ = nullptr;
@@ -47,9 +47,9 @@ void Mesh::operator=(Mesh &&other)
   other.material_     = nullptr;
 }
 
-GlVertexArray *Mesh::vertex_array() const { return vertex_array_.get(); }
+GlVertexArray *SubMesh::vertex_array() const { return vertex_array_.get(); }
 
-Material *Mesh::material() const
+Material *SubMesh::material() const
 {
 
   if (!material_->is_ready())
@@ -60,14 +60,14 @@ Material *Mesh::material() const
   return material_->get().get();
 }
 
-Model::Model(Model &&other) { meshes_ = std::move(other.meshes_); }
+Mesh::Mesh(Mesh &&other) { meshes_ = std::move(other.meshes_); }
 
-void Model::operator=(Model &&other) { meshes_ = std::move(other.meshes_); }
+void Mesh::operator=(Mesh &&other) { meshes_ = std::move(other.meshes_); }
 
-std::vector<Mesh *> Model::meshes() const
+std::vector<SubMesh *> Mesh::meshes() const
 {
 
-  std::vector<Mesh *> raw_meshes(meshes_.size());
+  std::vector<SubMesh *> raw_meshes(meshes_.size());
   for (std::size_t i = 0; i < raw_meshes.size(); ++i)
   {
     raw_meshes[i] = meshes_[i].get();
@@ -75,7 +75,7 @@ std::vector<Mesh *> Model::meshes() const
   return raw_meshes;
 }
 
-void Model::set_meshes(std::vector<std::unique_ptr<Mesh>> meshes)
+void Mesh::set_meshes(std::vector<std::unique_ptr<SubMesh>> meshes)
 {
   meshes_ = std::move(meshes);
 }

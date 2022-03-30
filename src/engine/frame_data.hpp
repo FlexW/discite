@@ -14,7 +14,7 @@ namespace dc
 struct MeshInfo
 {
   glm::mat4 model_matrix_;
-  Mesh *    mesh_;
+  SubMesh  *mesh_;
 };
 
 class SceneRenderInfo

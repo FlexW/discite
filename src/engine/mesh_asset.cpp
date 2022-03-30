@@ -24,7 +24,7 @@ MeshAssetHandle::MeshAssetHandle(const std::filesystem::path &file_path,
     MeshDescription mesh_description{};
     mesh_description.read(file_path);
 
-    std::vector<std::unique_ptr<Mesh>> meshes;
+    std::vector<std::unique_ptr<SubMesh>> meshes;
     for (const auto &sub_mesh : mesh_description.sub_meshes_)
     {
       const auto asset_cache = Engine::instance()->asset_cache();
@@ -47,11 +47,11 @@ MeshAssetHandle::MeshAssetHandle(const std::filesystem::path &file_path,
       vertex_array->add_vertex_buffer(vertex_buffer);
       vertex_array->set_index_buffer(index_buffer);
 
-      auto mesh = std::make_unique<Mesh>(std::move(vertex_array), material);
+      auto mesh = std::make_unique<SubMesh>(std::move(vertex_array), material);
       meshes.push_back(std::move(mesh));
     }
 
-    model_ = std::make_shared<Model>();
+    model_ = std::make_shared<Mesh>();
     model_->set_meshes(std::move(meshes));
   }
   catch (const std::runtime_error &error)
@@ -64,7 +64,7 @@ MeshAssetHandle::MeshAssetHandle(const std::filesystem::path &file_path,
 
 bool MeshAssetHandle::is_ready() const { return model_ != nullptr; }
 
-std::shared_ptr<Model> MeshAssetHandle::get() const { return model_; }
+std::shared_ptr<Mesh> MeshAssetHandle::get() const { return model_; }
 
 std::shared_ptr<AssetHandle>
 mesh_asset_loader(const std::filesystem::path &file_path, const Asset &asset)
