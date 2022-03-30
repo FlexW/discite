@@ -17,7 +17,7 @@ namespace dc
 
 MeshAssetHandle::MeshAssetHandle(const std::filesystem::path &file_path,
                                  const Asset                 &asset)
-    : AssetHandle(asset)
+    : AssetHandle{asset}
 {
   try
   {

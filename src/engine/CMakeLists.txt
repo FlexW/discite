@@ -45,6 +45,9 @@ target_sources(engine PRIVATE
   time.cpp
   material.cpp
   mesh.cpp
+  skinned_mesh.cpp
+  skeleton.cpp
+  animation.cpp
   engine.cpp
   directional_light.cpp
   point_light.cpp
@@ -54,6 +57,7 @@ target_sources(engine PRIVATE
   gl_texture_view.cpp
   asset.cpp
   mesh_asset.cpp
+  skinned_mesh_asset.cpp
   env_map_asset.cpp
   material_asset.cpp
   texture_asset.cpp

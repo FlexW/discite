@@ -195,6 +195,67 @@ AssetDescription MeshDescription::read(const std::filesystem::path &file_path)
   return asset_description;
 }
 
+void SkinnedSubMeshDescription::save(FILE *file) const
+{
+  write_vector(file, vertices_);
+  write_vector(file, indices_);
+  write_string(file, material_name_);
+}
+
+void SkinnedSubMeshDescription::read(FILE *file)
+{
+  read_vector(file, vertices_);
+  read_vector(file, indices_);
+  read_string(file, material_name_);
+}
+
+void SkinnedMeshDescription::save(
+    const std::filesystem::path &file_path,
+    const AssetDescription      &asset_description) const
+{
+  const auto file = std::fopen(file_path.string().c_str(), "wb");
+  if (!file)
+  {
+    throw std::runtime_error{"Could not open file " + file_path.string()};
+  }
+  defer(std::fclose(file));
+
+  asset_description.write(file);
+
+  write_value(file, static_cast<std::uint64_t>(sub_meshes_.size()));
+  for (const auto &sub_mesh : sub_meshes_)
+  {
+    sub_mesh.save(file);
+  }
+  skeleton_.save(file);
+}
+
+AssetDescription
+SkinnedMeshDescription::read(const std::filesystem::path &file_path)
+{
+  const auto file = std::fopen(file_path.string().c_str(), "rb");
+  if (!file)
+  {
+    throw std::runtime_error{"Could not open file " + file_path.string()};
+  }
+  defer(std::fclose(file));
+
+  AssetDescription asset_description;
+  asset_description.read(file);
+
+  std::uint64_t sub_meshes_count{};
+  read_value(file, sub_meshes_count);
+  for (std::uint64_t i = 0; i < sub_meshes_count; ++i)
+  {
+    SkinnedSubMeshDescription sub_mesh_description{};
+    sub_mesh_description.read(file);
+    sub_meshes_.push_back(std::move(sub_mesh_description));
+  }
+  skeleton_.read(file);
+
+  return asset_description;
+}
+
 void EnvironmentMapDescription::save(
     const std::filesystem::path &file_path,
     const AssetDescription      &asset_description) const

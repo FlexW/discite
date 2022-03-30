@@ -2,12 +2,14 @@
 
 #include "defer.hpp"
 #include "mesh.hpp"
+#include "skinned_mesh.hpp"
 
+#include <cstdlib>
 #include <filesystem>
+#include <memory>
 #include <stdexcept>
 #include <unordered_map>
 #include <vector>
-#include <cstdlib>
 
 namespace dc
 {
@@ -37,6 +39,18 @@ template <typename T> void write_vector(FILE *file, const std::vector<T> &value)
   std::fwrite(value.data(), sizeof(T), value.size(), file);
 }
 
+template <typename T>
+void write_vector_complex(FILE *file, const std::vector<T> &value)
+{
+  assert(file);
+  const auto count = value.size();
+  std::fwrite(&count, sizeof(std::uint64_t), 1, file);
+  for (std::size_t i = 0; i < value.size(); ++i)
+  {
+    value[i].save(file);
+  }
+}
+
 template <typename T> void read_vector(FILE *file, std::vector<T> &value)
 {
   assert(file);
@@ -46,6 +60,28 @@ template <typename T> void read_vector(FILE *file, std::vector<T> &value)
   {
     value.resize(count);
     std::fread(value.data(), sizeof(T), count, file);
+  }
+  else
+  {
+    value = {};
+  }
+}
+
+template <typename T>
+void read_vector_complex(FILE *file, std::vector<T> &value)
+{
+  assert(file);
+  std::uint64_t count{};
+  std::fread(&count, sizeof(std::uint64_t), 1, file);
+  if (count > 0)
+  {
+    value.resize(count);
+    for (std::uint64_t i = 0; i < value.size(); ++i)
+    {
+      T v{};
+      v.read(file);
+      value[i] = std::move(v);
+    }
   }
   else
   {
@@ -111,6 +147,26 @@ struct SubMeshDescription
 struct MeshDescription
 {
   std::vector<SubMeshDescription> sub_meshes_;
+
+  void             save(const std::filesystem::path &file_path,
+                        const AssetDescription      &asset_description) const;
+  AssetDescription read(const std::filesystem::path &file_path);
+};
+
+struct SkinnedSubMeshDescription
+{
+  std::vector<SkinnedVertex> vertices_;
+  std::vector<std::uint32_t> indices_;
+  std::string                material_name_;
+
+  void save(FILE *file) const;
+  void read(FILE *file);
+};
+
+struct SkinnedMeshDescription
+{
+  std::vector<SkinnedSubMeshDescription> sub_meshes_;
+  Skeleton                               skeleton_;
 
   void             save(const std::filesystem::path &file_path,
                         const AssetDescription      &asset_description) const;

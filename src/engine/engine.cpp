@@ -7,6 +7,7 @@
 #include "material_asset.hpp"
 #include "mesh_asset.hpp"
 #include "profiling.hpp"
+#include "skinned_mesh_asset.hpp"
 #include "spdlog/logger.h"
 #include "spdlog/sinks/ansicolor_sink.h"
 #include "texture_asset.hpp"
@@ -254,6 +255,7 @@ void Engine::register_asset_loaders()
   asset_cache_->register_asset_loader(".dctex", texture_asset_loader);
   asset_cache_->register_asset_loader(".dcmat", material_asset_loader);
   asset_cache_->register_asset_loader(".dcmesh", mesh_asset_loader);
+  asset_cache_->register_asset_loader(".dcskinmesh", skinned_mesh_asset_loader);
   asset_cache_->register_asset_loader(".dcenv", env_map_asset_loader);
 }
 
