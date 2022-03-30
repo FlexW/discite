@@ -6,4 +6,5 @@ target_sources(game PRIVATE
   entity_script_instance.cpp
   script_registry.cpp
   script_wrapper.cpp
+  script_component.cpp
   )

@@ -44,6 +44,13 @@ void GameLayer::register_asset_loaders()
 
 void GameLayer::init()
 {
+  if (is_init_)
+  {
+    return;
+  }
+
+  is_init_ = true;
+
   renderer_ = std::make_unique<SceneRenderer>();
   systems_context_.init();
   scene_manager_.init();

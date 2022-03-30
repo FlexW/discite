@@ -154,6 +154,12 @@ void Scene::save(const std::filesystem::path &file_path,
       entity.component<CameraComponent>().save(file);
     }
 
+    if (entity.has_component<ScriptComponent>())
+    {
+      write_string(file, "*script*");
+      entity.component<ScriptComponent>().save(file);
+    }
+
     write_string(file, "*end*");
   }
 }
@@ -198,28 +204,39 @@ AssetDescription Scene::read(const std::filesystem::path &file_path)
     {
       if (marker == "*model*")
       {
-        auto &component = entity.add_component<ModelComponent>();
+        ModelComponent component{};
         component.read(file);
+        entity.add_component<ModelComponent>(std::move(component));
       }
       else if (marker == "*pointlight*")
       {
-        auto &component = entity.add_component<PointLightComponent>();
+        PointLightComponent component{};
         component.read(file);
+        entity.add_component<PointLightComponent>(std::move(component));
       }
       else if (marker == "*directionallight*")
       {
-        auto &component = entity.add_component<DirectionalLightComponent>();
+        DirectionalLightComponent component{};
         component.read(file);
+        entity.add_component<DirectionalLightComponent>(std::move(component));
       }
       else if (marker == "*camera*")
       {
-        auto &component = entity.add_component<CameraComponent>();
+        CameraComponent component{};
         component.read(file);
+        entity.add_component<CameraComponent>(std::move(component));
       }
       else if (marker == "*sky*")
       {
-        auto &component = entity.add_component<SkyComponent>();
+        SkyComponent component{};
         component.read(file);
+        entity.add_component<SkyComponent>(std::move(component));
+      }
+      else if (marker == "*script*")
+      {
+        ScriptComponent component{};
+        component.read(file);
+        entity.add_component<ScriptComponent>(std::move(component));
       }
       read_string(file, marker);
     }

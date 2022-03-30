@@ -66,6 +66,9 @@ bool EditorLayer::render() { return false; }
 void EditorLayer::setup_game()
 {
   const auto game_layer = Engine::instance()->layer_stack()->layer<GameLayer>();
+  // Init if not already done
+  game_layer->init();
+
   DC_ASSERT(game_layer, "Game layer not loaded");
   if (game_layer)
   {

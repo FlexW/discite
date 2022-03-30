@@ -34,6 +34,8 @@ public:
   std::shared_ptr<SceneAssetHandle> scene() const;
 
 private:
+  bool is_init_{false};
+
   SceneManager   scene_manager_;
   SystemsContext systems_context_;
 

@@ -15,7 +15,11 @@ void CameraSystem::init()
   const auto game_layer = Engine::instance()->layer_stack()->layer<GameLayer>();
   if (game_layer)
   {
-    scene_ = game_layer->scene()->get();
+    const auto scene = game_layer->scene();
+    if (scene)
+    {
+      scene_ = scene->get();
+    }
   }
 }
 

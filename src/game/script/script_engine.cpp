@@ -15,6 +15,7 @@
 #include <mono/metadata/image.h>
 
 #include <memory>
+#include <mono/metadata/object-forward.h>
 #include <stdexcept>
 #include <string>
 
@@ -42,7 +43,7 @@ void dump_image(const std::string &assembly, MonoImage *image)
     const auto mono_class =
         mono_class_from_name(image, namespace_name, class_name);
 
-    void       *iter = NULL;
+    void *iter = NULL;
     while (true)
     {
       const auto method = mono_class_get_methods(mono_class, &iter);
@@ -131,7 +132,10 @@ MonoImage *assembly_image(MonoAssembly *assembly)
   return image;
 }
 
-void register_types() { script_registry::register_all(); }
+void register_types(MonoImage *core_image)
+{
+  script_registry::register_all(core_image);
+}
 
 } // namespace dc
 
@@ -161,7 +165,7 @@ void ScriptEngine::load_game_assembly(const std::filesystem::path &file_path)
 
   const auto game_assembly       = load_assembly_from_file(file_path);
   const auto game_assembly_image = assembly_image(game_assembly);
-  register_types();
+  register_types(core_assembly_image_);
 
   game_assembly_       = game_assembly;
   game_assembly_image_ = game_assembly_image;

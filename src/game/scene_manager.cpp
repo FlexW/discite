@@ -42,11 +42,14 @@ void SceneManager::load_scene(std::shared_ptr<SceneAssetHandle> new_scene)
   const auto old_scene = active_scene_;
   active_scene_        = {};
 
-  // notify everyone that the scene got unloaded
   const auto event_manager = Engine::instance()->event_manager();
-  const auto scene_unloaded_event =
-      std::make_shared<SceneUnloadedEvent>(old_scene->get());
-  event_manager->queue_event(scene_unloaded_event);
+  if (old_scene)
+  {
+    // notify everyone that the scene got unloaded
+    const auto scene_unloaded_event =
+        std::make_shared<SceneUnloadedEvent>(old_scene->get());
+    event_manager->queue_event(scene_unloaded_event);
+  }
 
   // set the new scene as active
   active_scene_ = new_scene;
