@@ -27,6 +27,7 @@ target_sources(game PRIVATE
   guid_component.cpp
   systems_context.cpp
   scene_manager.cpp
+  animation_system.cpp
   )
 
 target_link_libraries(game PUBLIC
