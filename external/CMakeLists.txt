@@ -116,3 +116,15 @@ add_subdirectory(deps/src/spdlog)
 
 # Optick
 add_subdirectory(deps/src/optick)
+
+# # PhysX
+set(TARGET_BUILD_PLATFORM "linux")
+set(PX_GENERATE_STATIC_LIBRARIES "ON" CACHE STRING "")
+set(PHYSX_ROOT_DIR ${CMAKE_SOURCE_DIR}/external/deps/src/physx/physx)
+set(PXSHARED_PATH ${PHYSX_ROOT_DIR}/../pxshared)
+set(PXSHARED_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(CMAKEMODULES_VERSION "1.27")
+set(CMAKEMODULES_PATH ${PHYSX_ROOT_DIR}/../externals/cmakemodules)
+set(PX_OUTPUT_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/external/deps/src/physx/physx)
+set(PX_OUTPUT_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/external/deps/src/physx/physx)
+add_subdirectory(deps/src/physx/physx/source/compiler/cmake)

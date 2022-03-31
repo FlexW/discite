@@ -49,15 +49,15 @@
   },
   {
     "name": "gli",
-    "source": {
+      "source": {
       "type": "git",
       "url": "https://github.com/g-truc/gli.git",
       "revision": "779b99ac6656e4d30c3b24e96e0136a59649a869"
     },
-      "postprocess": {
-          "type": "patch",
-          "file": "gli.patch"
-      }
+    "postprocess": {
+      "type": "patch",
+      "file": "gli.patch"
+    }
   },
   {
     "name": "assimp",
@@ -89,6 +89,18 @@
       "type": "git",
       "url": "https://github.com/skypjack/entt.git",
       "revision": "v3.9.0"
+    }
+  },
+  {
+    "name": "physx",
+    "source": {
+      "type": "git",
+      "url": "https://github.com/NVIDIAGameWorks/PhysX.git",
+      "revision": "4.1"
+    },
+    "postprocess": {
+      "type": "patch",
+      "file": "physx.patch"
     }
   },
   {
