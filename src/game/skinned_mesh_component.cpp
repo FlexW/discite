@@ -1,9 +1,33 @@
 #include "skinned_mesh_component.hpp"
+#include "animation_state.hpp"
 #include "engine.hpp"
 #include "serialization.hpp"
+#include "skinned_mesh_asset.hpp"
+
+#include <memory>
 
 namespace dc
 {
+
+void SkinnedMeshComponent::set_skinned_mesh_asset(
+    std::shared_ptr<SkinnedMeshAssetHandle> value)
+{
+  skinned_mesh_ = value;
+  DC_ASSERT(skinned_mesh_->is_ready(), "Asset not ready!");
+  animation_state_ =
+      std::make_unique<AnimationState>(skinned_mesh_->get()->skeleton());
+}
+
+std::shared_ptr<SkinnedMeshAssetHandle>
+SkinnedMeshComponent::skinned_mesh_asset() const
+{
+  return skinned_mesh_;
+}
+
+AnimationState *SkinnedMeshComponent::animation_state() const
+{
+  return animation_state_.get();
+}
 
 void SkinnedMeshComponent::save(FILE *file) const
 {
@@ -13,11 +37,9 @@ void SkinnedMeshComponent::save(FILE *file) const
     skinned_mesh_asset_name = skinned_mesh_->asset().id();
   }
   write_string(file, skinned_mesh_asset_name);
-  if (skinned_mesh_ && skinned_mesh_->is_ready())
+  if (animation_state_)
   {
-    const auto skinned_mesh = skinned_mesh_->get();
-    write_value(file, skinned_mesh->is_animation_endless());
-    write_string(file, skinned_mesh->current_animation_name());
+    animation_state_->save(file);
   }
 }
 
@@ -34,13 +56,9 @@ void SkinnedMeshComponent::read(FILE *file)
     DC_ASSERT(skinned_mesh_->is_ready(), "Asset not ready");
     if (skinned_mesh_->is_ready())
     {
-      bool is_endless{false};
-      read_value(file, is_endless);
-      skinned_mesh_->get()->set_animation_endless(is_endless);
-
-      std::string animation_name;
-      read_string(file, animation_name);
-      skinned_mesh_->get()->play_animation(animation_name);
+      animation_state_ =
+          std::make_unique<AnimationState>(skinned_mesh_->get()->skeleton());
+      animation_state_->read(file);
     }
   }
   else

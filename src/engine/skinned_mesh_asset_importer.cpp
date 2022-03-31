@@ -9,6 +9,7 @@
 #include "math.hpp"
 #include "mesh.hpp"
 #include "serialization.hpp"
+#include "skeleton.hpp"
 #include "skinned_mesh.hpp"
 
 #include <assimp/GltfMaterial.h>
@@ -674,7 +675,7 @@ void do_import_skinned_mesh(const aiScene         *ai_scene,
   {
     const auto ai_bone    = ai_mesh->mBones[j];
     const auto bone_index =
-        import_data.skinned_mesh_.skeleton_.bone_index(ai_bone->mName.C_Str());
+        import_data.skinned_mesh_.skeleton_->bone_index(ai_bone->mName.C_Str());
     DC_ASSERT(bone_index != -1, "Invalid bone index");
 
     for (uint32_t k = 0; k < ai_bone->mNumWeights; ++k)
@@ -825,7 +826,7 @@ void do_import_skinned_meshes(const aiScene         *ai_scene,
   }
 }
 
-Skeleton import_skeleton(const aiScene *ai_scene)
+std::shared_ptr<Skeleton> import_skeleton(const aiScene *ai_scene)
 {
   // Build up a map with all nodes that are in the scene
   // contained. This map saves for each node if this node is necessary
@@ -846,7 +847,7 @@ Skeleton import_skeleton(const aiScene *ai_scene)
 
   compute_global_inv_bind_poses(bones);
 
-  return Skeleton{bones};
+  return std::make_shared<Skeleton>(bones);
 }
 
 void import_skinned_mesh(const aiScene         *ai_scene,
@@ -857,10 +858,10 @@ void import_skinned_mesh(const aiScene         *ai_scene,
 
   import_data.skinned_mesh_.skeleton_ = import_skeleton(ai_scene);
   auto animations =
-      load_animations(ai_scene, import_data.skinned_mesh_.skeleton_);
+      load_animations(ai_scene, *import_data.skinned_mesh_.skeleton_);
   for (auto &&animation : animations)
   {
-    import_data.skinned_mesh_.skeleton_.add_animation(std::move(animation));
+    import_data.skinned_mesh_.skeleton_->add_animation(std::move(animation));
   }
 
   do_import_skinned_meshes(ai_scene,

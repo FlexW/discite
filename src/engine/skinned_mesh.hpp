@@ -44,24 +44,14 @@ private:
 class SkinnedMesh
 {
 public:
-  SkinnedMesh(const Skeleton                              &skeleton,
+  SkinnedMesh(std::shared_ptr<Skeleton>                    skeleton,
               std::vector<std::unique_ptr<SkinnedSubMesh>> sub_meshes);
 
+  std::shared_ptr<Skeleton>     skeleton() const;
   std::vector<SkinnedSubMesh *> sub_meshes() const;
 
-  void set_animation_endless(bool value);
-  bool is_animation_endless() const;
-
-  void play_animation(const std::string &name);
-  void stop_current_animation();
-
-  std::string current_animation_name() const;
-
-  void                   compute_bone_transforms(float delta_time);
-  std::vector<glm::mat4> bone_transforms() const;
-
 private:
-  Skeleton                                     skeleton_;
+  std::shared_ptr<Skeleton>                    skeleton_;
   std::vector<std::unique_ptr<SkinnedSubMesh>> sub_meshes_;
 };
 

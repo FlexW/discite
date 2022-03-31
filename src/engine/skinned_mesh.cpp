@@ -44,12 +44,14 @@ Material *SkinnedSubMesh::material() const
 }
 
 SkinnedMesh::SkinnedMesh(
-    const Skeleton                              &skeleton,
+    std::shared_ptr<Skeleton>                    skeleton,
     std::vector<std::unique_ptr<SkinnedSubMesh>> sub_meshes)
     : skeleton_{skeleton},
       sub_meshes_{std::move(sub_meshes)}
 {
 }
+
+std::shared_ptr<Skeleton> SkinnedMesh::skeleton() const { return skeleton_; }
 
 std::vector<SkinnedSubMesh *> SkinnedMesh::sub_meshes() const
 {
@@ -59,40 +61,6 @@ std::vector<SkinnedSubMesh *> SkinnedMesh::sub_meshes() const
     raw_sub_meshes[i] = sub_meshes_[i].get();
   }
   return raw_sub_meshes;
-}
-void SkinnedMesh::play_animation(const std::string &name)
-{
-  skeleton_.play_animation(name);
-}
-
-void SkinnedMesh::stop_current_animation()
-{
-  skeleton_.stop_current_animation();
-}
-
-void SkinnedMesh::compute_bone_transforms(float delta_time)
-{
-  return skeleton_.compute_bone_transforms(delta_time);
-}
-
-std::vector<glm::mat4> SkinnedMesh::bone_transforms() const
-{
-  return skeleton_.bone_transforms();
-}
-
-std::string SkinnedMesh::current_animation_name() const
-{
-  return skeleton_.current_animation_name();
-}
-
-void SkinnedMesh::set_animation_endless(bool value)
-{
-  skeleton_.set_animation_endless(value);
-}
-
-bool SkinnedMesh::is_animation_endless() const
-{
-  return skeleton_.is_animation_endless();
 }
 
 } // namespace dc

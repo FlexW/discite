@@ -84,7 +84,9 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
       const auto &skinned_mesh_component =
           view.get<SkinnedMeshComponent>(entity);
 
-      const auto &skinned_mesh_asset = skinned_mesh_component.skinned_mesh_;
+      const auto &skinned_mesh_asset =
+          skinned_mesh_component.skinned_mesh_asset();
+      const auto &animation_state = skinned_mesh_component.animation_state();
       if (!skinned_mesh_asset || !skinned_mesh_asset->is_ready())
       {
         continue;
@@ -97,7 +99,7 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
         skinned_mesh_info.skinned_sub_mesh_ = sub_mesh;
         skinned_mesh_info.model_matrix_ =
             transform_component.transform_matrix();
-        skinned_mesh_info.bones_ = skinned_mesh->bone_transforms();
+        skinned_mesh_info.bones_ = animation_state->bone_transforms();
 
         scene_render_info.add_skinned_mesh(std::move(skinned_mesh_info));
       }

@@ -48,6 +48,7 @@ target_sources(engine PRIVATE
   skinned_mesh.cpp
   skeleton.cpp
   animation.cpp
+  animation_state.cpp
   engine.cpp
   directional_light.cpp
   point_light.cpp

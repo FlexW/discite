@@ -1,5 +1,6 @@
 #include "serialization.hpp"
 #include "environment_map.hpp"
+#include "skeleton.hpp"
 
 #include <cstdint>
 
@@ -227,7 +228,7 @@ void SkinnedMeshDescription::save(
   {
     sub_mesh.save(file);
   }
-  skeleton_.save(file);
+  skeleton_->save(file);
 }
 
 AssetDescription
@@ -251,7 +252,7 @@ SkinnedMeshDescription::read(const std::filesystem::path &file_path)
     sub_mesh_description.read(file);
     sub_meshes_.push_back(std::move(sub_mesh_description));
   }
-  skeleton_.read(file);
+  skeleton_->read(file);
 
   return asset_description;
 }

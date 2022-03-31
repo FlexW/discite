@@ -2,6 +2,7 @@
 
 #include "defer.hpp"
 #include "mesh.hpp"
+#include "skeleton.hpp"
 #include "skinned_mesh.hpp"
 
 #include <cstdlib>
@@ -166,7 +167,7 @@ struct SkinnedSubMeshDescription
 struct SkinnedMeshDescription
 {
   std::vector<SkinnedSubMeshDescription> sub_meshes_;
-  Skeleton                               skeleton_;
+  std::shared_ptr<Skeleton> skeleton_{std::make_shared<Skeleton>()};
 
   void             save(const std::filesystem::path &file_path,
                         const AssetDescription      &asset_description) const;

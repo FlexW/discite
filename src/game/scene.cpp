@@ -189,6 +189,11 @@ AssetDescription Scene::read(const std::filesystem::path &file_path)
   }
   defer(std::fclose(file));
 
+  if (std::feof(file))
+  {
+    throw std::runtime_error{"File is empty: " + file_path.string()};
+  }
+
   AssetDescription asset_description{};
   asset_description.read(file);
 

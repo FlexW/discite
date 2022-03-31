@@ -161,9 +161,9 @@ void EntityPanel::on_render()
     auto &component = entity_.component<SkinnedMeshComponent>();
 
     std::string skinned_mesh_name;
-    if (component.skinned_mesh_)
+    if (component.skinned_mesh_asset())
     {
-      skinned_mesh_name = component.skinned_mesh_->asset().id();
+      skinned_mesh_name = component.skinned_mesh_asset()->asset().id();
     }
     if (imgui_input("Skinned mesh asset",
                     skinned_mesh_name,
@@ -171,31 +171,31 @@ void EntityPanel::on_render()
     {
       auto handle = Engine::instance()->asset_cache()->load_asset(
           Asset{skinned_mesh_name});
-      component.skinned_mesh_ =
-          std::dynamic_pointer_cast<SkinnedMeshAssetHandle>(handle);
+      component.set_skinned_mesh_asset(
+          std::dynamic_pointer_cast<SkinnedMeshAssetHandle>(handle));
     }
 
-    if (component.skinned_mesh_)
+    if (component.animation_state())
     {
-      const auto skinned_mesh = component.skinned_mesh_->get();
-      auto       is_endless   = skinned_mesh->is_animation_endless();
+      const auto animation_state = component.animation_state();
+      auto       is_endless      = animation_state->is_animation_endless();
       if (imgui_input("Endless", is_endless))
       {
-        skinned_mesh->set_animation_endless(is_endless);
+        animation_state->set_animation_endless(is_endless);
       }
 
-      auto       animation_name = skinned_mesh->current_animation_name();
+      auto animation_name = animation_state->current_animation_name();
       if (imgui_input("Animation",
                       animation_name,
                       ImGuiInputTextFlags_EnterReturnsTrue))
       {
         if (animation_name.empty())
         {
-          skinned_mesh->stop_current_animation();
+          animation_state->stop_current_animation();
         }
         else
         {
-          skinned_mesh->play_animation(animation_name);
+          animation_state->play_animation(animation_name);
         }
       }
     }

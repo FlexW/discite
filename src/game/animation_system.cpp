@@ -36,13 +36,13 @@ void AnimationSystem::update(float delta_time)
   {
     auto &skinned_mesh_component = view.get<SkinnedMeshComponent>(entity);
 
-    const auto &skinned_mesh = skinned_mesh_component.skinned_mesh_;
-    if (!skinned_mesh || !skinned_mesh->is_ready())
+    const auto &animation_state = skinned_mesh_component.animation_state();
+    if (!animation_state)
     {
       continue;
     }
 
-    skinned_mesh->get()->compute_bone_transforms(delta_time);
+    animation_state->compute_bone_transforms(delta_time);
   }
 }
 
