@@ -8,6 +8,8 @@ void LayerStack::push_layer(std::unique_ptr<Layer> layer)
   layers_.push_back(std::move(layer));
 }
 
+void LayerStack::clear() { layers_.clear(); }
+
 void LayerStack::add_cmd_line_args(ArgsParser &args_parser)
 {
   for (auto &layer : layers_)

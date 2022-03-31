@@ -15,6 +15,9 @@ struct Bone
   int         parent_index_{-1};
   glm::mat4   local_bind_pose_{1.0f};
   glm::mat4   global_inv_bind_pose_{1.0f};
+
+  void save(FILE *file) const;
+  void read(FILE *file);
 };
 
 class Skeleton

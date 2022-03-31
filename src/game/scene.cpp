@@ -226,7 +226,7 @@ AssetDescription Scene::read(const std::filesystem::path &file_path)
       {
         SkinnedMeshComponent component{};
         component.read(file);
-        entity.add_component<SkinnedMeshComponent>(std::move(component));
+        entity.add_component<SkinnedMeshComponent>(component);
       }
       else if (marker == "*pointlight*")
       {

@@ -44,10 +44,8 @@ private:
 class SkinnedMesh
 {
 public:
-  SkinnedMesh(Skeleton                                     skeleton,
+  SkinnedMesh(const Skeleton                              &skeleton,
               std::vector<std::unique_ptr<SkinnedSubMesh>> sub_meshes);
-  SkinnedMesh(SkinnedMesh &&other) noexcept;
-  void operator=(SkinnedMesh &&other) noexcept;
 
   std::vector<SkinnedSubMesh *> sub_meshes() const;
 

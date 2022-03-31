@@ -1,4 +1,5 @@
 #include "skinned_mesh.hpp"
+#include "skeleton.hpp"
 
 namespace dc
 {
@@ -43,24 +44,11 @@ Material *SkinnedSubMesh::material() const
 }
 
 SkinnedMesh::SkinnedMesh(
-    Skeleton                                     skeleton,
+    const Skeleton                              &skeleton,
     std::vector<std::unique_ptr<SkinnedSubMesh>> sub_meshes)
-    : skeleton_{std::move(skeleton)},
+    : skeleton_{skeleton},
       sub_meshes_{std::move(sub_meshes)}
 {
-}
-
-SkinnedMesh::SkinnedMesh(SkinnedMesh &&other) noexcept
-{
-  skeleton_   = std::move(other.skeleton_);
-  sub_meshes_ = std::move(other.sub_meshes_);
-}
-
-void SkinnedMesh::operator=(SkinnedMesh &&other) noexcept
-{
-
-  skeleton_   = std::move(other.skeleton_);
-  sub_meshes_ = std::move(other.sub_meshes_);
 }
 
 std::vector<SkinnedSubMesh *> SkinnedMesh::sub_meshes() const

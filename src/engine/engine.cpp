@@ -217,6 +217,10 @@ void Engine::shutdown()
 {
   // make sure layers get unloaded before the engine stops
   layer_stack_.shutdown();
+  layer_stack_.clear();
+
+  // unload asset cache
+  asset_cache_ = nullptr;
 
   // stop the window
   window_ = nullptr;

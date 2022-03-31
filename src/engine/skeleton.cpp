@@ -5,6 +5,22 @@
 namespace dc
 {
 
+void Bone::save(FILE *file) const
+{
+  write_string(file, name_);
+  write_value(file, parent_index_);
+  write_value(file, local_bind_pose_);
+  write_value(file, global_inv_bind_pose_);
+}
+
+void Bone::read(FILE *file)
+{
+  read_string(file, name_);
+  read_value(file, parent_index_);
+  read_value(file, local_bind_pose_);
+  read_value(file, global_inv_bind_pose_);
+}
+
 Skeleton::Skeleton(std::vector<Bone> bones) : bones_{std::move(bones)}
 {
   reset();
@@ -140,7 +156,7 @@ int Skeleton::index_of_animation_by_name(const std::string &name)
 
 void Skeleton::save(FILE *file) const
 {
-  write_vector(file, bones_);
+  write_vector_complex(file, bones_);
   write_vector_complex(file, animations_);
   write_value(file, animation_time_);
   write_value(file, is_endless_animation_);
@@ -149,7 +165,7 @@ void Skeleton::save(FILE *file) const
 
 void Skeleton::read(FILE *file)
 {
-  read_vector(file, bones_);
+  read_vector_complex(file, bones_);
   read_vector_complex(file, animations_);
   read_value(file, animation_time_);
   read_value(file, is_endless_animation_);

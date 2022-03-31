@@ -16,6 +16,7 @@ public:
   virtual ~LayerStack() = default;
 
   void push_layer(std::unique_ptr<Layer> layer);
+  void clear();
 
   void add_cmd_line_args(ArgsParser &args_parser);
   void eval_cmd_line_args(ArgsParser &args_parser);
