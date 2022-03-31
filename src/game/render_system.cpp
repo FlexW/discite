@@ -10,6 +10,8 @@
 #include "point_light.hpp"
 #include "point_light_component.hpp"
 #include "profiling.hpp"
+#include "skinned_mesh.hpp"
+#include "skinned_mesh_component.hpp"
 #include "sky_component.hpp"
 #include "transform_component.hpp"
 
@@ -65,7 +67,39 @@ void RenderSystem::render(SceneRenderInfo &scene_render_info,
         MeshInfo mesh_info{};
         mesh_info.mesh_         = mesh;
         mesh_info.model_matrix_ = transform_component.transform_matrix();
-        scene_render_info.add_mesh(mesh_info);
+        scene_render_info.add_mesh(std::move(mesh_info));
+      }
+    }
+  }
+
+  // add skinned meshes
+  {
+    DC_PROFILE_SCOPE("RenderSystem::render() - Process skinned meshes");
+
+    auto view =
+        scene->all_entities_with<TransformComponent, SkinnedMeshComponent>();
+    for (const auto entity : view)
+    {
+      const auto &transform_component = view.get<TransformComponent>(entity);
+      const auto &skinned_mesh_component =
+          view.get<SkinnedMeshComponent>(entity);
+
+      const auto &skinned_mesh_asset = skinned_mesh_component.skinned_mesh_;
+      if (!skinned_mesh_asset || !skinned_mesh_asset->is_ready())
+      {
+        continue;
+      }
+      const auto skinned_mesh = skinned_mesh_asset->get();
+
+      for (const auto &sub_mesh : skinned_mesh_asset->get()->sub_meshes())
+      {
+        SkinnedMeshInfo skinned_mesh_info{};
+        skinned_mesh_info.skinned_sub_mesh_ = sub_mesh;
+        skinned_mesh_info.model_matrix_ =
+            transform_component.transform_matrix();
+        skinned_mesh_info.bones_ = skinned_mesh->bone_transforms();
+
+        scene_render_info.add_skinned_mesh(std::move(skinned_mesh_info));
       }
     }
   }

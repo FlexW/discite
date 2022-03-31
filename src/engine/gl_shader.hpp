@@ -16,24 +16,30 @@ class GlShader
 {
 public:
   GlShader() = default;
-  GlShader(const std::filesystem::path &vertex_shader_file_path,
-           const std::filesystem::path &fragment_shader_file_path);
+  GlShader(const std::filesystem::path    &vertex_shader_file_path,
+           const std::filesystem::path    &fragment_shader_file_path,
+           const std::vector<std::string> &preprocessor_defines = {});
 
-  GlShader(const std::filesystem::path &vertex_shader_file_path,
-           const std::filesystem::path &geometry_shader_file_path,
-           const std::filesystem::path &fragment_shader_file_path);
+  GlShader(const std::filesystem::path    &vertex_shader_file_path,
+           const std::filesystem::path    &geometry_shader_file_path,
+           const std::filesystem::path    &fragment_shader_file_path,
+           const std::vector<std::string> &preprocessor_defines = {});
 
-  GlShader(const std::filesystem::path &compute_shader_file_path);
+  GlShader(const std::filesystem::path    &compute_shader_file_path,
+           const std::vector<std::string> &preprocessor_defines = {});
   ~GlShader();
 
-  void init(const std::filesystem::path &vertex_shader_file_path,
-            const std::filesystem::path &fragment_shader_file_path);
+  void init(const std::filesystem::path    &vertex_shader_file_path,
+            const std::filesystem::path    &fragment_shader_file_path,
+            const std::vector<std::string> &preprocessor_defines = {});
 
-  void init(const std::filesystem::path &vertex_shader_file_path,
-            const std::filesystem::path &geometry_shader_file_path,
-            const std::filesystem::path &fragment_shader_file_path);
+  void init(const std::filesystem::path    &vertex_shader_file_path,
+            const std::filesystem::path    &geometry_shader_file_path,
+            const std::filesystem::path    &fragment_shader_file_path,
+            const std::vector<std::string> &preprocessor_defines = {});
 
-  void init(const std::filesystem::path &compute_shader_file_path);
+  void init(const std::filesystem::path    &compute_shader_file_path,
+            const std::vector<std::string> &preprocessor_defines = {});
 
   void bind();
   void unbind();
@@ -68,8 +74,11 @@ private:
 
   [[nodiscard]] GLint uniform_location(const std::string &name);
 
-  GLuint compile_shader(const std::string &shader_code, GLenum type);
-  GLuint compile_shader(const std::filesystem::path &file_path);
+  GLuint compile_shader(const std::string              &shader_code,
+                        GLenum                          type,
+                        const std::vector<std::string> &preprocessor_defines);
+  GLuint compile_shader(const std::filesystem::path    &file_path,
+                        const std::vector<std::string> &preprocessor_defines);
   void   link_shaders(const std::vector<GLuint> &shader_ids);
 
   void load_shader_data();

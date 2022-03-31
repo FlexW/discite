@@ -58,11 +58,11 @@ void Skeleton::stop_current_animation()
   is_endless_animation_      = false;
 }
 
-std::vector<glm::mat4> Skeleton::compute_bone_transforms(double delta_time)
+void Skeleton::compute_bone_transforms(double delta_time)
 {
   if (active_animation_index_ == -1)
   {
-    return transforms_identity_;
+    return;
   }
 
   DC_ASSERT(0 <= active_animation_index_ &&
@@ -85,7 +85,7 @@ std::vector<glm::mat4> Skeleton::compute_bone_transforms(double delta_time)
   {
     active_animation_index_    = -1;
     is_endless_animation_      = false;
-    return transforms_identity_;
+    return;
   }
 
   const auto animation_time =
@@ -124,7 +124,14 @@ std::vector<glm::mat4> Skeleton::compute_bone_transforms(double delta_time)
     const auto &bone  = bones_[i];
     transforms_[i]    = transforms_[i] * bone.global_inv_bind_pose_;
   }
+}
 
+std::vector<glm::mat4> Skeleton::bone_transforms() const
+{
+  if (active_animation_index_ == -1)
+  {
+    return transforms_identity_;
+  }
   return transforms_;
 }
 

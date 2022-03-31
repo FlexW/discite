@@ -1,8 +1,10 @@
 #include "forward_pass.hpp"
+#include "frame_data.hpp"
 #include "gl_shader.hpp"
 #include "gl_texture.hpp"
 #include "gl_texture_array.hpp"
 #include "log.hpp"
+#include "material.hpp"
 #include "render_pass.hpp"
 #include "shadow_pass.hpp"
 
@@ -387,40 +389,229 @@ void         renderCube()
   glBindVertexArray(0);
 }
 
-void ForwardPass::execute(const SceneRenderInfo &         scene_render_info,
-                          const ViewRenderInfo &          view_render_info,
-                          std::shared_ptr<GlTextureArray> shadow_tex_array,
-                          const std::vector<glm::mat4>    light_space_matrices,
-                          const std::vector<CascadeSplit> cascade_frustums)
+void ForwardPass::set_ibl(GlShader         &shader,
+                          int              &global_texture_slot,
+                          const EnvMapData &env_map_data)
 {
-  const auto &viewport_info = view_render_info.viewport_info();
-  recreate_scene_framebuffer(viewport_info.width_, viewport_info.height_);
+  brdf_lut_texture_->bind_unit(global_texture_slot);
+  shader.set_uniform("brdf_lut_tex", global_texture_slot);
+  ++global_texture_slot;
 
-  scene_framebuffer_msaa_->bind();
-  glCullFace(GL_BACK);
+  env_map_data.prefilter_tex_->bind_unit(global_texture_slot);
+  shader.set_uniform("env_tex", global_texture_slot);
+  ++global_texture_slot;
 
-  int global_texture_slot{0};
+  env_map_data.irradiance_tex_->bind_unit(global_texture_slot);
+  shader.set_uniform("env_irradiance_tex", global_texture_slot);
+  ++global_texture_slot;
+}
 
-  glViewport(0, 0, viewport_info.width_, viewport_info.height_);
-  const glm::vec4 clear_color{0.0f, 0.0f, 0.0f, 1.0f};
-  glClearNamedFramebufferfv(scene_framebuffer_msaa_->id(),
-                            GL_COLOR,
-                            0,
-                            glm::value_ptr(clear_color));
-  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+void ForwardPass::set_lightning(
+    GlShader                        &shader,
+    int                             &global_texture_slot,
+    const SceneRenderInfo           &scene_render_info,
+    const ViewRenderInfo            &view_render_info,
+    std::shared_ptr<GlTextureArray>  shadow_tex_array,
+    const std::vector<glm::mat4>    &light_space_matrices,
+    const std::vector<CascadeSplit> &cascade_frustums)
+{
+  const auto view_matrix = view_render_info.view_matrix();
+  const int  max_point_light_count{100};
 
-  const auto env_map_data = env_map(scene_render_info.env_map());
+  const auto &point_lights      = scene_render_info.point_lights();
+  const auto  point_light_count = point_lights.size() <= max_point_light_count
+                                      ? static_cast<int>(point_lights.size())
+                                      : max_point_light_count;
 
-  if (!env_map_data.irradiance_tex_ || !env_map_data.prefilter_tex_)
+  std::vector<GLint> point_light_shadow_maps;
+  shader.set_uniform("point_light_count", point_light_count);
+  for (int i = 0; i < point_light_count; ++i)
   {
-    // can not render anything without them
-    if (output_)
+    shader.set_uniform(
+        "point_lights[" + std::to_string(i) + "].position",
+        glm::vec3(view_matrix * glm::vec4(point_lights[i].position(), 1.0f)));
+    shader.set_uniform("point_lights[" + std::to_string(i) +
+                           "].position_world_space",
+                       point_lights[i].position());
+
+    shader.set_uniform("point_lights[" + std::to_string(i) + "].color",
+                       point_lights[i].color());
+    shader.set_uniform("point_lights[" + std::to_string(i) + "].multiplier",
+                       point_lights[i].multiplier());
+
+    shader.set_uniform("point_lights[" + std::to_string(i) + "].radius",
+                       point_lights[i].radius());
+    shader.set_uniform("point_lights[" + std::to_string(i) + "].falloff",
+                       point_lights[i].falloff());
+
+    shader.set_uniform("point_lights[" + std::to_string(i) + "].cast_shadow",
+                       point_lights[i].cast_shadow());
+
+    if (point_lights[i].cast_shadow())
     {
-      output_(scene_render_info, view_render_info, scene_framebuffer_, nullptr);
+      point_lights[i].shadow_tex()->bind_unit(global_texture_slot);
     }
+    else
+    {
+      dummy_cube_texture_->bind_unit(global_texture_slot);
+    }
+    point_light_shadow_maps.push_back(global_texture_slot);
+    ++global_texture_slot;
+  }
+
+  // bind rest of the cube samplers
+  for (int i = point_light_count; i < max_point_light_count; ++i)
+  {
+    dummy_cube_texture_->bind_unit(global_texture_slot);
+    point_light_shadow_maps.push_back(global_texture_slot);
+    ++global_texture_slot;
+  }
+  shader.set_uniform("point_light_shadow_tex[0]", point_light_shadow_maps);
+
+  const auto &directional_light = scene_render_info.directional_light();
+  shader.set_uniform("smooth_shadows", smooth_shadows_);
+  shader.set_uniform("shadow_bias_min", shadow_bias_min_);
+  shader.set_uniform("light_size", light_size_);
+  shader.set_uniform("directional_light_enabled", true);
+  shader.set_uniform(
+      "directional_light.direction",
+      glm::vec3{view_matrix * glm::vec4{directional_light.direction(), 0.0f}});
+  shader.set_uniform("directional_light.color", directional_light.color());
+  shader.set_uniform("directional_light.multiplier",
+                     directional_light.multiplier());
+
+  shader.set_uniform("directional_light_shadow_enabled",
+                     directional_light.cast_shadow());
+
+  {
+    shader.set_uniform("light_space_matrices[0]", light_space_matrices);
+
+    shader.set_uniform("show_shadow_cascades", show_shadow_cascades_);
+    std::vector<float> far_planes;
+    std::transform(cascade_frustums.cbegin(),
+                   cascade_frustums.cend(),
+                   std::back_inserter(far_planes),
+                   [](const auto &frustum) { return frustum.far; });
+    shader.set_uniform("cascades_plane_distances[0]", far_planes);
+
+    shadow_tex_array->bind_unit(global_texture_slot);
+    shader.set_uniform("directional_light_shadow_tex", global_texture_slot);
+    ++global_texture_slot;
+  }
+}
+
+void ForwardPass::render_meshes(
+    int                             &global_texture_slot,
+    const EnvMapData                &env_map_data,
+    const SceneRenderInfo           &scene_render_info,
+    const ViewRenderInfo            &view_render_info,
+    std::shared_ptr<GlTextureArray>  shadow_tex_array,
+    const std::vector<glm::mat4>    &light_space_matrices,
+    const std::vector<CascadeSplit> &cascade_frustums)
+{
+  const auto view_matrix = view_render_info.view_matrix();
+
+  // prepare mesh pass
+  mesh_shader_->bind();
+  mesh_shader_->set_uniform("view_position", view_render_info.view_position());
+  mesh_shader_->set_uniform("view_matrix", view_matrix);
+  mesh_shader_->set_uniform("projection_matrix",
+                            view_render_info.projection_matrix());
+
+  set_ibl(*mesh_shader_, global_texture_slot, env_map_data);
+
+  set_lightning(*mesh_shader_,
+                global_texture_slot,
+                scene_render_info,
+                view_render_info,
+                shadow_tex_array,
+                light_space_matrices,
+                cascade_frustums);
+
+  // iterate through all meshes
+  for (const auto &mesh : scene_render_info.meshes())
+  {
+    const auto material = mesh.mesh_->material();
+    if (!material)
+    {
+      continue;
+    }
+
+    mesh_shader_->set_uniform("model_matrix", mesh.model_matrix_);
+
+    int texture_slot = global_texture_slot;
+    set_material(*mesh_shader_, texture_slot, *material);
+
+    const auto vertex_array = mesh.mesh_->vertex_array();
+    draw(*vertex_array, GL_TRIANGLES);
+  }
+
+  mesh_shader_->unbind();
+}
+
+void ForwardPass::render_skinned_meshes(
+    int                             &global_texture_slot,
+    const EnvMapData                &env_map_data,
+    const SceneRenderInfo           &scene_render_info,
+    const ViewRenderInfo            &view_render_info,
+    std::shared_ptr<GlTextureArray>  shadow_tex_array,
+    const std::vector<glm::mat4>    &light_space_matrices,
+    const std::vector<CascadeSplit> &cascade_frustums)
+{
+  const auto &skinned_meshes = scene_render_info.skinned_meshes();
+  if (skinned_meshes.empty())
+  {
     return;
   }
 
+  const auto view_matrix = view_render_info.view_matrix();
+
+  // prepare mesh pass
+  skinned_mesh_shader_->bind();
+  skinned_mesh_shader_->set_uniform("view_position",
+                                    view_render_info.view_position());
+  skinned_mesh_shader_->set_uniform("view_matrix", view_matrix);
+  skinned_mesh_shader_->set_uniform("projection_matrix",
+                                    view_render_info.projection_matrix());
+
+  set_ibl(*skinned_mesh_shader_, global_texture_slot, env_map_data);
+
+  set_lightning(*skinned_mesh_shader_,
+                global_texture_slot,
+                scene_render_info,
+                view_render_info,
+                shadow_tex_array,
+                light_space_matrices,
+                cascade_frustums);
+
+  // iterate through all meshes
+  for (const auto &skinned_mesh : skinned_meshes)
+  {
+    const auto skinned_sub_mesh = skinned_mesh.skinned_sub_mesh_;
+    const auto material         = skinned_sub_mesh->material();
+    if (!material)
+    {
+      continue;
+    }
+
+    skinned_mesh_shader_->set_uniform("model_matrix",
+                                      skinned_mesh.model_matrix_);
+    skinned_mesh_shader_->set_uniform("bones[0]", skinned_mesh.bones_);
+
+    int texture_slot = global_texture_slot;
+    set_material(*skinned_mesh_shader_, texture_slot, *material);
+
+    const auto vertex_array = skinned_sub_mesh->vertex_array();
+    draw(*vertex_array, GL_TRIANGLES);
+  }
+
+  skinned_mesh_shader_->unbind();
+}
+
+void ForwardPass::render_meshes_depth_prepass(
+    const SceneRenderInfo &scene_render_info,
+    const ViewRenderInfo  &view_render_info)
+{
   const auto view_matrix = view_render_info.view_matrix();
 
   // render depth pre pass
@@ -455,202 +646,188 @@ void ForwardPass::execute(const SceneRenderInfo &         scene_render_info,
     draw(*vertex_array, GL_TRIANGLES);
   }
   depth_only_shader_->unbind();
+}
 
-  mesh_shader_->bind();
-  mesh_shader_->set_uniform("view_position", view_render_info.view_position());
-  mesh_shader_->set_uniform("view_matrix", view_matrix);
-  mesh_shader_->set_uniform("projection_matrix",
-                            view_render_info.projection_matrix());
-
-  brdf_lut_texture_->bind_unit(global_texture_slot);
-  mesh_shader_->set_uniform("brdf_lut_tex", global_texture_slot);
-  ++global_texture_slot;
-
-  env_map_data.prefilter_tex_->bind_unit(global_texture_slot);
-  mesh_shader_->set_uniform("env_tex", global_texture_slot);
-  ++global_texture_slot;
-
-  env_map_data.irradiance_tex_->bind_unit(global_texture_slot);
-  mesh_shader_->set_uniform("env_irradiance_tex", global_texture_slot);
-  ++global_texture_slot;
-
-  const int   max_point_light_count{100};
-  const auto &point_lights      = scene_render_info.point_lights();
-  const auto  point_light_count = point_lights.size() <= max_point_light_count
-                                      ? static_cast<int>(point_lights.size())
-                                      : max_point_light_count;
-  std::vector<GLint> point_light_shadow_maps;
-  mesh_shader_->set_uniform("point_light_count", point_light_count);
-  for (int i = 0; i < point_light_count; ++i)
+void ForwardPass::render_skinned_meshes_depth_prepass(
+    const SceneRenderInfo &scene_render_info,
+    const ViewRenderInfo  &view_render_info)
+{
+  // render depth pre pass for skinned meshes
+  const auto skinned_meshes = scene_render_info.skinned_meshes();
+  if (skinned_meshes.empty())
   {
-    mesh_shader_->set_uniform(
-        "point_lights[" + std::to_string(i) + "].position",
-        glm::vec3(view_matrix * glm::vec4(point_lights[i].position(), 1.0f)));
-    mesh_shader_->set_uniform("point_lights[" + std::to_string(i) +
-                                  "].position_world_space",
-                              point_lights[i].position());
-
-    mesh_shader_->set_uniform("point_lights[" + std::to_string(i) + "].color",
-                              point_lights[i].color());
-    mesh_shader_->set_uniform("point_lights[" + std::to_string(i) +
-                                  "].multiplier",
-                              point_lights[i].multiplier());
-
-    mesh_shader_->set_uniform("point_lights[" + std::to_string(i) + "].radius",
-                              point_lights[i].radius());
-    mesh_shader_->set_uniform("point_lights[" + std::to_string(i) + "].falloff",
-                              point_lights[i].falloff());
-
-    mesh_shader_->set_uniform("point_lights[" + std::to_string(i) +
-                                  "].cast_shadow",
-                              point_lights[i].cast_shadow());
-
-    if (point_lights[i].cast_shadow())
-    {
-      point_lights[i].shadow_tex()->bind_unit(global_texture_slot);
-    }
-    else
-    {
-      dummy_cube_texture_->bind_unit(global_texture_slot);
-    }
-    point_light_shadow_maps.push_back(global_texture_slot);
-    ++global_texture_slot;
+    return;
   }
 
-  // bind rest of the cube samplers
-  for (int i = point_light_count; i < max_point_light_count; ++i)
+  const auto view_matrix = view_render_info.view_matrix();
+  skinned_depth_only_shader_->bind();
+  skinned_depth_only_shader_->set_uniform("view_matrix", view_matrix);
+  skinned_depth_only_shader_->set_uniform("projection_matrix",
+                                          view_render_info.projection_matrix());
+
+  for (const auto &skinned_mesh : skinned_meshes)
   {
-    dummy_cube_texture_->bind_unit(global_texture_slot);
-    point_light_shadow_maps.push_back(global_texture_slot);
-    ++global_texture_slot;
-  }
-  mesh_shader_->set_uniform("point_light_shadow_tex[0]",
-                            point_light_shadow_maps);
-
-  const auto &directional_light = scene_render_info.directional_light();
-  mesh_shader_->set_uniform("smooth_shadows", smooth_shadows_);
-  mesh_shader_->set_uniform("shadow_bias_min", shadow_bias_min_);
-  mesh_shader_->set_uniform("light_size", light_size_);
-  mesh_shader_->set_uniform("directional_light_enabled", true);
-  mesh_shader_->set_uniform(
-      "directional_light.direction",
-      glm::vec3{view_matrix * glm::vec4{directional_light.direction(), 0.0f}});
-  mesh_shader_->set_uniform("directional_light.color",
-                            directional_light.color());
-  mesh_shader_->set_uniform("directional_light.multiplier",
-                            directional_light.multiplier());
-
-  mesh_shader_->set_uniform("directional_light_shadow_enabled",
-                            directional_light.cast_shadow());
-
-  {
-    mesh_shader_->set_uniform("light_space_matrices[0]", light_space_matrices);
-
-    mesh_shader_->set_uniform("show_shadow_cascades", show_shadow_cascades_);
-    std::vector<float> far_planes;
-    std::transform(cascade_frustums.cbegin(),
-                   cascade_frustums.cend(),
-                   std::back_inserter(far_planes),
-                   [](const auto &frustum) { return frustum.far; });
-    mesh_shader_->set_uniform("cascades_plane_distances[0]", far_planes);
-
-    shadow_tex_array->bind_unit(global_texture_slot);
-    mesh_shader_->set_uniform("directional_light_shadow_tex",
-                              global_texture_slot);
-    ++global_texture_slot;
-  }
-
-  // iterate through all meshes
-  for (const auto &mesh : scene_render_info.meshes())
-  {
-    const auto material = mesh.mesh_->material();
+    const auto material = skinned_mesh.skinned_sub_mesh_->material();
     if (!material)
     {
       continue;
     }
 
-    mesh_shader_->set_uniform("model_matrix", mesh.model_matrix_);
+    skinned_depth_only_shader_->set_uniform("model_matrix",
+                                            skinned_mesh.model_matrix_);
+    skinned_depth_only_shader_->set_uniform("bones[0]", skinned_mesh.bones_);
 
-    int texture_slot = global_texture_slot;
-    if (material->albedo_texture())
+    const auto albedo_tex = material->albedo_texture();
+    if (albedo_tex && albedo_tex->format() == GL_RGBA)
     {
-      const auto albedo_texture = material->albedo_texture();
-      albedo_texture->bind_unit(texture_slot);
-      mesh_shader_->set_uniform("albedo_tex", texture_slot);
-      mesh_shader_->set_uniform("albedo_color", glm::vec3(1.0f));
-      ++texture_slot;
+      albedo_tex->bind_unit(1);
+      skinned_depth_only_shader_->set_uniform("is_tex", true);
     }
     else
     {
-      white_texture_->bind_unit(texture_slot);
-      mesh_shader_->set_uniform("in_albedo_tex", texture_slot);
+      white_texture_->bind_unit(1);
+      skinned_depth_only_shader_->set_uniform("is_tex", false);
     }
+    skinned_depth_only_shader_->set_uniform("tex", 1);
 
-    if (material->roughness_texture())
-    {
-      const auto roughness_texture = material->roughness_texture();
-      roughness_texture->bind_unit(texture_slot);
-      mesh_shader_->set_uniform("metalness_roughness_tex", texture_slot);
-      mesh_shader_->set_uniform("roughness", 1.0f);
-      mesh_shader_->set_uniform("metalness", 1.0f);
-      ++texture_slot;
-    }
-    else
-    {
-      white_texture_->bind_unit(texture_slot);
-      mesh_shader_->set_uniform("metalness_roughness_tex", texture_slot);
-    }
-
-    if (material->ambient_occlusion_texture())
-    {
-      const auto ao_texture = material->ambient_occlusion_texture();
-      ao_texture->bind_unit(texture_slot);
-      mesh_shader_->set_uniform("ao_tex", texture_slot);
-      mesh_shader_->set_uniform("ao_tex_enabled", true);
-      ++texture_slot;
-    }
-    else
-    {
-      white_texture_->bind_unit(texture_slot);
-      mesh_shader_->set_uniform("ao_tex", texture_slot);
-      mesh_shader_->set_uniform("ao_tex_enabled", false);
-    }
-
-    if (material->emissive_texture())
-    {
-      const auto emissive_texture = material->emissive_texture();
-      emissive_texture->bind_unit(texture_slot);
-      mesh_shader_->set_uniform("emissive_tex", texture_slot);
-      mesh_shader_->set_uniform("emissive", glm::vec3(1.0f));
-      ++texture_slot;
-    }
-    else
-    {
-      white_texture_->bind_unit(texture_slot);
-      mesh_shader_->set_uniform("emissive_tex", texture_slot);
-      mesh_shader_->set_uniform("emissive", glm::vec3(0.0f));
-    }
-
-    if (material->normal_texture())
-    {
-      const auto normal_texture = material->normal_texture();
-      normal_texture->bind_unit(texture_slot);
-      mesh_shader_->set_uniform("normal_tex", texture_slot);
-      mesh_shader_->set_uniform("normal_tex_enabled", true);
-      ++texture_slot;
-    }
-    else
-    {
-      white_texture_->bind_unit(texture_slot);
-      mesh_shader_->set_uniform("normal_tex", texture_slot);
-      mesh_shader_->set_uniform("normal_tex_enabled", false);
-    }
-
-    const auto vertex_array = mesh.mesh_->vertex_array();
+    const auto vertex_array = skinned_mesh.skinned_sub_mesh_->vertex_array();
     draw(*vertex_array, GL_TRIANGLES);
   }
+  skinned_depth_only_shader_->unbind();
+}
 
-  mesh_shader_->unbind();
+void ForwardPass::set_material(GlShader       &shader,
+                               int            &texture_slot,
+                               const Material &material)
+{
+  if (material.albedo_texture())
+  {
+    const auto albedo_texture = material.albedo_texture();
+    albedo_texture->bind_unit(texture_slot);
+    shader.set_uniform("albedo_tex", texture_slot);
+    shader.set_uniform("albedo_color", glm::vec3(1.0f));
+    ++texture_slot;
+  }
+  else
+  {
+    white_texture_->bind_unit(texture_slot);
+    shader.set_uniform("in_albedo_tex", texture_slot);
+  }
+
+  if (material.roughness_texture())
+  {
+    const auto roughness_texture = material.roughness_texture();
+    roughness_texture->bind_unit(texture_slot);
+    shader.set_uniform("metalness_roughness_tex", texture_slot);
+    shader.set_uniform("roughness", 1.0f);
+    shader.set_uniform("metalness", 1.0f);
+    ++texture_slot;
+  }
+  else
+  {
+    white_texture_->bind_unit(texture_slot);
+    shader.set_uniform("metalness_roughness_tex", texture_slot);
+  }
+
+  if (material.ambient_occlusion_texture())
+  {
+    const auto ao_texture = material.ambient_occlusion_texture();
+    ao_texture->bind_unit(texture_slot);
+    shader.set_uniform("ao_tex", texture_slot);
+    shader.set_uniform("ao_tex_enabled", true);
+    ++texture_slot;
+  }
+  else
+  {
+    white_texture_->bind_unit(texture_slot);
+    shader.set_uniform("ao_tex", texture_slot);
+    shader.set_uniform("ao_tex_enabled", false);
+  }
+
+  if (material.emissive_texture())
+  {
+    const auto emissive_texture = material.emissive_texture();
+    emissive_texture->bind_unit(texture_slot);
+    shader.set_uniform("emissive_tex", texture_slot);
+    shader.set_uniform("emissive", glm::vec3(1.0f));
+    ++texture_slot;
+  }
+  else
+  {
+    white_texture_->bind_unit(texture_slot);
+    shader.set_uniform("emissive_tex", texture_slot);
+    shader.set_uniform("emissive", glm::vec3(0.0f));
+  }
+
+  if (material.normal_texture())
+  {
+    const auto normal_texture = material.normal_texture();
+    normal_texture->bind_unit(texture_slot);
+    shader.set_uniform("normal_tex", texture_slot);
+    shader.set_uniform("normal_tex_enabled", true);
+    ++texture_slot;
+  }
+  else
+  {
+    white_texture_->bind_unit(texture_slot);
+    shader.set_uniform("normal_tex", texture_slot);
+    shader.set_uniform("normal_tex_enabled", false);
+  }
+}
+
+void ForwardPass::execute(const SceneRenderInfo           &scene_render_info,
+                          const ViewRenderInfo            &view_render_info,
+                          std::shared_ptr<GlTextureArray>  shadow_tex_array,
+                          const std::vector<glm::mat4>    &light_space_matrices,
+                          const std::vector<CascadeSplit> &cascade_frustums)
+{
+  const auto &viewport_info = view_render_info.viewport_info();
+  recreate_scene_framebuffer(viewport_info.width_, viewport_info.height_);
+
+  scene_framebuffer_msaa_->bind();
+  glCullFace(GL_BACK);
+
+  int global_texture_slot{0};
+
+  glViewport(0, 0, viewport_info.width_, viewport_info.height_);
+  const glm::vec4 clear_color{0.0f, 0.0f, 0.0f, 1.0f};
+  glClearNamedFramebufferfv(scene_framebuffer_msaa_->id(),
+                            GL_COLOR,
+                            0,
+                            glm::value_ptr(clear_color));
+  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+  const auto env_map_data = env_map(scene_render_info.env_map());
+
+  if (!env_map_data.irradiance_tex_ || !env_map_data.prefilter_tex_)
+  {
+    // can not render anything without them
+    if (output_)
+    {
+      output_(scene_render_info, view_render_info, scene_framebuffer_, nullptr);
+    }
+    return;
+  }
+
+  render_meshes_depth_prepass(scene_render_info, view_render_info);
+  render_skinned_meshes_depth_prepass(scene_render_info, view_render_info);
+
+  render_meshes(global_texture_slot,
+                env_map_data,
+                scene_render_info,
+                view_render_info,
+                shadow_tex_array,
+                light_space_matrices,
+                cascade_frustums);
+
+  render_skinned_meshes(global_texture_slot,
+                        env_map_data,
+                        scene_render_info,
+                        view_render_info,
+                        shadow_tex_array,
+                        light_space_matrices,
+                        cascade_frustums);
+
   scene_framebuffer_msaa_->unbind();
 
   // resolve msaa framebuffer info normal framebuffer
@@ -681,8 +858,18 @@ void ForwardPass::init_shaders()
   depth_only_shader_ = std::make_shared<GlShader>();
   depth_only_shader_->init("shaders/pbr.vert", "shaders/depth_only.frag");
 
+  skinned_depth_only_shader_ = std::make_shared<GlShader>();
+  skinned_depth_only_shader_->init("shaders/pbr.vert",
+                                   "shaders/depth_only.frag",
+                                   std::vector<std::string>{"SKINNED 1"});
+
   mesh_shader_ = std::make_shared<GlShader>();
   mesh_shader_->init("shaders/pbr.vert", "shaders/pbr.frag");
+
+  skinned_mesh_shader_ = std::make_shared<GlShader>();
+  skinned_mesh_shader_->init("shaders/pbr.vert",
+                             "shaders/pbr.frag",
+                             std::vector<std::string>{"SKINNED 1"});
 
   equirectangular_to_cubemap_shader_ = std::make_shared<GlShader>();
   equirectangular_to_cubemap_shader_->init(

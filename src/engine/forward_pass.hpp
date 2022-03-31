@@ -22,11 +22,11 @@ public:
 
   ForwardPass();
 
-  void execute(const SceneRenderInfo &         scene_render_info,
-               const ViewRenderInfo &          view_render_info,
-               std::shared_ptr<GlTextureArray> shadow_tex_array,
-               const std::vector<glm::mat4>    light_space_matrices,
-               const std::vector<CascadeSplit> cascade_frustums);
+  void execute(const SceneRenderInfo           &scene_render_info,
+               const ViewRenderInfo            &view_render_info,
+               std::shared_ptr<GlTextureArray>  shadow_tex_array,
+               const std::vector<glm::mat4>    &light_space_matrices,
+               const std::vector<CascadeSplit> &cascade_frustums);
 
   void set_output(Output output);
 
@@ -57,8 +57,10 @@ private:
   std::shared_ptr<GlTexture> white_texture_{};
   std::shared_ptr<GlCubeTexture> dummy_cube_texture_{};
 
-  std::shared_ptr<GlShader> depth_only_shader_;
+  std::shared_ptr<GlShader> depth_only_shader_{};
+  std::shared_ptr<GlShader> skinned_depth_only_shader_{};
   std::shared_ptr<GlShader> mesh_shader_{};
+  std::shared_ptr<GlShader> skinned_mesh_shader_{};
 
   std::shared_ptr<GlTexture> brdf_lut_texture_{};
 
@@ -72,6 +74,44 @@ private:
 
   EnvMapData env_map(const EnvironmentMap &env_map);
   EnvMapData generate_env_map(const EnvironmentMap &env_map);
+
+  void render_meshes_depth_prepass(const SceneRenderInfo &scene_render_info,
+                                   const ViewRenderInfo  &view_render_info);
+
+  void
+  render_skinned_meshes_depth_prepass(const SceneRenderInfo &scene_render_info,
+                                      const ViewRenderInfo  &view_render_info);
+
+  void set_lightning(GlShader                        &shader,
+                     int                             &global_texture_slot,
+                     const SceneRenderInfo           &scene_render_info,
+                     const ViewRenderInfo            &view_render_info,
+                     std::shared_ptr<GlTextureArray>  shadow_tex_array,
+                     const std::vector<glm::mat4>    &light_space_matrices,
+                     const std::vector<CascadeSplit> &cascade_frustums);
+
+  void set_ibl(GlShader         &shader,
+               int              &global_texture_slot,
+               const EnvMapData &env_map_data);
+
+  void render_meshes(int                             &global_texture_slot,
+                     const EnvMapData                &env_map_data,
+                     const SceneRenderInfo           &scene_render_info,
+                     const ViewRenderInfo            &view_render_info,
+                     std::shared_ptr<GlTextureArray>  shadow_tex_array,
+                     const std::vector<glm::mat4>    &light_space_matrices,
+                     const std::vector<CascadeSplit> &cascade_frustums);
+
+  void render_skinned_meshes(int                   &global_texture_slot,
+                             const EnvMapData      &env_map_data,
+                             const SceneRenderInfo &scene_render_info,
+                             const ViewRenderInfo  &view_render_info,
+                             std::shared_ptr<GlTextureArray> shadow_tex_array,
+                             const std::vector<glm::mat4> &light_space_matrices,
+                             const std::vector<CascadeSplit> &cascade_frustums);
+
+  void
+  set_material(GlShader &shader, int &texture_slot, const Material &material);
 };
 
 } // namespace dc

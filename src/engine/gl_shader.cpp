@@ -65,24 +65,30 @@ void check_for_program_link_errors(GLuint program_id)
 namespace dc
 {
 
-GlShader::GlShader(const std::filesystem::path &vertex_shader_file_path,
-                   const std::filesystem::path &fragment_shader_file_path)
+GlShader::GlShader(const std::filesystem::path    &vertex_shader_file_path,
+                   const std::filesystem::path    &fragment_shader_file_path,
+                   const std::vector<std::string> &preprocessor_defines)
 {
-  init(vertex_shader_file_path, fragment_shader_file_path);
+  init(vertex_shader_file_path,
+       fragment_shader_file_path,
+       preprocessor_defines);
 }
 
-GlShader::GlShader(const std::filesystem::path &vertex_shader_file_path,
-                   const std::filesystem::path &geometry_shader_file_path,
-                   const std::filesystem::path &fragment_shader_file_path)
+GlShader::GlShader(const std::filesystem::path    &vertex_shader_file_path,
+                   const std::filesystem::path    &geometry_shader_file_path,
+                   const std::filesystem::path    &fragment_shader_file_path,
+                   const std::vector<std::string> &preprocessor_defines)
 {
   init(vertex_shader_file_path,
        geometry_shader_file_path,
-       fragment_shader_file_path);
+       fragment_shader_file_path,
+       preprocessor_defines);
 }
 
-GlShader::GlShader(const std::filesystem::path &compute_shader_file_path)
+GlShader::GlShader(const std::filesystem::path    &compute_shader_file_path,
+                   const std::vector<std::string> &preprocessor_defines)
 {
-  init(compute_shader_file_path);
+  init(compute_shader_file_path, preprocessor_defines);
 }
 
 GlShader::~GlShader()
@@ -93,7 +99,9 @@ GlShader::~GlShader()
   }
 }
 
-GLuint GlShader::compile_shader(const std::filesystem::path &file_path)
+GLuint
+GlShader::compile_shader(const std::filesystem::path    &file_path,
+                         const std::vector<std::string> &preprocessor_defines)
 {
   const auto extension = file_path.extension();
   GLuint     shader_id{};
@@ -101,19 +109,23 @@ GLuint GlShader::compile_shader(const std::filesystem::path &file_path)
 
   if (extension == ".vert")
   {
-    shader_id = compile_shader(shader_code, GL_VERTEX_SHADER);
+    shader_id =
+        compile_shader(shader_code, GL_VERTEX_SHADER, preprocessor_defines);
   }
   else if (extension == ".geom")
   {
-    shader_id = compile_shader(shader_code, GL_GEOMETRY_SHADER);
+    shader_id =
+        compile_shader(shader_code, GL_GEOMETRY_SHADER, preprocessor_defines);
   }
   else if (extension == ".frag")
   {
-    shader_id = compile_shader(shader_code, GL_FRAGMENT_SHADER);
+    shader_id =
+        compile_shader(shader_code, GL_FRAGMENT_SHADER, preprocessor_defines);
   }
   else if (extension == ".comp")
   {
-    shader_id = compile_shader(shader_code, GL_COMPUTE_SHADER);
+    shader_id =
+        compile_shader(shader_code, GL_COMPUTE_SHADER, preprocessor_defines);
   }
   else
   {
@@ -124,8 +136,19 @@ GLuint GlShader::compile_shader(const std::filesystem::path &file_path)
   return shader_id;
 }
 
-GLuint GlShader::compile_shader(const std::string &shader_code, GLenum type)
+GLuint
+GlShader::compile_shader(const std::string              &shader_code,
+                         GLenum                          type,
+                         const std::vector<std::string> &preprocessor_defines)
 {
+  // add preprocessor defines
+  std::string final_shader_code;
+  for (const auto &preprocessor_define : preprocessor_defines)
+  {
+    final_shader_code += "#define " + preprocessor_define + '\n';
+  }
+  final_shader_code += shader_code;
+
   const auto shader_id         = glCreateShader(type);
   auto       shader_code_c_str = shader_code.c_str();
   glShaderSource(shader_id, 1, &shader_code_c_str, nullptr);
@@ -219,17 +242,20 @@ void GlShader::load_shader_data()
   }
 }
 
-void GlShader::init(const std::filesystem::path &vertex_shader_file_path,
-                    const std::filesystem::path &fragment_shader_file_path)
+void GlShader::init(const std::filesystem::path    &vertex_shader_file_path,
+                    const std::filesystem::path    &fragment_shader_file_path,
+                    const std::vector<std::string> &preprocessor_defines)
 {
   DC_LOG_INFO("Load vertex shader {}", vertex_shader_file_path.string());
   DC_LOG_INFO("Load fragment shader {}", fragment_shader_file_path.string());
 
   // compile shaders
-  const auto vertex_shader_id = compile_shader(vertex_shader_file_path);
+  const auto vertex_shader_id =
+      compile_shader(vertex_shader_file_path, preprocessor_defines);
   defer(glDeleteShader(vertex_shader_id));
 
-  const auto fragment_shader_id = compile_shader(fragment_shader_file_path);
+  const auto fragment_shader_id =
+      compile_shader(fragment_shader_file_path, preprocessor_defines);
   defer(glDeleteShader(fragment_shader_id));
 
   // link the shaders together
@@ -238,22 +264,26 @@ void GlShader::init(const std::filesystem::path &vertex_shader_file_path,
   load_shader_data();
 }
 
-void GlShader::init(const std::filesystem::path &vertex_shader_file_path,
-                    const std::filesystem::path &geometry_shader_file_path,
-                    const std::filesystem::path &fragment_shader_file_path)
+void GlShader::init(const std::filesystem::path    &vertex_shader_file_path,
+                    const std::filesystem::path    &geometry_shader_file_path,
+                    const std::filesystem::path    &fragment_shader_file_path,
+                    const std::vector<std::string> &preprocessor_defines)
 {
   DC_LOG_INFO("Load vertex shader {}", vertex_shader_file_path.string());
   DC_LOG_INFO("Load geometry shader {}", geometry_shader_file_path.string());
   DC_LOG_INFO("Load fragment shader {}", fragment_shader_file_path.string());
 
   // compile shaders
-  const auto vertex_shader_id = compile_shader(vertex_shader_file_path);
+  const auto vertex_shader_id =
+      compile_shader(vertex_shader_file_path, preprocessor_defines);
   defer(glDeleteShader(vertex_shader_id));
 
-  const auto geometry_shader_id = compile_shader(geometry_shader_file_path);
+  const auto geometry_shader_id =
+      compile_shader(geometry_shader_file_path, preprocessor_defines);
   defer(glDeleteShader(geometry_shader_id));
 
-  const auto fragment_shader_id = compile_shader(fragment_shader_file_path);
+  const auto fragment_shader_id =
+      compile_shader(fragment_shader_file_path, preprocessor_defines);
   defer(glDeleteShader(fragment_shader_id));
 
   // link the shaders together
@@ -264,12 +294,14 @@ void GlShader::init(const std::filesystem::path &vertex_shader_file_path,
   load_shader_data();
 }
 
-void GlShader::init(const std::filesystem::path &compute_shader_file_path)
+void GlShader::init(const std::filesystem::path    &compute_shader_file_path,
+                    const std::vector<std::string> &preprocessor_defines)
 {
   DC_LOG_INFO("Load compute shader {}", compute_shader_file_path.string());
 
   // compile shaders
-  const auto compute_shader_id = compile_shader(compute_shader_file_path);
+  const auto compute_shader_id =
+      compile_shader(compute_shader_file_path, preprocessor_defines);
   defer(glDeleteShader(compute_shader_id));
 
   link_shaders(std::vector<GLuint>{compute_shader_id});

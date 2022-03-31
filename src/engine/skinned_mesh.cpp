@@ -87,9 +87,14 @@ void SkinnedMesh::stop_current_animation()
   skeleton_.stop_current_animation();
 }
 
-std::vector<glm::mat4> SkinnedMesh::compute_bone_transforms(float delta_time)
+void SkinnedMesh::compute_bone_transforms(float delta_time)
 {
   return skeleton_.compute_bone_transforms(delta_time);
+}
+
+std::vector<glm::mat4> SkinnedMesh::bone_transforms() const
+{
+  return skeleton_.bone_transforms();
 }
 
 } // namespace dc

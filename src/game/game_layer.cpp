@@ -1,4 +1,5 @@
 #include "game_layer.hpp"
+#include "animation_system.hpp"
 #include "camera_component.hpp"
 #include "camera_system.hpp"
 #include "directional_light_component.hpp"
@@ -21,6 +22,7 @@ void add_systems(dc::SystemsContext &system_context)
   // add systems, order matters
   system_context.add_system<dc::ScriptSystem>();
   system_context.add_system<dc::CameraSystem>();
+  system_context.add_system<dc::AnimationSystem>();
   system_context.add_system<dc::RenderSystem>();
 }
 

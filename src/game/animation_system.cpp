@@ -44,8 +44,6 @@ void AnimationSystem::update(float delta_time)
 
     skinned_mesh->get()->compute_bone_transforms(delta_time);
   }
-
-  DC_FAIL("Implement");
 }
 
 void AnimationSystem::render(SceneRenderInfo & /*scene_render_info*/,

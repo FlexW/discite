@@ -6,6 +6,8 @@
 #include "math.hpp"
 #include "mesh.hpp"
 #include "point_light.hpp"
+#include "skinned_mesh.hpp"
+
 #include <optional>
 
 namespace dc
@@ -17,11 +19,21 @@ struct MeshInfo
   SubMesh  *mesh_;
 };
 
+struct SkinnedMeshInfo
+{
+  glm::mat4              model_matrix_;
+  SkinnedSubMesh        *skinned_sub_mesh_;
+  std::vector<glm::mat4> bones_;
+};
+
 class SceneRenderInfo
 {
 public:
-  void                  add_mesh(const MeshInfo &mesh_info);
+  void                  add_mesh(MeshInfo mesh_info);
   std::vector<MeshInfo> meshes() const;
+
+  void add_skinned_mesh(SkinnedMeshInfo skinned_mesh_info);
+  std::vector<SkinnedMeshInfo> skinned_meshes() const;
 
   void                    add_point_light(const PointLight &point_light);
   std::vector<PointLight> point_lights() const;
@@ -33,10 +45,11 @@ public:
   EnvironmentMap env_map() const;
 
 private:
-  std::vector<MeshInfo>   meshes_;
-  std::vector<PointLight> point_lights_;
-  DirectionalLight        directional_light_;
-  EnvironmentMap          env_map_;
+  std::vector<MeshInfo>        meshes_;
+  std::vector<SkinnedMeshInfo> skinned_meshes_;
+  std::vector<PointLight>      point_lights_;
+  DirectionalLight             directional_light_;
+  EnvironmentMap               env_map_;
 };
 
 struct ViewportInfo

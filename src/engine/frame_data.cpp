@@ -4,12 +4,22 @@
 namespace dc
 {
 
-void SceneRenderInfo::add_mesh(const MeshInfo &mesh_info)
+void SceneRenderInfo::add_mesh(MeshInfo mesh_info)
 {
-  meshes_.push_back(mesh_info);
+  meshes_.emplace_back(std::move(mesh_info));
 }
 
 std::vector<MeshInfo> SceneRenderInfo::meshes() const { return meshes_; }
+
+void SceneRenderInfo::add_skinned_mesh(SkinnedMeshInfo skinned_mesh_info)
+{
+  skinned_meshes_.emplace_back(std::move(skinned_mesh_info));
+}
+
+std::vector<SkinnedMeshInfo> SceneRenderInfo::skinned_meshes() const
+{
+  return skinned_meshes_;
+}
 
 void SceneRenderInfo::add_point_light(const PointLight &point_light)
 {

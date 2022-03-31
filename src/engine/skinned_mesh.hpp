@@ -55,7 +55,8 @@ public:
   void play_animation_endless(const std::string &name);
   void stop_current_animation();
 
-  std::vector<glm::mat4> compute_bone_transforms(float delta_time);
+  void                   compute_bone_transforms(float delta_time);
+  std::vector<glm::mat4> bone_transforms() const;
 
 private:
   Skeleton                                     skeleton_;
