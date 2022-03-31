@@ -51,9 +51,11 @@ private:
   std::shared_ptr<GlFramebuffer>  shadow_framebuffer_{};
 
   std::shared_ptr<GlShader> shadow_map_shader_{};
+  std::shared_ptr<GlShader> shadow_map_skinned_shader_{};
   std::shared_ptr<GlShader> shadow_map_transparent_shader_{};
 
   std::shared_ptr<GlShader>      point_light_shadow_map_shader_{};
+  std::shared_ptr<GlShader>      point_light_shadow_map_skinned_shader_{};
   std::shared_ptr<GlFramebuffer> point_light_framebuffer_{};
 
   void calc_shadow_cascades_splits(const ViewRenderInfo &view_render_info);

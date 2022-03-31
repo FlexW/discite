@@ -43,6 +43,15 @@ void EntityPanel::on_render()
   }
 
   {
+    // Remove
+    ImGui::SameLine();
+    if (ImGui::Button("Remove entity"))
+    {
+      entity_.remove();
+    }
+  }
+
+  {
     // name
     auto name = entity_.name();
     if (imgui_input("Name", name))
@@ -180,7 +189,14 @@ void EntityPanel::on_render()
                       animation_name,
                       ImGuiInputTextFlags_EnterReturnsTrue))
       {
-        skinned_mesh->play_animation(animation_name);
+        if (animation_name.empty())
+        {
+          skinned_mesh->stop_current_animation();
+        }
+        else
+        {
+          skinned_mesh->play_animation(animation_name);
+        }
       }
     }
   }

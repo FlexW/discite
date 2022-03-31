@@ -1,5 +1,3 @@
-#version 460 core
-
 out VS_OUT
 {
     vec2 tex_coord;

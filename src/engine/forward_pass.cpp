@@ -20,13 +20,13 @@ namespace dc
 ForwardPass::ForwardPass()
 {
   // dummy/placeholder texture
-  std::vector<unsigned char> white_tex_data{255};
+  std::vector<unsigned char> white_tex_data{255, 255, 255};
   GlTextureConfig            white_tex_config{};
   white_tex_config.data_             = white_tex_data.data();
   white_tex_config.width_            = 1;
   white_tex_config.height_           = 1;
-  white_tex_config.format_           = GL_RED;
-  white_tex_config.sized_format_     = GL_R8;
+  white_tex_config.format_           = GL_RGB;
+  white_tex_config.sized_format_     = GL_RGB8;
   white_tex_config.generate_mipmaps_ = false;
   white_texture_ = std::make_shared<GlTexture>(white_tex_config);
 
@@ -416,7 +416,7 @@ void ForwardPass::set_lightning(
     const std::vector<CascadeSplit> &cascade_frustums)
 {
   const auto view_matrix = view_render_info.view_matrix();
-  const int  max_point_light_count{100};
+  const int  max_point_light_count{30};
 
   const auto &point_lights      = scene_render_info.point_lights();
   const auto  point_light_count = point_lights.size() <= max_point_light_count
@@ -700,27 +700,27 @@ void ForwardPass::set_material(GlShader       &shader,
                                int            &texture_slot,
                                const Material &material)
 {
+  shader.set_uniform("albedo_color", glm::vec3(1.0f));
   if (material.albedo_texture())
   {
     const auto albedo_texture = material.albedo_texture();
     albedo_texture->bind_unit(texture_slot);
     shader.set_uniform("albedo_tex", texture_slot);
-    shader.set_uniform("albedo_color", glm::vec3(1.0f));
     ++texture_slot;
   }
   else
   {
     white_texture_->bind_unit(texture_slot);
-    shader.set_uniform("in_albedo_tex", texture_slot);
+    shader.set_uniform("albedo_tex", texture_slot);
   }
 
+  shader.set_uniform("roughness", 1.0f);
+  shader.set_uniform("metalness", 1.0f);
   if (material.roughness_texture())
   {
     const auto roughness_texture = material.roughness_texture();
     roughness_texture->bind_unit(texture_slot);
     shader.set_uniform("metalness_roughness_tex", texture_slot);
-    shader.set_uniform("roughness", 1.0f);
-    shader.set_uniform("metalness", 1.0f);
     ++texture_slot;
   }
   else

@@ -95,8 +95,39 @@ void ShadowPass::generate_point_light_shadows(
 
       draw(*mesh_info.mesh_->vertex_array(), GL_TRIANGLES);
     }
-
     point_light_shadow_map_shader_->unbind();
+
+    // process skinned meshes if needed
+    const auto &skinned_meshes = scene_render_info.skinned_meshes();
+    if (!skinned_meshes.empty())
+    {
+      point_light_shadow_map_skinned_shader_->bind();
+      for (unsigned i = 0; i < 6; ++i)
+      {
+        point_light_shadow_map_skinned_shader_->set_uniform("shadowMatrices[0]",
+                                                            shadow_transforms);
+      }
+
+      point_light_shadow_map_skinned_shader_->set_uniform("far_plane", far);
+      point_light_shadow_map_skinned_shader_->set_uniform("lightPos",
+                                                          light_pos);
+
+      // iterate through all solid meshes
+      for (const auto &skinned_mesh_info : skinned_meshes)
+      {
+        point_light_shadow_map_skinned_shader_->set_uniform(
+            "model",
+            skinned_mesh_info.model_matrix_);
+        point_light_shadow_map_skinned_shader_->set_uniform(
+            "bones[0]",
+            skinned_mesh_info.bones_);
+
+        draw(*skinned_mesh_info.skinned_sub_mesh_->vertex_array(),
+             GL_TRIANGLES);
+      }
+      point_light_shadow_map_skinned_shader_->unbind();
+    }
+
     point_light_framebuffer_->unbind();
   }
 }
@@ -158,6 +189,25 @@ void ShadowPass::execute(const SceneRenderInfo &scene_render_info,
   }
 
   shadow_map_shader_->unbind();
+
+  // iterate through all skinned meshes
+  const auto &skinned_meshes = scene_render_info.skinned_meshes();
+  if (!skinned_meshes.empty())
+  {
+    shadow_map_skinned_shader_->bind();
+    shadow_map_skinned_shader_->set_uniform("light_space_matrices[0]",
+                                            light_space_matrices);
+    for (const auto &skinned_mesh_info : skinned_meshes)
+    {
+      shadow_map_skinned_shader_->set_uniform("model_matrix",
+                                              skinned_mesh_info.model_matrix_);
+      shadow_map_skinned_shader_->set_uniform("bones[0]",
+                                              skinned_mesh_info.bones_);
+
+      draw(*skinned_mesh_info.skinned_sub_mesh_->vertex_array(), GL_TRIANGLES);
+    }
+    shadow_map_skinned_shader_->unbind();
+  }
 
   shadow_map_transparent_shader_->bind();
 
@@ -371,6 +421,12 @@ void ShadowPass::init_shaders()
                            "shaders/shadow_map.geom",
                            "shaders/shadow_map.frag");
 
+  shadow_map_skinned_shader_ = std::make_shared<GlShader>();
+  shadow_map_skinned_shader_->init("shaders/shadow_map.vert",
+                                   "shaders/shadow_map.geom",
+                                   "shaders/shadow_map.frag",
+                                   std::vector<std::string>{"SKINNED 1"});
+
   shadow_map_transparent_shader_ = std::make_shared<GlShader>();
   shadow_map_transparent_shader_->init("shaders/shadow_map_transparent.vert",
                                        "shaders/shadow_map_transparent.geom",
@@ -381,6 +437,13 @@ void ShadowPass::init_shaders()
       "shaders/learnopengl/point_light_shadow_map.vert",
       "shaders/learnopengl/point_light_shadow_map.geom",
       "shaders/learnopengl/point_light_shadow_map.frag");
+
+  point_light_shadow_map_skinned_shader_ = std::make_shared<GlShader>();
+  point_light_shadow_map_skinned_shader_->init(
+      "shaders/learnopengl/point_light_shadow_map.vert",
+      "shaders/learnopengl/point_light_shadow_map.geom",
+      "shaders/learnopengl/point_light_shadow_map.frag",
+      std::vector<std::string>{"SKINNED 1"});
 }
 
 void ShadowPass::set_output(Output output) { output_ = output; }

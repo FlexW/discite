@@ -16,6 +16,7 @@
 #include "scene_events.hpp"
 #include "script/script_component.hpp"
 #include "serialization.hpp"
+#include "skinned_mesh_component.hpp"
 #include "sky_component.hpp"
 #include "transform_component.hpp"
 #include "uuid.hpp"
@@ -62,6 +63,13 @@ Entity Scene::create_entity(const std::string &name, Uuid uuid)
   return entity;
 }
 
+void Scene::remove_entity(Uuid uuid)
+{
+  DC_PROFILE_SCOPE("Scene::remove_entity()");
+  const auto &e = entity(uuid);
+  registry_.destroy(e.entity_handle());
+}
+
 Entity Scene::get_or_create_entity(Uuid uuid)
 {
   if (uuid == 0)
@@ -81,9 +89,9 @@ Entity Scene::entity(Uuid uuid)
 {
   DC_PROFILE_SCOPE("Scene::entity()");
 
-  assert(uuid != 0);
+  DC_ASSERT(uuid != 0, "Invalid uuid");
   const auto iter = uuid_to_entity_map_.find(uuid);
-  assert(iter != uuid_to_entity_map_.end());
+  DC_ASSERT(iter != uuid_to_entity_map_.end(), "Invalid entity");
   return Entity{iter->second, shared_from_this()};
 }
 
@@ -128,6 +136,12 @@ void Scene::save(const std::filesystem::path &file_path,
     {
       write_string(file, "*model*");
       entity.component<MeshComponent>().save(file);
+    }
+
+    if (entity.has_component<SkinnedMeshComponent>())
+    {
+      write_string(file, "*skinnedmesh*");
+      entity.component<SkinnedMeshComponent>().save(file);
     }
 
     if (entity.has_component<SkyComponent>())
@@ -207,6 +221,12 @@ AssetDescription Scene::read(const std::filesystem::path &file_path)
         MeshComponent component{};
         component.read(file);
         entity.add_component<MeshComponent>(std::move(component));
+      }
+      else if (marker == "*skinnedmesh*")
+      {
+        SkinnedMeshComponent component{};
+        component.read(file);
+        entity.add_component<SkinnedMeshComponent>(std::move(component));
       }
       else if (marker == "*pointlight*")
       {

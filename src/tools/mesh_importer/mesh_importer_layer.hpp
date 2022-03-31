@@ -22,6 +22,7 @@ public:
 private:
   std::string file_path_;
   std::string mesh_name_;
+  bool        is_skinned_{false};
 };
 
 } // namespace dc

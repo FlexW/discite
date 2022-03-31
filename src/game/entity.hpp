@@ -22,6 +22,8 @@ public:
   void          set_id(Uuid uuid);
   std::uint64_t id() const;
 
+  void remove();
+
   template <typename TComponent, typename... TArgs>
   decltype(auto) add_component(TArgs &&...args)
   {

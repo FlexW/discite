@@ -24,6 +24,8 @@ public:
   Entity create_entity(const std::string &name);
   Entity create_entity(const std::string &name, Uuid uuid);
 
+  void remove_entity(Uuid uuid);
+
   template <typename... T> decltype(auto) all_entities_with()
   {
     return registry_.view<T...>();

@@ -1,8 +1,9 @@
 #include "dockspace_panel.hpp"
-#include "profiling.hpp"
 #include "engine.hpp"
 #include "imgui.h"
+#include "imgui.hpp"
 #include "imgui_panel.hpp"
+#include "profiling.hpp"
 
 namespace
 {
@@ -55,6 +56,8 @@ void DockspacePanel::on_render()
   }
 
   // menubar
+  bool is_open_new_scene_popup_{false};
+
   if (ImGui::BeginMenuBar())
   {
     if (ImGui::BeginMenu("File"))
@@ -65,7 +68,49 @@ void DockspacePanel::on_render()
       }
       ImGui::EndMenu();
     }
+
+    if (ImGui::BeginMenu("Scene"))
+    {
+      if (ImGui::MenuItem("New"))
+      {
+        is_open_new_scene_popup_ = true;
+        new_scene_name_ = "";
+      }
+      ImGui::EndMenu();
+    }
+
     ImGui::EndMenuBar();
+  }
+
+  // popups
+  if (is_open_new_scene_popup_)
+  {
+    ImGui::OpenPopup("New scene");
+  }
+
+  // Always center this window when appearing
+  ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+  ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+  if (ImGui::BeginPopupModal("New scene",
+                             NULL,
+                             ImGuiWindowFlags_AlwaysAutoResize))
+  {
+    imgui_input("Scene name", new_scene_name_);
+
+    if (ImGui::Button("Ok"))
+    {
+      on_new_scene_(new_scene_name_);
+      new_scene_name_ = "";
+      ImGui::CloseCurrentPopup();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Cancel"))
+    {
+      new_scene_name_ = "";
+      ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::EndPopup();
   }
 }
 

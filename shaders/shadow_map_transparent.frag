@@ -1,5 +1,3 @@
-#version 460 core
-
 in GEO_OUT
 {
     vec2 tex_coord;

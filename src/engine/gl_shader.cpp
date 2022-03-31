@@ -142,7 +142,7 @@ GlShader::compile_shader(const std::string              &shader_code,
                          const std::vector<std::string> &preprocessor_defines)
 {
   // add preprocessor defines
-  std::string final_shader_code;
+  std::string final_shader_code{"#version 460 core\n\n"};
   for (const auto &preprocessor_define : preprocessor_defines)
   {
     final_shader_code += "#define " + preprocessor_define + '\n';
@@ -150,7 +150,7 @@ GlShader::compile_shader(const std::string              &shader_code,
   final_shader_code += shader_code;
 
   const auto shader_id         = glCreateShader(type);
-  auto       shader_code_c_str = shader_code.c_str();
+  auto       shader_code_c_str = final_shader_code.c_str();
   glShaderSource(shader_id, 1, &shader_code_c_str, nullptr);
   glCompileShader(shader_id);
 

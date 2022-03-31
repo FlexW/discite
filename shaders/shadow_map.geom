@@ -1,5 +1,3 @@
-#version 460 core
-
 #define LIGHT_SPACE_MATRICES_COUNT 4
 
 layout(triangles, invocations = LIGHT_SPACE_MATRICES_COUNT) in;

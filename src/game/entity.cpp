@@ -59,6 +59,15 @@ std::uint64_t Entity::id() const
   return 0;
 }
 
+void Entity::remove()
+{
+  auto scene = scene_.lock();
+  if (scene)
+  {
+    scene->remove_entity(id());
+  }
+}
+
 std::string Entity::name() const
 {
   const auto scene = scene_.lock();

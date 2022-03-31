@@ -17,6 +17,7 @@ target_sources(game PRIVATE
   transform_component.cpp
   scene_asset_importer.cpp
   mesh_component.cpp
+  skinned_mesh_component.cpp
   guid_component.cpp
   name_component.cpp
   relationship_component.cpp

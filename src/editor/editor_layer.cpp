@@ -1,4 +1,5 @@
 #include "editor_layer.hpp"
+#include "asset.hpp"
 #include "dockspace_panel.hpp"
 #include "engine.hpp"
 #include "entity_panel.hpp"
@@ -23,7 +24,18 @@ void EditorLayer::init()
   setup_game();
   set_capture_mouse(false);
 
-  const auto dockspace_panel = std::make_shared<DockspacePanel>();
+  const auto dockspace_panel     = std::make_shared<DockspacePanel>();
+  dockspace_panel->on_new_scene_ = [](const std::string &name)
+  {
+    const auto path  = std::filesystem::path{"scenes"} / (name + ".dcscn");
+    const auto scene = std::make_shared<SceneAssetHandle>(
+        Engine::instance()->base_directory() / path,
+        Asset{path.string()});
+    const auto game_layer =
+        Engine::instance()->layer_stack()->layer<GameLayer>();
+    DC_ASSERT(game_layer, "No game layer set");
+    game_layer->set_scene(scene);
+  };
 
   const auto game_layer = Engine::instance()->layer_stack()->layer<GameLayer>();
   DC_ASSERT(game_layer, "Game layer not loaded");
@@ -74,7 +86,7 @@ void EditorLayer::setup_game()
   {
     game_layer->set_scene(std::dynamic_pointer_cast<SceneAssetHandle>(
         Engine::instance()->asset_cache()->load_asset(
-            Asset{"scenes/sponza.dcscn"})));
+            Asset{"scenes/myscene.dcscn"})));
   }
 }
 

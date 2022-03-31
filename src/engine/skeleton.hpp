@@ -3,6 +3,7 @@
 #include "animation.hpp"
 #include "math.hpp"
 
+#include <cstddef>
 #include <string>
 
 namespace dc
@@ -11,7 +12,7 @@ namespace dc
 struct Bone
 {
   std::string name_;
-  int         parent_index{-1};
+  int         parent_index_{-1};
   glm::mat4   local_bind_pose_{1.0f};
   glm::mat4   global_inv_bind_pose_{1.0f};
 };
@@ -22,7 +23,9 @@ public:
   Skeleton() = default;
   explicit Skeleton(std::vector<Bone> bones);
 
-  int bone_index(const std::string &name);
+  int bone_index(const std::string &name) const;
+
+  std::size_t bones_count() const;
 
   void play_animation(const std::string &name);
   void stop_current_animation();

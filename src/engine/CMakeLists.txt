@@ -66,6 +66,7 @@ target_sources(engine PRIVATE
   importer.cpp
   asset_importer_manager.cpp
   mesh_asset_importer.cpp
+  skinned_mesh_asset_importer.cpp
   cmd_args_parser.cpp
   serialization.cpp
   texture_asset.cpp

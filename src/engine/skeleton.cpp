@@ -10,7 +10,7 @@ Skeleton::Skeleton(std::vector<Bone> bones) : bones_{std::move(bones)}
   reset();
 }
 
-int Skeleton::bone_index(const std::string &name)
+int Skeleton::bone_index(const std::string &name) const
 {
   for (std::size_t i = 0; i < bones_.size(); ++i)
   {
@@ -23,6 +23,8 @@ int Skeleton::bone_index(const std::string &name)
   return -1;
 }
 
+std::size_t Skeleton::bones_count() const { return bones_.size(); }
+
 void Skeleton::play_animation(const std::string &name)
 {
   const auto animation_index = index_of_animation_by_name(name);
@@ -34,6 +36,8 @@ void Skeleton::play_animation(const std::string &name)
 
   animation_time_         = 0.0f;
   active_animation_index_ = animation_index;
+
+  compute_bone_transforms(0.0f);
 }
 
 void Skeleton::stop_current_animation()
@@ -92,12 +96,12 @@ void Skeleton::compute_bone_transforms(double delta_time)
 
     if (track.has_value())
     {
-      transforms_[i] = transforms_[bone.parent_index] *
+      transforms_[i] = transforms_[bone.parent_index_] *
                        track.value().interpolate(animation_time);
     }
     else
     {
-      transforms_[i] = transforms_[bone.parent_index] * bone.local_bind_pose_;
+      transforms_[i] = transforms_[bone.parent_index_] * bone.local_bind_pose_;
     }
   }
 
@@ -145,13 +149,13 @@ void Skeleton::save(FILE *file) const
 
 void Skeleton::read(FILE *file)
 {
-  reset();
-
   read_vector(file, bones_);
   read_vector_complex(file, animations_);
   read_value(file, animation_time_);
   read_value(file, is_endless_animation_);
   read_value(file, active_animation_index_);
+
+  reset();
 }
 
 void Skeleton::reset()
