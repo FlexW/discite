@@ -15,6 +15,8 @@
 #include "scene_events.hpp"
 #include "scene_panel.hpp"
 #include "script/script_component.hpp"
+#include "skinned_mesh_asset.hpp"
+#include "skinned_mesh_component.hpp"
 #include "sky_component.hpp"
 #include "transform_component.hpp"
 
@@ -88,9 +90,13 @@ void EntityPanel::on_render()
 
     if (ImGui::BeginPopup("select_component_popup"))
     {
-      if (ImGui::Selectable("Model"))
+      if (ImGui::Selectable("Mesh"))
       {
         entity_.add_component<MeshComponent>();
+      }
+      if (ImGui::Selectable("Skinned mesh"))
+      {
+        entity_.add_component<SkinnedMeshComponent>();
       }
       if (ImGui::Selectable("Camera"))
       {
@@ -120,7 +126,7 @@ void EntityPanel::on_render()
   if (entity_.has_component<MeshComponent>())
   {
     ImGui::Separator();
-    ImGui::Text("Model");
+    ImGui::Text("Mesh");
 
     auto       &component = entity_.component<MeshComponent>();
     std::string mesh_name;
@@ -128,11 +134,54 @@ void EntityPanel::on_render()
     {
       mesh_name = component.model_->asset().id();
     }
-    if (imgui_input("Mesh", mesh_name, ImGuiInputTextFlags_EnterReturnsTrue))
+    if (imgui_input("Mesh asset",
+                    mesh_name,
+                    ImGuiInputTextFlags_EnterReturnsTrue))
     {
       auto handle =
           Engine::instance()->asset_cache()->load_asset(Asset{mesh_name});
       component.model_ = std::dynamic_pointer_cast<MeshAssetHandle>(handle);
+    }
+  }
+
+  if (entity_.has_component<SkinnedMeshComponent>())
+  {
+    ImGui::Separator();
+    ImGui::Text("Skinned mesh");
+
+    auto &component = entity_.component<SkinnedMeshComponent>();
+
+    std::string skinned_mesh_name;
+    if (component.skinned_mesh_)
+    {
+      skinned_mesh_name = component.skinned_mesh_->asset().id();
+    }
+    if (imgui_input("Skinned mesh asset",
+                    skinned_mesh_name,
+                    ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+      auto handle = Engine::instance()->asset_cache()->load_asset(
+          Asset{skinned_mesh_name});
+      component.skinned_mesh_ =
+          std::dynamic_pointer_cast<SkinnedMeshAssetHandle>(handle);
+    }
+
+    if (component.skinned_mesh_)
+    {
+      const auto skinned_mesh = component.skinned_mesh_->get();
+      auto       is_endless   = skinned_mesh->is_animation_endless();
+      if (imgui_input("Endless", is_endless))
+      {
+        skinned_mesh->set_animation_endless(is_endless);
+      }
+
+      auto       animation_name = skinned_mesh->current_animation_name();
+      if (imgui_input("Animation",
+                      animation_name,
+                      ImGuiInputTextFlags_EnterReturnsTrue))
+      {
+        skinned_mesh->play_animation(animation_name);
+      }
     }
   }
 

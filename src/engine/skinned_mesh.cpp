@@ -77,11 +77,6 @@ void SkinnedMesh::play_animation(const std::string &name)
   skeleton_.play_animation(name);
 }
 
-void SkinnedMesh::play_animation_endless(const std::string &name)
-{
-  skeleton_.play_animation_endless(name);
-}
-
 void SkinnedMesh::stop_current_animation()
 {
   skeleton_.stop_current_animation();
@@ -95,6 +90,21 @@ void SkinnedMesh::compute_bone_transforms(float delta_time)
 std::vector<glm::mat4> SkinnedMesh::bone_transforms() const
 {
   return skeleton_.bone_transforms();
+}
+
+std::string SkinnedMesh::current_animation_name() const
+{
+  return skeleton_.current_animation_name();
+}
+
+void SkinnedMesh::set_animation_endless(bool value)
+{
+  skeleton_.set_animation_endless(value);
+}
+
+bool SkinnedMesh::is_animation_endless() const
+{
+  return skeleton_.is_animation_endless();
 }
 
 } // namespace dc

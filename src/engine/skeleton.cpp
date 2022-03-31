@@ -33,29 +33,13 @@ void Skeleton::play_animation(const std::string &name)
   }
 
   animation_time_         = 0.0f;
-  is_endless_animation_   = false;
-  active_animation_index_ = animation_index;
-}
-
-void Skeleton::play_animation_endless(const std::string &name)
-{
-  const auto animation_index = index_of_animation_by_name(name);
-
-  if (animation_index == -1)
-  {
-    return;
-  }
-
-  animation_time_         = 0.0f;
-  is_endless_animation_   = true;
   active_animation_index_ = animation_index;
 }
 
 void Skeleton::stop_current_animation()
 {
-  animation_time_            = 0.0f;
-  active_animation_index_    = -1;
-  is_endless_animation_      = false;
+  animation_time_         = 0.0f;
+  active_animation_index_ = -1;
 }
 
 void Skeleton::compute_bone_transforms(double delta_time)
@@ -75,7 +59,7 @@ void Skeleton::compute_bone_transforms(double delta_time)
   const auto &animation = animations_[active_animation_index_];
 
   auto ticks_per_second = animation.ticks_per_second();
-  ticks_per_second        = ticks_per_second != 0 ? ticks_per_second : 25.0f;
+  ticks_per_second      = ticks_per_second != 0 ? ticks_per_second : 25.0f;
   ticks_per_second *= animation_speed_;
 
   const auto current_time_in_ticks = animation_time_ * ticks_per_second;
@@ -83,8 +67,6 @@ void Skeleton::compute_bone_transforms(double delta_time)
   // Is animation over?
   if (!is_endless_animation_ && current_time_in_ticks >= animation.duration())
   {
-    active_animation_index_    = -1;
-    is_endless_animation_      = false;
     return;
   }
 
@@ -121,8 +103,8 @@ void Skeleton::compute_bone_transforms(double delta_time)
 
   for (std::size_t i = 0; i < bones_.size(); ++i)
   {
-    const auto &bone  = bones_[i];
-    transforms_[i]    = transforms_[i] * bone.global_inv_bind_pose_;
+    const auto &bone = bones_[i];
+    transforms_[i]   = transforms_[i] * bone.global_inv_bind_pose_;
   }
 }
 
@@ -185,5 +167,22 @@ void Skeleton::reset()
     transforms_identity_.push_back(glm::mat4(1.0f));
   }
 }
+
+std::string Skeleton::current_animation_name() const
+{
+  if (active_animation_index_ == -1)
+  {
+    return {};
+  }
+
+  return animations_[active_animation_index_].name();
+}
+
+void Skeleton::set_animation_endless(bool value)
+{
+  is_endless_animation_ = value;
+}
+
+bool Skeleton::is_animation_endless() const { return is_endless_animation_; }
 
 } // namespace dc

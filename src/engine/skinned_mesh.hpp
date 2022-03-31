@@ -51,9 +51,13 @@ public:
 
   std::vector<SkinnedSubMesh *> sub_meshes() const;
 
+  void set_animation_endless(bool value);
+  bool is_animation_endless() const;
+
   void play_animation(const std::string &name);
-  void play_animation_endless(const std::string &name);
   void stop_current_animation();
+
+  std::string current_animation_name() const;
 
   void                   compute_bone_transforms(float delta_time);
   std::vector<glm::mat4> bone_transforms() const;
