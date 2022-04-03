@@ -1,5 +1,7 @@
 #pragma once
 
+#include "component_types.hpp"
+#include "entt/entity/fwd.hpp"
 #include "event.hpp"
 #include "serialization.hpp"
 #include "system.hpp"
@@ -50,10 +52,40 @@ private:
 
   void init_systems();
 
-  void on_construct_script_component(entt::registry &registry,
+  void fire_component_construct_event(entt::entity  entity,
+                                      ComponentType component_type);
+  void fire_component_destroy_event(entt::entity  entity,
+                                    ComponentType component_type);
+
+  void on_script_component_construct(entt::registry &registry,
                                      entt::entity    entity);
-  void on_destroy_script_component(entt::registry &registry,
+  void on_script_component_destroy(entt::registry &registry,
                                    entt::entity    entity);
+
+  void on_rigid_body_component_construct(entt::registry &registry,
+                                         entt::entity    entity);
+  void on_rigid_body_component_destroy(entt::registry &registry,
+                                       entt::entity    entity);
+
+  void on_box_collider_component_construct(entt::registry &registry,
+                                           entt::entity    entity);
+  void on_box_collider_component_destroy(entt::registry &registry,
+                                         entt::entity    entity);
+
+  void on_sphere_collider_component_construct(entt::registry &registry,
+                                              entt::entity    entity);
+  void on_sphere_collider_component_destroy(entt::registry &registry,
+                                            entt::entity    entity);
+
+  void on_capsule_collider_component_construct(entt::registry &registry,
+                                               entt::entity    entity);
+  void on_capsule_collider_component_destroy(entt::registry &registry,
+                                             entt::entity    entity);
+
+  void on_mesh_collider_component_construct(entt::registry &registry,
+                                            entt::entity    entity);
+  void on_mesh_collider_component_destroy(entt::registry &registry,
+                                          entt::entity    entity);
 };
 
 } // namespace dc

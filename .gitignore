@@ -13,3 +13,5 @@ DisciteRuntime.csproj
 # RenderDoc
 *.rdc
 *.cap
+
+mono_crash*

@@ -19,19 +19,23 @@ SceneUnloadedEvent::SceneUnloadedEvent(std::shared_ptr<Scene> scene)
 {
 }
 
-EventId ScriptComponentConstructEvent::id{0x22bdd75f};
+EventId ComponentConstructEvent::id{0x22bdd75f};
 
-ScriptComponentConstructEvent::ScriptComponentConstructEvent(Entity entity)
+ComponentConstructEvent::ComponentConstructEvent(Entity        entity,
+                                                 ComponentType component_type)
     : Event{id},
-      entity_{entity}
+      entity_{entity},
+      component_type_{component_type}
 {
 }
 
-EventId ScriptComponentDestroyEvent::id{0x873c615f};
+EventId ComponentDestroyEvent::id{0x873c615f};
 
-ScriptComponentDestroyEvent::ScriptComponentDestroyEvent(Entity entity)
+ComponentDestroyEvent::ComponentDestroyEvent(Entity        entity,
+                                             ComponentType component_type)
     : Event{id},
-      entity_{entity}
+      entity_{entity},
+      component_type_{component_type}
 {
 }
 

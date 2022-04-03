@@ -4,6 +4,17 @@
 namespace dc
 {
 
+DebugLineInfo::DebugLineInfo(glm::vec3 start,
+                             glm::vec3 end,
+                             glm::vec3 start_color,
+                             glm::vec3 end_color)
+    : start_{std::move(start)},
+      end_{std::move(end)},
+      start_color_{std::move(start_color)},
+      end_color_{std::move(end_color)}
+{
+}
+
 void SceneRenderInfo::add_mesh(MeshInfo mesh_info)
 {
   meshes_.emplace_back(std::move(mesh_info));
@@ -45,6 +56,24 @@ DirectionalLight SceneRenderInfo::directional_light() const
 void SceneRenderInfo::set_env_map(const EnvironmentMap &value)
 {
   env_map_ = value;
+}
+
+void SceneRenderInfo::add_debug_line(DebugLineInfo debug_line_info)
+{
+  debug_lines_.push_back(debug_line_info);
+}
+
+void SceneRenderInfo::add_debug_lines(
+    const std::vector<DebugLineInfo> &debug_lines)
+{
+  debug_lines_.insert(debug_lines_.end(),
+                      debug_lines.begin(),
+                      debug_lines.end());
+}
+
+std::vector<DebugLineInfo> SceneRenderInfo::debug_lines() const
+{
+  return debug_lines_;
 }
 
 EnvironmentMap SceneRenderInfo::env_map() const { return env_map_; }

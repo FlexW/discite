@@ -1,12 +1,16 @@
 #pragma once
 
+#include "component_types.hpp"
 #include "entity.hpp"
 #include "event.hpp"
 
-class Scene;
+#include <memory>
 
 namespace dc
 {
+
+class Entity;
+class Scene;
 
 /**
  * Event gets fired after the scene has been loaded
@@ -34,24 +38,26 @@ public:
   SceneUnloadedEvent(std::shared_ptr<Scene> scene);
 };
 
-class ScriptComponentConstructEvent : public Event
+class ComponentConstructEvent : public Event
 {
 public:
   static EventId id;
 
-  Entity entity_;
+  Entity        entity_;
+  ComponentType component_type_;
 
-  ScriptComponentConstructEvent(Entity entity);
+  ComponentConstructEvent(Entity entity, ComponentType component_type);
 };
 
-class ScriptComponentDestroyEvent : public Event
+class ComponentDestroyEvent : public Event
 {
 public:
   static EventId id;
 
-  Entity entity_;
+  Entity        entity_;
+  ComponentType component_type_;
 
-  ScriptComponentDestroyEvent(Entity entity);
+  ComponentDestroyEvent(Entity entity, ComponentType component_type);
 };
 
 } // namespace dc

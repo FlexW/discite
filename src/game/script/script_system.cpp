@@ -1,4 +1,5 @@
 #include "script_system.hpp"
+#include "component_types.hpp"
 #include "engine.hpp"
 #include "game_layer.hpp"
 #include "log.hpp"
@@ -69,16 +70,15 @@ bool ScriptSystem::on_event(const Event &event)
   {
     on_scene_loaded(dynamic_cast<const SceneLoadedEvent &>(event));
   }
-  else if (event_id == ScriptComponentConstructEvent::id)
+  else if (event_id == ComponentConstructEvent::id)
   {
-    on_script_component_construct(
-        dynamic_cast<const ScriptComponentConstructEvent &>(event));
+    on_component_construct(
+        dynamic_cast<const ComponentConstructEvent &>(event));
     return false;
   }
-  else if (event_id == ScriptComponentDestroyEvent::id)
+  else if (event_id == ComponentDestroyEvent::id)
   {
-    on_script_component_destroy(
-        dynamic_cast<const ScriptComponentDestroyEvent &>(event));
+    on_component_destroy(dynamic_cast<const ComponentDestroyEvent &>(event));
     return false;
   }
 
@@ -90,9 +90,13 @@ void ScriptSystem::on_scene_loaded(const SceneLoadedEvent &event)
   scene_ = event.scene_;
 }
 
-void ScriptSystem::on_script_component_construct(
-    const ScriptComponentConstructEvent &event)
+void ScriptSystem::on_component_construct(const ComponentConstructEvent &event)
 {
+  if (event.component_type_ != ComponentType::Script)
+  {
+    return;
+  }
+
   auto       &script_component = event.entity_.component<ScriptComponent>();
   const auto &module_name      = script_component.module_name_;
 
@@ -104,8 +108,7 @@ void ScriptSystem::on_script_component_construct(
   }
 }
 
-void ScriptSystem::on_script_component_destroy(
-    const ScriptComponentDestroyEvent & /*event*/)
+void ScriptSystem::on_component_destroy(const ComponentDestroyEvent & /*event*/)
 {
 }
 

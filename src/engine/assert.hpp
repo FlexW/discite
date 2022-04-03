@@ -14,7 +14,7 @@
     {                                                                          \
       const auto fmsg = fmt::format(msg, ##__VA_ARGS__);                       \
       fmt::print(stderr,                                                       \
-                 "Failure in {} on line {}:\n\t{}\n\t" #expr "\n\n",           \
+                 "Failure in {} on line {}:\n\t{}: " #expr "\n",               \
                  (file),                                                       \
                  (line),                                                       \
                  (fmsg));                                                      \
@@ -30,7 +30,7 @@
   {                                                                            \
     const auto fmsg = fmt::format(msg, ##__VA_ARGS__);                         \
     fmt::print(stderr,                                                         \
-               "Failure in {} on line {}:\n\t{}\n\n",                          \
+               "Failure in {} on line {}: {}\n",                               \
                (file),                                                         \
                (line),                                                         \
                (fmsg));                                                        \

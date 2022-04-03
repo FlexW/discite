@@ -5,6 +5,7 @@
 #include "directional_light_component.hpp"
 #include "engine.hpp"
 #include "entity.hpp"
+#include "physic/physic_system.hpp"
 #include "profiling.hpp"
 #include "render_system.hpp"
 #include "script/script_system.hpp"
@@ -22,6 +23,7 @@ void add_systems(dc::SystemsContext &system_context)
   // add systems, order matters
   system_context.add_system<dc::ScriptSystem>();
   system_context.add_system<dc::CameraSystem>();
+  system_context.add_system<dc::PhysicSystem>();
   system_context.add_system<dc::AnimationSystem>();
   system_context.add_system<dc::RenderSystem>();
 }

@@ -1,13 +1,25 @@
 #include "entity_panel.hpp"
 #include "camera_component.hpp"
+#include "component_types.hpp"
 #include "directional_light_component.hpp"
 #include "engine.hpp"
 #include "env_map_asset.hpp"
-#include "glm/trigonometric.hpp"
 #include "imgui.h"
 #include "imgui.hpp"
 #include "imgui_panel.hpp"
 #include "mesh_component.hpp"
+#include "physic/box_collider.hpp"
+#include "physic/box_collider_component.hpp"
+#include "physic/capsule_collider.hpp"
+#include "physic/capsule_collider_component.hpp"
+#include "physic/mesh_collider_component.hpp"
+#include "physic/physic_actor.hpp"
+#include "physic/physic_collider.hpp"
+#include "physic/physic_material.hpp"
+#include "physic/physic_scene.hpp"
+#include "physic/rigid_body_component.hpp"
+#include "physic/sphere_collider.hpp"
+#include "physic/sphere_collider_component.hpp"
 #include "point_light.hpp"
 #include "point_light_component.hpp"
 #include "profiling.hpp"
@@ -21,6 +33,33 @@
 #include "transform_component.hpp"
 
 #include <memory>
+
+namespace
+{
+
+void draw_physic_material_properties(dc::PhysicCollider &collider)
+{
+  const auto         px_physic_material = collider.get_physic_material();
+  dc::PhysicMaterial physic_material{};
+  physic_material.static_friction_  = px_physic_material->getStaticFriction();
+  physic_material.dynamic_friction_ = px_physic_material->getDynamicFriction();
+  physic_material.bounciness_       = px_physic_material->getRestitution();
+
+  if (dc::imgui_input("Static friction", physic_material.static_friction_))
+  {
+    collider.set_physic_material(physic_material);
+  }
+  if (dc::imgui_input("Dynamic friction", physic_material.dynamic_friction_))
+  {
+    collider.set_physic_material(physic_material);
+  }
+  if (dc::imgui_input("Bounciness", physic_material.bounciness_))
+  {
+    collider.set_physic_material(physic_material);
+  }
+}
+
+} // namespace
 
 namespace dc
 {
@@ -99,33 +138,93 @@ void EntityPanel::on_render()
 
     if (ImGui::BeginPopup("select_component_popup"))
     {
-      if (ImGui::Selectable("Mesh"))
+      if (!entity_.has_component<MeshComponent>())
       {
-        entity_.add_component<MeshComponent>();
+        if (ImGui::Selectable("Mesh"))
+        {
+          entity_.add_component<MeshComponent>();
+        }
       }
-      if (ImGui::Selectable("Skinned mesh"))
+      if (!entity_.has_component<SkinnedMeshComponent>())
       {
-        entity_.add_component<SkinnedMeshComponent>();
+        if (ImGui::Selectable("Skinned mesh"))
+        {
+          entity_.add_component<SkinnedMeshComponent>();
+        }
       }
-      if (ImGui::Selectable("Camera"))
+      if (!entity_.has_component<CameraComponent>())
       {
-        entity_.add_component<CameraComponent>();
+        if (ImGui::Selectable("Camera"))
+        {
+          entity_.add_component<CameraComponent>();
+        }
       }
-      if (ImGui::Selectable("Directional light"))
+      if (!entity_.has_component<DirectionalLightComponent>())
       {
-        entity_.add_component<DirectionalLightComponent>();
+        if (ImGui::Selectable("Directional light"))
+        {
+          entity_.add_component<DirectionalLightComponent>();
+        }
       }
-      if (ImGui::Selectable("Point light"))
+      if (!entity_.has_component<PointLightComponent>())
       {
-        entity_.add_component<PointLightComponent>();
+        if (ImGui::Selectable("Point light"))
+        {
+          entity_.add_component<PointLightComponent>();
+        }
       }
-      if (ImGui::Selectable("Sky"))
+      if (!entity_.has_component<SkyComponent>())
       {
-        entity_.add_component<SkyComponent>();
+        if (ImGui::Selectable("Sky"))
+        {
+          entity_.add_component<SkyComponent>();
+        }
       }
-      if (ImGui::Selectable("Script"))
+      if (!entity_.has_component<ScriptComponent>())
       {
-        entity_.add_component<ScriptComponent>();
+        if (ImGui::Selectable("Script"))
+        {
+          entity_.add_component<ScriptComponent>();
+        }
+      }
+      if (!entity_.has_component<RigidBodyComponent>())
+      {
+        if (ImGui::Selectable("Rigid body (static)"))
+        {
+          entity_.add_component<RigidBodyComponent>(RigidBodyType::Static);
+        }
+        else if (ImGui::Selectable("Rigid body (dynamic)"))
+        {
+          entity_.add_component<RigidBodyComponent>(RigidBodyType::Dynamic);
+        }
+      }
+      if (!entity_.has_component<BoxColliderComponent>())
+      {
+        if (ImGui::Selectable("Box collider"))
+        {
+          entity_.add_component<BoxColliderComponent>();
+        }
+      }
+      if (!entity_.has_component<SphereColliderComponent>())
+      {
+        if (ImGui::Selectable("Sphere collider"))
+        {
+          entity_.add_component<SphereColliderComponent>();
+        }
+      }
+      if (!entity_.has_component<CapsuleColliderComponent>())
+      {
+        if (ImGui::Selectable("Capsule collider"))
+        {
+          entity_.add_component<CapsuleColliderComponent>();
+        }
+      }
+      if (!entity_.has_component<MeshColliderComponent>())
+      {
+        if (ImGui::Selectable("Mesh collider"))
+        {
+          entity_.add_component<MeshColliderComponent>();
+        }
       }
       ImGui::EndPopup();
     }
@@ -265,9 +364,144 @@ void EntityPanel::on_render()
                     component.module_name_,
                     ImGuiInputTextFlags_EnterReturnsTrue))
     {
-      ScriptComponentConstructEvent event{entity_};
+      ComponentConstructEvent event{entity_, ComponentType::Script};
       Engine::instance()->event_manager()->fire_event(event);
     }
+  }
+
+  if (entity_.has_component<RigidBodyComponent>())
+  {
+    ImGui::Separator();
+    auto &component = entity_.component<RigidBodyComponent>();
+
+    const auto is_dynamic = component.body_type_ == RigidBodyType::Dynamic;
+    const auto text =
+        is_dynamic ? "Rigid body (dynamic)" : "Rigid body (static)";
+    ImGui::Text(text);
+    const auto actor = component.physic_actor_;
+    if (component.physic_actor_ && is_dynamic)
+    {
+      auto mass = actor->get_mass();
+      if (imgui_input("Mass", mass))
+      {
+        actor->set_mass(mass);
+      }
+      auto linear_drag = actor->get_linear_drag();
+      if (imgui_input("Linear drag", linear_drag))
+      {
+        actor->set_linear_drag(linear_drag);
+      }
+      auto angular_drag = actor->get_angular_drag();
+      if (imgui_input("Angular drag", angular_drag))
+      {
+        actor->set_angular_drag(angular_drag);
+      }
+      auto is_kinematic = actor->is_kinematic();
+      if (imgui_input("Kinematic", is_kinematic))
+      {
+        actor->set_kinematic(is_kinematic);
+      }
+      auto is_gravity_disabled = actor->is_gravity_disabled();
+      if (imgui_input("Gravity disabled", is_gravity_disabled))
+      {
+        actor->set_gravity_disabled(is_gravity_disabled);
+      }
+    }
+  }
+
+  if (entity_.has_component<BoxColliderComponent>())
+  {
+    ImGui::Separator();
+    ImGui::Text("Box collider");
+    auto      &component = entity_.component<BoxColliderComponent>();
+    const auto collider  = component.box_collider_;
+    if (collider)
+    {
+      auto size = collider->get_size();
+      if (imgui_input("Size", size))
+      {
+        collider->set_size(size);
+      }
+      auto offset = collider->get_offset();
+      if (imgui_input("Offset", offset))
+      {
+        collider->set_offset(offset);
+      }
+      auto is_trigger = collider->is_trigger();
+      if (imgui_input("Trigger", is_trigger))
+      {
+        collider->set_trigger(is_trigger);
+      }
+
+      draw_physic_material_properties(*collider);
+    }
+  }
+
+  if (entity_.has_component<SphereColliderComponent>())
+  {
+    ImGui::Separator();
+    ImGui::Text("Sphere collider");
+    auto      &component = entity_.component<SphereColliderComponent>();
+    const auto collider  = component.sphere_collider_;
+    if (collider)
+    {
+      auto radius = collider->get_radius();
+      if (imgui_input("Radius", radius))
+      {
+        collider->set_radius(radius);
+      }
+      auto offset = collider->get_offset();
+      if (imgui_input("Offset", offset))
+      {
+        collider->set_offset(offset);
+      }
+      auto is_trigger = collider->is_trigger();
+      if (imgui_input("Trigger", is_trigger))
+      {
+        collider->set_trigger(is_trigger);
+      }
+
+      draw_physic_material_properties(*collider);
+    }
+  }
+
+  if (entity_.has_component<SphereColliderComponent>())
+  {
+    ImGui::Separator();
+    ImGui::Text("Capsule collider");
+    auto      &component = entity_.component<CapsuleColliderComponent>();
+    const auto collider  = component.capsule_collider_;
+    if (collider)
+    {
+      auto radius = collider->get_radius();
+      if (imgui_input("Radius", radius))
+      {
+        collider->set_radius(radius);
+      }
+      auto height = collider->get_height();
+      if (imgui_input("Height", height))
+      {
+        collider->set_height(height);
+      }
+      auto offset = collider->get_offset();
+      if (imgui_input("Offset", offset))
+      {
+        collider->set_offset(offset);
+      }
+      auto is_trigger = collider->is_trigger();
+      if (imgui_input("Trigger", is_trigger))
+      {
+        collider->set_trigger(is_trigger);
+      }
+
+      draw_physic_material_properties(*collider);
+    }
+  }
+
+  if (entity_.has_component<MeshColliderComponent>())
+  {
+    ImGui::Separator();
+    ImGui::Text("Mesh collider");
   }
 }
 

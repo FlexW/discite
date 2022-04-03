@@ -28,12 +28,24 @@ void TransformComponent::set_position(const glm::vec3 &value)
   recalculate_transform_matrix();
 }
 
+void TransformComponent::set_absolute_position(const glm::vec3 &value)
+{
+  position_ = value;
+  recalculate_transform_matrix(false);
+}
+
 glm::vec3 TransformComponent::position() const { return position_; }
 
 void TransformComponent::set_rotation(const glm::quat &value)
 {
   rotation_ = value;
   recalculate_transform_matrix();
+}
+
+void TransformComponent::set_absolute_rotation(const glm::quat &value)
+{
+  rotation_ = value;
+  recalculate_transform_matrix(false);
 }
 
 glm::quat TransformComponent::rotation_quat() const { return rotation_; }
@@ -62,11 +74,16 @@ glm::mat4 TransformComponent::transform_matrix() const
   return transform_matrix_;
 }
 
-void TransformComponent::recalculate_transform_matrix()
+void TransformComponent::recalculate_transform_matrix(bool use_parent)
 {
   const auto transform_matrix =
       calculate_transform_matrix(position_, rotation_, scale_);
-  transform_matrix_ = parent_transform_matrix_ * transform_matrix;
+  if (use_parent)
+  {
+    transform_matrix_ = parent_transform_matrix_ * transform_matrix;
+    return;
+  }
+  transform_matrix_ = transform_matrix;
 }
 
 void TransformComponent::set_parent_transform_matrix(const glm::mat4 &value)

@@ -1,5 +1,6 @@
 #include "scene.hpp"
 #include "camera_component.hpp"
+#include "component_types.hpp"
 #include "directional_light_component.hpp"
 #include "engine.hpp"
 #include "entity.hpp"
@@ -9,6 +10,11 @@
 #include "mesh.hpp"
 #include "mesh_component.hpp"
 #include "name_component.hpp"
+#include "physic/box_collider_component.hpp"
+#include "physic/capsule_collider_component.hpp"
+#include "physic/mesh_collider_component.hpp"
+#include "physic/rigid_body_component.hpp"
+#include "physic/sphere_collider_component.hpp"
 #include "point_light_component.hpp"
 #include "profiling.hpp"
 #include "relationship_component.hpp"
@@ -36,9 +42,34 @@ std::shared_ptr<Scene> Scene::create()
 Scene::Scene()
 {
   registry_.on_construct<ScriptComponent>()
-      .connect<&Scene::on_construct_script_component>(this);
+      .connect<&Scene::on_script_component_construct>(this);
   registry_.on_destroy<ScriptComponent>()
-      .connect<&Scene::on_destroy_script_component>(this);
+      .connect<&Scene::on_script_component_destroy>(this);
+
+  registry_.on_construct<RigidBodyComponent>()
+      .connect<&Scene::on_rigid_body_component_construct>(this);
+  registry_.on_destroy<RigidBodyComponent>()
+      .connect<&Scene::on_rigid_body_component_destroy>(this);
+
+  registry_.on_construct<BoxColliderComponent>()
+      .connect<&Scene::on_box_collider_component_construct>(this);
+  registry_.on_destroy<BoxColliderComponent>()
+      .connect<&Scene::on_box_collider_component_destroy>(this);
+
+  registry_.on_construct<SphereColliderComponent>()
+      .connect<&Scene::on_sphere_collider_component_construct>(this);
+  registry_.on_destroy<SphereColliderComponent>()
+      .connect<&Scene::on_sphere_collider_component_destroy>(this);
+
+  registry_.on_construct<CapsuleColliderComponent>()
+      .connect<&Scene::on_capsule_collider_component_construct>(this);
+  registry_.on_destroy<CapsuleColliderComponent>()
+      .connect<&Scene::on_capsule_collider_component_destroy>(this);
+
+  registry_.on_construct<MeshColliderComponent>()
+      .connect<&Scene::on_mesh_collider_component_construct>(this);
+  registry_.on_destroy<MeshColliderComponent>()
+      .connect<&Scene::on_mesh_collider_component_destroy>(this);
 }
 
 Entity Scene::create_entity(const std::string &name)
@@ -270,18 +301,94 @@ AssetDescription Scene::read(const std::filesystem::path &file_path)
   return asset_description;
 }
 
-void Scene::on_construct_script_component(entt::registry & /*registry*/,
-                                          entt::entity entity)
+void Scene::fire_component_destroy_event(entt::entity      entity,
+                                         dc::ComponentType component_type)
 {
-  ScriptComponentConstructEvent event{Entity{entity, shared_from_this()}};
-  Engine::instance()->event_manager()->fire_event(event);
+  dc::ComponentDestroyEvent event{dc::Entity{entity, shared_from_this()},
+                                  component_type};
+  dc::Engine::instance()->event_manager()->fire_event(event);
 }
 
-void Scene::on_destroy_script_component(entt::registry & /*registry*/,
+void Scene::fire_component_construct_event(entt::entity      entity,
+                                           dc::ComponentType component_type)
+{
+  dc::ComponentConstructEvent event{dc::Entity{entity, shared_from_this()},
+                                    component_type};
+  dc::Engine::instance()->event_manager()->fire_event(event);
+}
+
+void Scene::on_script_component_construct(entt::registry & /*registry*/,
+                                          entt::entity entity)
+{
+  fire_component_construct_event(entity, ComponentType::Script);
+}
+
+void Scene::on_script_component_destroy(entt::registry & /*registry*/,
                                         entt::entity entity)
 {
-  ScriptComponentDestroyEvent event{Entity{entity, shared_from_this()}};
-  Engine::instance()->event_manager()->fire_event(event);
+  fire_component_destroy_event(entity, ComponentType::Script);
+}
+
+void Scene::on_rigid_body_component_construct(entt::registry & /*registry*/,
+                                              entt::entity entity)
+{
+  fire_component_construct_event(entity, ComponentType::RigidBody);
+}
+
+void Scene::on_rigid_body_component_destroy(entt::registry & /*registry*/,
+                                            entt::entity entity)
+{
+  fire_component_destroy_event(entity, ComponentType::RigidBody);
+}
+
+void Scene::on_box_collider_component_construct(entt::registry & /*registry*/,
+                                                entt::entity entity)
+{
+  fire_component_construct_event(entity, ComponentType::BoxCollider);
+}
+
+void Scene::on_box_collider_component_destroy(entt::registry & /*registry*/,
+                                              entt::entity entity)
+{
+  fire_component_destroy_event(entity, ComponentType::BoxCollider);
+}
+
+void Scene::on_sphere_collider_component_construct(
+    entt::registry & /*registry*/,
+    entt::entity entity)
+{
+  fire_component_construct_event(entity, ComponentType::SphereCollider);
+}
+
+void Scene::on_sphere_collider_component_destroy(entt::registry & /*registry*/,
+                                                 entt::entity entity)
+{
+  fire_component_destroy_event(entity, ComponentType::SphereCollider);
+}
+
+void Scene::on_capsule_collider_component_construct(
+    entt::registry & /*registry*/,
+    entt::entity entity)
+{
+  fire_component_construct_event(entity, ComponentType::CapsuleCollider);
+}
+
+void Scene::on_capsule_collider_component_destroy(entt::registry & /*registry*/,
+                                                  entt::entity entity)
+{
+  fire_component_destroy_event(entity, ComponentType::CapsuleCollider);
+}
+
+void Scene::on_mesh_collider_component_construct(entt::registry & /*registry*/,
+                                                 entt::entity entity)
+{
+  fire_component_construct_event(entity, ComponentType::MeshCollider);
+}
+
+void Scene::on_mesh_collider_component_destroy(entt::registry & /*registry*/,
+                                               entt::entity entity)
+{
+  fire_component_destroy_event(entity, ComponentType::MeshCollider);
 }
 
 } // namespace dc

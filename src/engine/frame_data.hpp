@@ -26,6 +26,21 @@ struct SkinnedMeshInfo
   std::vector<glm::mat4> bones_;
 };
 
+struct DebugLineInfo
+{
+  glm::vec3 start_{};
+  glm::vec3 end_{};
+  glm::vec3 start_color_{};
+  glm::vec3 end_color_{};
+
+  DebugLineInfo() = default;
+
+  DebugLineInfo(glm::vec3 start,
+                glm::vec3 end,
+                glm::vec3 start_color,
+                glm::vec3 end_color);
+};
+
 class SceneRenderInfo
 {
 public:
@@ -44,12 +59,17 @@ public:
   void           set_env_map(const EnvironmentMap &sky);
   EnvironmentMap env_map() const;
 
+  void add_debug_line(DebugLineInfo debug_line_info);
+  void add_debug_lines(const std::vector<DebugLineInfo> &debug_lines);
+  std::vector<DebugLineInfo> debug_lines() const;
+
 private:
   std::vector<MeshInfo>        meshes_;
   std::vector<SkinnedMeshInfo> skinned_meshes_;
   std::vector<PointLight>      point_lights_;
   DirectionalLight             directional_light_;
   EnvironmentMap               env_map_;
+  std::vector<DebugLineInfo>   debug_lines_;
 };
 
 struct ViewportInfo

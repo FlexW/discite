@@ -1,15 +1,16 @@
 #pragma once
 
+#include "physic/physic_scene.hpp"
 #include "scene.hpp"
 #include "scene_events.hpp"
-#include "script_engine.hpp"
 #include "system.hpp"
 
 #include <memory>
 
 namespace dc
 {
-class ScriptSystem : public System
+
+class PhysicSystem : public System
 {
 public:
   void init() override;
@@ -20,13 +21,16 @@ public:
   bool on_event(const Event &event) override;
 
 private:
-  std::weak_ptr<Scene> scene_{};
+  std::weak_ptr<Scene>         scene_{};
+  std::unique_ptr<PhysicScene> physic_scene_{};
 
-  std::unique_ptr<ScriptEngine> script_engine_{};
+  void create_physic_actors();
+
+  void on_scene_loaded(const SceneLoadedEvent &event);
+  void on_scene_unloaded(const SceneUnloadedEvent &event);
 
   void on_component_construct(const ComponentConstructEvent &event);
   void on_component_destroy(const ComponentDestroyEvent &event);
-  void on_scene_loaded(const SceneLoadedEvent &event);
 };
 
 } // namespace dc
