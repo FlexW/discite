@@ -63,24 +63,10 @@ public:
   void write(const std::vector<T> &data, std::size_t offset)
   {
     const auto size = data.size() * sizeof(T);
-    if ((offset + size) >= size_)
-    {
-      DC_FAIL(
-          "Can not write to buffer of size {} at offset {} {} bytes of data",
-          size_,
-          offset,
-          size);
-      return;
-    }
-
-    const auto mapped_data =
-        glMapNamedBufferRange(id_,
-                              offset,
-                              size,
-                              GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
-    std::memcpy(mapped_data, data.data(), size);
-    glUnmapNamedBuffer(id_);
+    write(data.data(), size, offset);
   }
+
+  void write(const void *data, std::size_t size, std::size_t offset);
 
   ~GlVertexBuffer();
 

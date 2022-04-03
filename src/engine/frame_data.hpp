@@ -29,8 +29,8 @@ struct SkinnedMeshInfo
 struct DebugLineInfo
 {
   glm::vec3 start_{};
-  glm::vec3 end_{};
   glm::vec3 start_color_{};
+  glm::vec3 end_{};
   glm::vec3 end_color_{};
 
   DebugLineInfo() = default;

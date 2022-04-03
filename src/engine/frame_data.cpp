@@ -9,8 +9,8 @@ DebugLineInfo::DebugLineInfo(glm::vec3 start,
                              glm::vec3 start_color,
                              glm::vec3 end_color)
     : start_{std::move(start)},
-      end_{std::move(end)},
       start_color_{std::move(start_color)},
+      end_{std::move(end)},
       end_color_{std::move(end_color)}
 {
 }

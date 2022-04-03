@@ -5,8 +5,11 @@
 #include "gl_framebuffer.hpp"
 #include "gl_shader.hpp"
 #include "gl_texture.hpp"
+#include "gl_vertex_array.hpp"
+#include "gl_vertex_buffer.hpp"
 #include "render_pass.hpp"
 #include "shadow_pass.hpp"
+#include <memory>
 
 namespace dc
 {
@@ -57,10 +60,15 @@ private:
   std::shared_ptr<GlTexture> white_texture_{};
   std::shared_ptr<GlCubeTexture> dummy_cube_texture_{};
 
+  std::shared_ptr<GlShader> line_shader_{};
   std::shared_ptr<GlShader> depth_only_shader_{};
   std::shared_ptr<GlShader> skinned_depth_only_shader_{};
   std::shared_ptr<GlShader> mesh_shader_{};
   std::shared_ptr<GlShader> skinned_mesh_shader_{};
+
+  static constexpr std::size_t    max_debug_lines_count{1024 * 8};
+  std::shared_ptr<GlVertexBuffer> lines_vertex_buffer_{};
+  std::shared_ptr<GlVertexArray>  lines_vertex_array_;
 
   std::shared_ptr<GlTexture> brdf_lut_texture_{};
 
@@ -109,6 +117,9 @@ private:
                              std::shared_ptr<GlTextureArray> shadow_tex_array,
                              const std::vector<glm::mat4> &light_space_matrices,
                              const std::vector<CascadeSplit> &cascade_frustums);
+
+  void render_debug_lines(const SceneRenderInfo &scene_render_info,
+                          const ViewRenderInfo  &view_render_info);
 
   void
   set_material(GlShader &shader, int &texture_slot, const Material &material);

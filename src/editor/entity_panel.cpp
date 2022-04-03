@@ -465,7 +465,7 @@ void EntityPanel::on_render()
     }
   }
 
-  if (entity_.has_component<SphereColliderComponent>())
+  if (entity_.has_component<CapsuleColliderComponent>())
   {
     ImGui::Separator();
     ImGui::Text("Capsule collider");

@@ -87,6 +87,7 @@ PhysicScene::PhysicScene()
   DC_ASSERT(scene_, "Could not create PhysX scene");
 
   create_regions();
+  set_debug_draw(is_debug_draw_);
 }
 
 PhysicScene::~PhysicScene()

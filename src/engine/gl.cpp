@@ -5,7 +5,7 @@
 namespace dc
 {
 
-void draw(const GlVertexArray &vertex_array, GLenum mode)
+void draw(const GlVertexArray &vertex_array, GLenum mode, long count)
 {
   vertex_array.bind();
 
@@ -16,10 +16,17 @@ void draw(const GlVertexArray &vertex_array, GLenum mode)
   }
   else
   {
-    glDrawArrays(mode, 0, vertex_array.vertex_count());
-  }
+    if (count == -1)
+    {
+      glDrawArrays(mode, 0, vertex_array.vertex_count());
+    }
+    else
+    {
+      glDrawArrays(mode, 0, count);
+    }
 
-  vertex_array.unbind();
+    vertex_array.unbind();
+  }
 }
 
 void compute(std::uint32_t x_size, std::uint32_t y_size, std::uint32_t z_size)

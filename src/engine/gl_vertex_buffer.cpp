@@ -54,4 +54,26 @@ void GlVertexBuffer::unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
 
 std::size_t GlVertexBuffer::size() const { return size_; }
 
+void GlVertexBuffer::write(const void *data,
+                           std::size_t size,
+                           std::size_t offset)
+{
+  if ((offset + size) > size_)
+  {
+    DC_FAIL("Can not write to buffer of size {}, {} bytes of data at offset {}",
+            size_,
+            size,
+            offset);
+    return;
+  }
+
+  const auto mapped_data =
+      glMapNamedBufferRange(id_,
+                            offset,
+                            size,
+                            GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
+  std::memcpy(mapped_data, data, size);
+  glUnmapNamedBuffer(id_);
+}
+
 } // namespace dc

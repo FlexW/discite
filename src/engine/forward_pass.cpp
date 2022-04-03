@@ -3,6 +3,8 @@
 #include "gl_shader.hpp"
 #include "gl_texture.hpp"
 #include "gl_texture_array.hpp"
+#include "gl_vertex_array.hpp"
+#include "gl_vertex_buffer.hpp"
 #include "log.hpp"
 #include "material.hpp"
 #include "render_pass.hpp"
@@ -19,6 +21,15 @@ namespace dc
 
 ForwardPass::ForwardPass()
 {
+  GlVertexBufferLayout line_layout;
+  line_layout.push_float(3);
+  line_layout.push_float(3);
+  lines_vertex_buffer_ = std::make_shared<GlVertexBuffer>(
+      max_debug_lines_count * sizeof(DebugLineInfo),
+      line_layout);
+  lines_vertex_array_ = std::make_shared<GlVertexArray>();
+  lines_vertex_array_->add_vertex_buffer(lines_vertex_buffer_);
+
   // dummy/placeholder texture
   std::vector<unsigned char> white_tex_data{255, 255, 255};
   GlTextureConfig            white_tex_config{};
@@ -828,6 +839,8 @@ void ForwardPass::execute(const SceneRenderInfo           &scene_render_info,
                         light_space_matrices,
                         cascade_frustums);
 
+  render_debug_lines(scene_render_info, view_render_info);
+
   scene_framebuffer_msaa_->unbind();
 
   // resolve msaa framebuffer info normal framebuffer
@@ -855,6 +868,9 @@ void ForwardPass::execute(const SceneRenderInfo           &scene_render_info,
 
 void ForwardPass::init_shaders()
 {
+  line_shader_ = std::make_shared<GlShader>();
+  line_shader_->init("shaders/line.vert", "shaders/line.frag");
+
   depth_only_shader_ = std::make_shared<GlShader>();
   depth_only_shader_->init("shaders/pbr.vert", "shaders/depth_only.frag");
 
@@ -1178,6 +1194,42 @@ ForwardPass::EnvMapData ForwardPass::env_map(const EnvironmentMap &env_map)
   }
 
   return iter->second;
+}
+
+void ForwardPass::render_debug_lines(const SceneRenderInfo &scene_render_info,
+                                     const ViewRenderInfo  &view_render_info)
+{
+  const auto &debug_lines = scene_render_info.debug_lines();
+  if (debug_lines.empty())
+  {
+    return;
+  }
+
+  line_shader_->bind();
+
+  line_shader_->set_uniform("projection_matrix",
+                            view_render_info.projection_matrix());
+  line_shader_->set_uniform("view_matrix", view_render_info.view_matrix());
+
+  long debug_lines_count = debug_lines.size();
+  long debug_lines_index{0};
+
+  while (debug_lines_count > 0)
+  {
+    const auto count =
+        std::min((static_cast<long>(debug_lines.size()) - debug_lines_index),
+                 static_cast<long>(max_debug_lines_count));
+
+    lines_vertex_buffer_->write(debug_lines.data() + debug_lines_index,
+                                count * sizeof(DebugLineInfo),
+                                0);
+    draw(*lines_vertex_array_, GL_LINES, count * 2);
+
+    debug_lines_count -= count;
+    debug_lines_index += count;
+  }
+
+  line_shader_->unbind();
 }
 
 } // namespace dc
