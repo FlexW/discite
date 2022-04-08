@@ -1,5 +1,6 @@
 #pragma once
 
+#include "asset_description.hpp"
 #include "gl_vertex_array.hpp"
 #include "material.hpp"
 #include "material_asset.hpp"
@@ -24,6 +25,25 @@ struct Vertex
   glm::vec2 tex_coords;
 };
 
+struct SubMeshDescription
+{
+  std::vector<Vertex>        vertices_;
+  std::vector<std::uint32_t> indices_;
+  std::string                material_name_;
+
+  void save(FILE *file) const;
+  void read(FILE *file);
+};
+
+struct MeshDescription
+{
+  std::vector<SubMeshDescription> sub_meshes_;
+
+  void             save(const std::filesystem::path &file_path,
+                        const AssetDescription      &asset_description) const;
+  AssetDescription read(const std::filesystem::path &file_path);
+};
+
 class SubMesh
 {
 public:
@@ -37,7 +57,7 @@ public:
   Material      *material() const;
 
 private:
-  std::unique_ptr<GlVertexArray> vertex_array_;
+  std::unique_ptr<GlVertexArray>       vertex_array_;
   std::shared_ptr<MaterialAssetHandle> material_;
 
   SubMesh(const SubMesh &) = delete;
@@ -54,7 +74,12 @@ public:
   void set_meshes(std::vector<std::unique_ptr<SubMesh>> meshes);
   std::vector<SubMesh *> meshes() const;
 
+  void            set_description(MeshDescription value);
+  MeshDescription get_description() const;
+
 private:
+  MeshDescription mesh_description_;
+
   std::vector<std::unique_ptr<SubMesh>> meshes_;
 };
 

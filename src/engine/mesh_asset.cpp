@@ -51,8 +51,9 @@ MeshAssetHandle::MeshAssetHandle(const std::filesystem::path &file_path,
       meshes.push_back(std::move(mesh));
     }
 
-    model_ = std::make_shared<Mesh>();
-    model_->set_meshes(std::move(meshes));
+    mesh_ = std::make_shared<Mesh>();
+    mesh_->set_meshes(std::move(meshes));
+    mesh_->set_description(std::move(mesh_description));
   }
   catch (const std::runtime_error &error)
   {
@@ -62,9 +63,9 @@ MeshAssetHandle::MeshAssetHandle(const std::filesystem::path &file_path,
   }
 }
 
-bool MeshAssetHandle::is_ready() const { return model_ != nullptr; }
+bool MeshAssetHandle::is_ready() const { return mesh_ != nullptr; }
 
-std::shared_ptr<Mesh> MeshAssetHandle::get() const { return model_; }
+std::shared_ptr<Mesh> MeshAssetHandle::get() const { return mesh_; }
 
 std::shared_ptr<AssetHandle>
 mesh_asset_loader(const std::filesystem::path &file_path, const Asset &asset)

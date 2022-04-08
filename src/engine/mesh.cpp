@@ -3,12 +3,10 @@
 #include "gl_index_buffer.hpp"
 #include "gl_texture.hpp"
 #include "gl_vertex_buffer.hpp"
-#include "glm/ext/matrix_float4x4.hpp"
-#include "glm/ext/matrix_transform.hpp"
-#include "glm/gtx/quaternion.hpp"
 #include "log.hpp"
 #include "material_asset.hpp"
 #include "math.hpp"
+#include "serialization.hpp"
 
 #include <assimp/Importer.hpp>
 #include <assimp/material.h>
@@ -23,6 +21,63 @@
 
 namespace dc
 {
+
+void SubMeshDescription::save(FILE *file) const
+{
+  write_vector(file, vertices_);
+  write_vector(file, indices_);
+  write_string(file, material_name_);
+}
+
+void SubMeshDescription::read(FILE *file)
+{
+  read_vector(file, vertices_);
+  read_vector(file, indices_);
+  read_string(file, material_name_);
+}
+
+void MeshDescription::save(const std::filesystem::path &file_path,
+                           const AssetDescription      &asset_description) const
+{
+  const auto file = std::fopen(file_path.string().c_str(), "wb");
+  if (!file)
+  {
+    throw std::runtime_error{"Could not open file " + file_path.string()};
+  }
+  defer(std::fclose(file));
+
+  asset_description.write(file);
+
+  write_value(file, static_cast<std::uint64_t>(sub_meshes_.size()));
+  for (const auto &sub_mesh : sub_meshes_)
+  {
+    sub_mesh.save(file);
+  }
+}
+
+AssetDescription MeshDescription::read(const std::filesystem::path &file_path)
+{
+  const auto file = std::fopen(file_path.string().c_str(), "rb");
+  if (!file)
+  {
+    throw std::runtime_error{"Could not open file " + file_path.string()};
+  }
+  defer(std::fclose(file));
+
+  AssetDescription asset_description;
+  asset_description.read(file);
+
+  std::uint64_t sub_meshes_count{};
+  read_value(file, sub_meshes_count);
+  for (std::uint64_t i = 0; i < sub_meshes_count; ++i)
+  {
+    SubMeshDescription sub_mesh_description{};
+    sub_mesh_description.read(file);
+    sub_meshes_.push_back(std::move(sub_mesh_description));
+  }
+
+  return asset_description;
+}
 
 SubMesh::SubMesh(std::unique_ptr<GlVertexArray>       vertex_array,
                  std::shared_ptr<MaterialAssetHandle> material)
@@ -79,5 +134,12 @@ void Mesh::set_meshes(std::vector<std::unique_ptr<SubMesh>> meshes)
 {
   meshes_ = std::move(meshes);
 }
+
+void Mesh::set_description(MeshDescription value)
+{
+  mesh_description_ = std::move(value);
+}
+
+MeshDescription Mesh::get_description() const { return mesh_description_; }
 
 } // namespace dc

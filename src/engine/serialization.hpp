@@ -1,5 +1,6 @@
 #pragma once
 
+#include "asset_description.hpp"
 #include "defer.hpp"
 #include "mesh.hpp"
 #include "skeleton.hpp"
@@ -90,16 +91,6 @@ void read_vector_complex(FILE *file, std::vector<T> &value)
   }
 }
 
-struct AssetDescription
-{
-  std::uint32_t magic_value_{0xdeadbeef};
-  std::uint32_t version_{0};
-  std::string   original_file_;
-
-  void write(FILE *file) const;
-  void read(FILE *file);
-};
-
 struct TextureDescription
 {
   std::vector<std::uint8_t> data_;
@@ -132,25 +123,6 @@ struct MaterialDescription
   void save(const std::filesystem::path &file_path,
             const AssetDescription      &asset_description) const;
 
-  AssetDescription read(const std::filesystem::path &file_path);
-};
-
-struct SubMeshDescription
-{
-  std::vector<Vertex>        vertices_;
-  std::vector<std::uint32_t> indices_;
-  std::string                material_name_;
-
-  void save(FILE *file) const;
-  void read(FILE *file);
-};
-
-struct MeshDescription
-{
-  std::vector<SubMeshDescription> sub_meshes_;
-
-  void             save(const std::filesystem::path &file_path,
-                        const AssetDescription      &asset_description) const;
   AssetDescription read(const std::filesystem::path &file_path);
 };
 

@@ -1,6 +1,7 @@
 #include "physx_sdk.hpp"
 #include "assert.hpp"
 #include "log.hpp"
+#include "physic/cooking_factory.hpp"
 #include "physic/physx_debugger.hpp"
 #include "physic/physx_helper.hpp"
 
@@ -137,17 +138,26 @@ PhysXSdk::PhysXSdk()
   cpu_dispatcher_ =
       physx::PxDefaultCpuDispatcherCreate(std::thread::hardware_concurrency());
 
+  CookingFactory::get_instance()->init(*foundation_, scale);
+
   physx::PxSetAssertHandler(assert_handler_);
 }
 
 PhysXSdk::~PhysXSdk()
 {
+  CookingFactory::get_instance()->shutdown();
+
   px_release(cpu_dispatcher_);
+
   PxCloseExtensions();
+
   const auto debugger = PhysXDebugger::get_instance();
   debugger->stop_debugging();
+
   px_release(physics_);
+
   debugger->shutdown();
+
   px_release(foundation_);
 }
 

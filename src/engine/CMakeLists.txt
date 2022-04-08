@@ -57,6 +57,7 @@ target_sources(engine PRIVATE
   gl_cube_texture.cpp
   gl_texture_view.cpp
   asset.cpp
+  asset_description.cpp
   mesh_asset.cpp
   skinned_mesh_asset.cpp
   env_map_asset.cpp

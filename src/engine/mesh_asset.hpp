@@ -20,7 +20,7 @@ public:
   std::shared_ptr<Mesh> get() const;
 
 private:
-  std::shared_ptr<Mesh> model_{};
+  std::shared_ptr<Mesh> mesh_{};
 };
 
 std::shared_ptr<AssetHandle>

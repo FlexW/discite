@@ -13,6 +13,8 @@ target_sources(game PRIVATE
   box_collider.cpp
   sphere_collider.cpp
   capsule_collider.cpp
+  cooking_factory.cpp
+  mesh_collider_data.cpp
   )
 
 target_link_libraries(game PUBLIC
