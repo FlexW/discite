@@ -33,8 +33,6 @@ public:
 
   void detach_from_actor(physx::PxRigidActor &actor) override;
 
-  std::string get_collider_name() const override;
-
 private:
   Entity entity_;
 

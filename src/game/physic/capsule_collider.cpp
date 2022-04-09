@@ -16,8 +16,11 @@ CapsuleCollider::CapsuleCollider(Entity               entity,
     : PhysicCollider{type},
       entity_{entity}
 {
-  const auto &capsule_collider_component =
+  auto &capsule_collider_component =
       entity_.component<CapsuleColliderComponent>();
+  DC_ASSERT(!capsule_collider_component.capsule_collider_,
+            "Capsule collider already set");
+  capsule_collider_component.capsule_collider_ = this;
 
   set_physic_material(capsule_collider_component.physic_material_);
 
@@ -108,11 +111,6 @@ bool CapsuleCollider::is_trigger() const
 void CapsuleCollider::detach_from_actor(physx::PxRigidActor &actor)
 {
   actor.detachShape(*shape_);
-}
-
-std::string CapsuleCollider::get_collider_name() const
-{
-  return "CapsuleCollider";
 }
 
 } // namespace dc

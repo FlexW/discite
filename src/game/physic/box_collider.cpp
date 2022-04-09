@@ -90,6 +90,4 @@ void BoxCollider::detach_from_actor(physx::PxRigidActor &actor)
   actor.detachShape(*shape_);
 }
 
-std::string BoxCollider::get_collider_name() const { return "BoxCollider"; }
-
 } // namespace dc

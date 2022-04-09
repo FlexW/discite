@@ -4,6 +4,11 @@ add_subdirectory(stb)
 add_subdirectory(fastdelegate)
 
 # GLFW
+if (USE_WAYLAND)
+  set(GLFW_USE_WAYLAND "ON" CACHE STRING "")
+else()
+  set(GLFW_USE_WAYLAND "OFF" CACHE STRING "")
+endif()
 set(GLFW_BUILD_EXAMPLES "OFF" CACHE STRING "")
 set(GLFW_BUILD_TESTS "OFF" CACHE STRING "")
 set(GLFW_BUILD_DOCS "OFF" CACHE STRING "")

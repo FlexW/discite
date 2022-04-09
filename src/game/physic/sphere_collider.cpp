@@ -16,8 +16,11 @@ SphereCollider::SphereCollider(Entity               entity,
     : PhysicCollider{type},
       entity_{entity}
 {
-  const auto &sphere_collider_component =
+  auto &sphere_collider_component =
       entity_.component<SphereColliderComponent>();
+  DC_ASSERT(!sphere_collider_component.sphere_collider_,
+            "Sphere collider already set");
+  sphere_collider_component.sphere_collider_ = this;
 
   set_physic_material(sphere_collider_component.physic_material_);
 
@@ -91,9 +94,4 @@ void SphereCollider::detach_from_actor(physx::PxRigidActor &actor)
   actor.detachShape(*shape_);
 }
 
-std::string SphereCollider::get_collider_name() const
-{
-  return "SphereCollider";
-}
-
-  } // namespace dc
+} // namespace dc

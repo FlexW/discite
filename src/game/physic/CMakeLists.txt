@@ -15,6 +15,7 @@ target_sources(game PRIVATE
   capsule_collider.cpp
   cooking_factory.cpp
   mesh_collider_data.cpp
+  mesh_collider.cpp
   )
 
 target_link_libraries(game PUBLIC

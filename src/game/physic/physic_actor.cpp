@@ -8,6 +8,8 @@
 #include "mesh_collider_component.hpp"
 #include "physic/box_collider.hpp"
 #include "physic/capsule_collider.hpp"
+#include "physic/mesh_collider.hpp"
+#include "physic/mesh_collider_data.hpp"
 #include "physic/sphere_collider.hpp"
 #include "physic_settings.hpp"
 #include "physx_helper.hpp"
@@ -573,10 +575,26 @@ void PhysicActor::add_capsule_collider(Entity entity, const glm::vec3 &offset)
       std::make_shared<CapsuleCollider>(entity, rigid_actor_, offset));
 }
 
-void PhysicActor::add_mesh_collider(Entity /*entity*/,
+void PhysicActor::add_mesh_collider(Entity entity,
                                     const glm::vec3 & /*offset*/)
 {
-  DC_FAIL("Not implemented");
+  const auto is_convex = entity.component<MeshColliderComponent>().is_convex_;
+
+  if (!is_convex && is_dynamic() && !is_kinematic())
+  {
+    DC_LOG_WARN("Can not add triangle mesh collider to dynamic non kinematic "
+                "rigid actor");
+    colliders_.push_back(
+        std::make_shared<MeshCollider>(entity,
+                                       rigid_actor_,
+                                       MeshColliderType::Convex));
+    return;
+  }
+
+  colliders_.push_back(std::make_shared<MeshCollider>(
+      entity,
+      rigid_actor_,
+      (is_convex ? MeshColliderType::Convex : MeshColliderType::Triangle)));
 }
 
 physx::PxRigidActor *PhysicActor::px_rigid_actor() const

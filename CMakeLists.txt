@@ -6,6 +6,8 @@ project(
   LANGUAGES CXX C
   )
 
+option(USE_WAYLAND "Compile for Wayland" OFF)
+
 # Include modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 

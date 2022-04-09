@@ -502,6 +502,22 @@ void EntityPanel::on_render()
   {
     ImGui::Separator();
     ImGui::Text("Mesh collider");
+    auto      &component = entity_.component<MeshColliderComponent>();
+    const auto collider  = component.mesh_collider_;
+    if (collider)
+    {
+      auto is_trigger = collider->is_trigger();
+      if (imgui_input("Trigger", is_trigger))
+      {
+        collider->set_trigger(is_trigger);
+      }
+      // if (imgui_input("Convex", component.is_convex_))
+      // {
+      //   DC_LOG_WARN("Changing mesh collider convex state is not supported
+      //   yet");
+      // }
+      draw_physic_material_properties(*collider);
+    }
   }
 }
 

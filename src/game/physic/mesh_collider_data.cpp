@@ -28,6 +28,9 @@ void MeshColliderData::save(const std::filesystem::path &file_path,
   defer(std::fclose(file));
 
   asset_description.write(file);
+  write_value(file,
+              static_cast<std::uint8_t>(
+                  collider_type_ == MeshColliderType::Convex ? 1 : 0));
   write_value(file, static_cast<std::uint64_t>(sub_meshes_.size()));
   for (const auto &sub_mesh : sub_meshes_)
   {
@@ -46,6 +49,17 @@ AssetDescription MeshColliderData::read(const std::filesystem::path &file_path)
 
   AssetDescription asset_description;
   asset_description.read(file);
+
+  std::uint8_t collider_type{};
+  read_value(file, collider_type);
+  if (collider_type == 0)
+  {
+    collider_type_ = MeshColliderType::Triangle;
+  }
+  else
+  {
+    collider_type_ = MeshColliderType::Convex;
+  }
 
   std::uint64_t sub_meshes_count{};
   read_value(file, sub_meshes_count);

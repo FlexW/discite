@@ -41,8 +41,6 @@ public:
 
   virtual void detach_from_actor(physx::PxRigidActor &actor) = 0;
 
-  virtual std::string get_collider_name() const = 0;
-
 private:
   PhysicColliderType physic_collider_type_;
   physx::PxMaterial *material_{};
