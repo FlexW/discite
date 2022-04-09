@@ -27,9 +27,8 @@ BoxCollider::BoxCollider(Entity               entity,
   set_physic_material(box_collider_component.physic_material_);
 
   const auto collider_size = entity_.scale() * box_collider_component.size_;
-  const auto geometry      = physx::PxBoxGeometry(collider_size.x / 2.0f,
-                                             collider_size.y / 2.0f,
-                                             collider_size.z / 2.0f);
+  const auto geometry =
+      physx::PxBoxGeometry(collider_size.x, collider_size.y, collider_size.z);
 
   shape_ = physx::PxRigidActorExt::createExclusiveShape(*physx_actor,
                                                         geometry,
@@ -44,9 +43,9 @@ BoxCollider::BoxCollider(Entity               entity,
 void BoxCollider::set_size(const glm::vec3 &size) {
   const auto collider_size = entity_.scale() * size;
 
-  const physx::PxBoxGeometry geometry{collider_size.x / 2.0f,
-                                      collider_size.y / 2.0f,
-                                      collider_size.z / 2.0f};
+  const physx::PxBoxGeometry geometry{collider_size.x,
+                                      collider_size.y,
+                                      collider_size.z};
 
   shape_->setGeometry(geometry);
 

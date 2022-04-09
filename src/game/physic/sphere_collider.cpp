@@ -50,8 +50,7 @@ void SphereCollider::set_radius(float value)
   const auto  largest_scale =
       std::max({actor_scale.x, actor_scale.y, actor_scale.z});
 
-  const auto geometry = physx::PxSphereGeometry(
-      largest_scale * sphere_collider_component.radius_);
+  const auto geometry = physx::PxSphereGeometry(largest_scale * value);
   shape_->setGeometry(geometry);
 
   sphere_collider_component.radius_ = value;
