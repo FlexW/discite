@@ -1,15 +1,18 @@
 #include "physic_scene.hpp"
 #include "assert.hpp"
+#include "character_controller.hpp"
 #include "entity.hpp"
 #include "frame_data.hpp"
-#include "physic/physic_actor.hpp"
-#include "physic/physic_controller.hpp"
-#include "physic/physic_settings.hpp"
-#include "physic/rigid_body_component.hpp"
+#include "log.hpp"
+#include "physic/character_controller_component.hpp"
+#include "physic/rigid_body.hpp"
+#include "physic_actor.hpp"
+#include "physic_settings.hpp"
 #include "physic_types.hpp"
 #include "physx_helper.hpp"
 #include "physx_sdk.hpp"
 #include "profiling.hpp"
+#include "rigid_body_component.hpp"
 
 #include <PxRigidDynamic.h>
 #include <PxSceneDesc.h>
@@ -108,16 +111,15 @@ void PhysicScene::update(float delta_time)
   }
 
   process_active_actors();
-  process_controllers();
 }
 
-PhysicActor *PhysicScene::create_actor(Entity entity)
+RigidBody *PhysicScene::create_rigid_body(Entity entity)
 {
   DC_PROFILE_SCOPE("PhysicScene::create_actor()");
 
   DC_ASSERT(scene_, "Scene is not set");
 
-  const auto existing_actor = get_actor(entity);
+  const auto existing_actor = get_rigid_body(entity);
   if (existing_actor)
   {
     return existing_actor;
@@ -127,7 +129,7 @@ PhysicActor *PhysicScene::create_actor(Entity entity)
             "Entity has no rigid body component");
   auto &rigid_body_component = entity.component<RigidBodyComponent>();
 
-  auto       actor     = std::make_unique<PhysicActor>(entity);
+  auto       actor     = std::make_unique<RigidBody>(entity);
   const auto actor_ptr = actor.get();
 
   rigid_body_component.physic_actor_ = actor_ptr;
@@ -138,7 +140,7 @@ PhysicActor *PhysicScene::create_actor(Entity entity)
   return actor_ptr;
 }
 
-PhysicActor *PhysicScene::get_actor(Entity entity)
+RigidBody *PhysicScene::get_rigid_body(Entity entity)
 {
   // TODO: Maybe could just use actor from component
 
@@ -151,7 +153,7 @@ PhysicActor *PhysicScene::get_actor(Entity entity)
   return nullptr;
 }
 
-void PhysicScene::remove_actor(Entity entity)
+void PhysicScene::remove_rigid_body(Entity entity)
 {
   DC_PROFILE_SCOPE("PhysicScene::remove_actor()");
 
@@ -159,16 +161,39 @@ void PhysicScene::remove_actor(Entity entity)
   actors_.erase(entity.id());
 }
 
-PhysicController *PhysicScene::create_controller(Entity /*entity*/)
+CharacterController *PhysicScene::create_controller(Entity entity)
 {
   DC_PROFILE_SCOPE("PhysicScene::create_controller()");
-  DC_FAIL("Not implemented");
+
+  DC_ASSERT(scene_, "Scene is not set");
+
+  const auto existing_controller = get_controller(entity);
+  if (existing_controller)
+  {
+    return existing_controller;
+  }
+
+  auto controller =
+      std::make_unique<CharacterController>(entity, *controller_manager_);
+  const auto controller_ptr = controller.get();
+
+  controllers_[entity.id()] = std::move(controller);
+
+  return controller_ptr;
 }
 
-PhysicController *PhysicScene::get_controller(Entity /*entity*/)
+CharacterController *PhysicScene::get_controller(Entity entity)
 {
+  // TODO: Maybe could just use actor from component
+
   DC_PROFILE_SCOPE("PhysicScene::get_controller()");
-  DC_FAIL("Not implemented");
+
+  const auto iter = controllers_.find(entity.id());
+  if (iter != controllers_.end())
+  {
+    return iter->second.get();
+  }
+  return nullptr;
 }
 
 void PhysicScene::remove_controller(Entity entity)
@@ -262,28 +287,26 @@ void PhysicScene::process_active_actors()
   const auto active_actors = scene_->getActiveActors(active_actors_count);
   for (unsigned i = 0; i < active_actors_count; ++i)
   {
-    // NOTE: We can guarantee that this is a PhysicsActor, because controllers
-    // aren't included in active actors
     const auto actor = static_cast<PhysicActor *>(active_actors[i]->userData);
     DC_ASSERT(actor, "Actor can't be nullptr");
-    if (!actor->is_sleeping())
+    if (actor->physic_actor_type() == PhysicActorType::RigidBody)
     {
-      actor->sync_transform();
+      const auto rigid_body = static_cast<RigidBody *>(actor);
+      if (!rigid_body->is_sleeping())
+      {
+        rigid_body->sync_transform();
+      }
     }
-  }
-}
-
-void PhysicScene::process_controllers()
-{
-  const auto controllers_count = controller_manager_->getNbControllers();
-  for (unsigned i = 0; i < controllers_count; ++i)
-  {
-    const auto px_controller       = controller_manager_->getController(i);
-    const auto px_controller_actor = px_controller->getActor();
-    const auto controller =
-        static_cast<PhysicController *>(px_controller_actor->userData);
-    DC_ASSERT(controller, "Controller can't be nullptr");
-    controller->sync_transform();
+    else if (actor->physic_actor_type() == PhysicActorType::CharacterController)
+    {
+      const auto character_controller =
+          static_cast<CharacterController *>(actor);
+      character_controller->sync_transform();
+    }
+    else
+    {
+      DC_FAIL("Unknown physic actor type");
+    }
   }
 }
 
@@ -343,7 +366,7 @@ void PhysicScene::remove_actor_from_scene(Entity entity)
 {
   DC_PROFILE_SCOPE("PhysicScene::remove_actor_from_scene()");
 
-  const auto actor = get_actor(entity);
+  const auto actor = get_rigid_body(entity);
   if (!actor)
   {
     return;
@@ -355,10 +378,18 @@ void PhysicScene::remove_actor_from_scene(Entity entity)
   scene_->removeActor(*actor->px_rigid_actor());
 }
 
-void PhysicScene::remove_controller_from_scene(Entity /*entity*/)
+void PhysicScene::remove_controller_from_scene(Entity entity)
 {
   DC_PROFILE_SCOPE("PhysicScene::remove_controller_from_scene()");
-  DC_FAIL("Not implemented");
+
+  const auto controller = get_controller(entity);
+  if (!controller)
+  {
+    return;
+  }
+
+  auto &component       = entity.component<CharacterControllerComponent>();
+  component.controller_ = nullptr;
 }
 
 } // namespace dc

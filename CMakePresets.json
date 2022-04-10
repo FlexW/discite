@@ -131,11 +131,11 @@
         },
         "CMAKE_CXX_FLAGS": {
           "type": "STRING",
-          "value": "-g -O1 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+          "value": "-g -O0 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
         },
         "CMAKE_C_FLAGS": {
           "type": "STRING",
-          "value": "-g -O1 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+          "value": "-g -O0 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
         },
         "DC_BIN_DIR": {
           "type": "STRING",
@@ -157,11 +157,11 @@
         },
         "CMAKE_CXX_FLAGS": {
           "type": "STRING",
-          "value": "-g -O1 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+          "value": "-g -O0 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
         },
         "CMAKE_C_FLAGS": {
           "type": "STRING",
-          "value": "-g -O1 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+          "value": "-g -O0 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
         },
         "DC_BIN_DIR": {
           "type": "STRING",

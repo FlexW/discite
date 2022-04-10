@@ -16,6 +16,8 @@ glm::vec3 to_glm(const physx::PxExtendedVec3 &value);
 
 physx::PxVec3 to_physx(const glm::vec3 &value);
 
+physx::PxExtendedVec3 to_physx_ext(const glm::vec3 &value);
+
 physx::PxVec4 to_physx(const glm::vec4 &value);
 
 physx::PxQuat to_physx(const glm::quat &value);

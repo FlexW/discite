@@ -1,5 +1,6 @@
 #pragma once
 
+#include "character_controller.hpp"
 #include "math.hpp"
 #include "physic_material.hpp"
 
@@ -17,7 +18,8 @@ struct BoxColliderComponent
 
   PhysicMaterial physic_material_{};
 
-  BoxCollider *box_collider_{};
+  BoxCollider         *box_collider_{};
+  CharacterController *character_controller_{};
 };
 
 } // namespace dc

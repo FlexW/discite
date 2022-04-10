@@ -5,8 +5,8 @@ target_sources(game PRIVATE
   physic_engine.cpp
   physic_scene.cpp
   physx_helper.cpp
-  physic_actor.cpp
-  physic_controller.cpp
+  rigid_body.cpp
+  character_controller.cpp
   physic_system.cpp
   physic_settings.cpp
   physic_collider.cpp

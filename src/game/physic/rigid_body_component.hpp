@@ -1,7 +1,7 @@
 #pragma once
 
 #include "math.hpp"
-#include "physic_actor.hpp"
+#include "rigid_body.hpp"
 
 namespace dc
 {
@@ -18,7 +18,7 @@ struct RigidBodyComponent
 
   bool is_gravity_disabled_{false};
 
-  PhysicActor *physic_actor_{};
+  RigidBody *physic_actor_{};
 };
 
 } // namespace dc

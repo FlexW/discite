@@ -12,6 +12,7 @@
 #include "name_component.hpp"
 #include "physic/box_collider_component.hpp"
 #include "physic/capsule_collider_component.hpp"
+#include "physic/character_controller_component.hpp"
 #include "physic/mesh_collider_component.hpp"
 #include "physic/rigid_body_component.hpp"
 #include "physic/sphere_collider_component.hpp"
@@ -50,6 +51,11 @@ Scene::Scene()
       .connect<&Scene::on_rigid_body_component_construct>(this);
   registry_.on_destroy<RigidBodyComponent>()
       .connect<&Scene::on_rigid_body_component_destroy>(this);
+
+  registry_.on_construct<CharacterControllerComponent>()
+      .connect<&Scene::on_character_controller_component_construct>(this);
+  registry_.on_destroy<CharacterControllerComponent>()
+      .connect<&Scene::on_character_controller_component_destroy>(this);
 
   registry_.on_construct<BoxColliderComponent>()
       .connect<&Scene::on_box_collider_component_construct>(this);
@@ -339,6 +345,20 @@ void Scene::on_rigid_body_component_destroy(entt::registry & /*registry*/,
                                             entt::entity entity)
 {
   fire_component_destroy_event(entity, ComponentType::RigidBody);
+}
+
+void Scene::on_character_controller_component_construct(
+    entt::registry & /*registry*/,
+    entt::entity entity)
+{
+  fire_component_construct_event(entity, ComponentType::CharacterController);
+}
+
+void Scene::on_character_controller_component_destroy(
+    entt::registry & /*registry*/,
+    entt::entity entity)
+{
+  fire_component_destroy_event(entity, ComponentType::CharacterController);
 }
 
 void Scene::on_box_collider_component_construct(entt::registry & /*registry*/,

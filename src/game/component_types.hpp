@@ -7,6 +7,7 @@ enum class ComponentType
 {
   Script,
   RigidBody,
+  CharacterController,
   BoxCollider,
   SphereCollider,
   CapsuleCollider,

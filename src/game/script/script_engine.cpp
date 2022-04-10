@@ -23,6 +23,8 @@ namespace
 {
 void dump_image(const std::string &assembly, MonoImage *image)
 {
+  DC_ASSERT(image, "No image set");
+
   DC_LOG_DEBUG("Dump {}", assembly);
 
   const auto table_info = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
@@ -42,6 +44,7 @@ void dump_image(const std::string &assembly, MonoImage *image)
 
     const auto mono_class =
         mono_class_from_name(image, namespace_name, class_name);
+    DC_ASSERT(mono_class, "No such class");
 
     void *iter = NULL;
     while (true)

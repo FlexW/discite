@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physic/physic_scene.hpp"
+#include "physic_scene.hpp"
 #include "scene.hpp"
 #include "scene_events.hpp"
 #include "system.hpp"

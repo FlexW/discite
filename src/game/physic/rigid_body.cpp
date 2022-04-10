@@ -1,21 +1,22 @@
-#include "physic_actor.hpp"
+#include "rigid_body.hpp"
 #include "assert.hpp"
+#include "box_collider.hpp"
 #include "box_collider_component.hpp"
+#include "capsule_collider.hpp"
 #include "capsule_collider_component.hpp"
 #include "entity.hpp"
 #include "log.hpp"
 #include "math.hpp"
+#include "mesh_collider.hpp"
 #include "mesh_collider_component.hpp"
-#include "physic/box_collider.hpp"
-#include "physic/capsule_collider.hpp"
-#include "physic/mesh_collider.hpp"
-#include "physic/mesh_collider_data.hpp"
-#include "physic/sphere_collider.hpp"
+#include "mesh_collider_data.hpp"
+#include "physic/physic_actor.hpp"
 #include "physic_settings.hpp"
 #include "physx_helper.hpp"
 #include "physx_sdk.hpp"
 #include "profiling.hpp"
 #include "rigid_body_component.hpp"
+#include "sphere_collider.hpp"
 #include "sphere_collider_component.hpp"
 #include "transform_component.hpp"
 
@@ -51,14 +52,20 @@ physx::PxForceMode::Enum to_physx(dc::ForceMode force_mode)
 namespace dc
 {
 
-PhysicActor::PhysicActor(Entity entity) : entity_{entity}
+RigidBody::RigidBody(Entity entity)
+    : PhysicActor{PhysicActorType::RigidBody},
+      entity_{entity}
 {
   DC_ASSERT(entity.has_component<RigidBodyComponent>(),
             "Entity has not rigid body component");
 
-  const auto &rigid_body_component = entity.component<RigidBodyComponent>();
+  auto       &rigid_body_component = entity.component<RigidBodyComponent>();
   const auto &settings             = default_physic_settings();
   const auto &sdk                  = PhysXSdk::get_instance()->get_physics();
+
+  DC_ASSERT(rigid_body_component.physic_actor_ == nullptr,
+            "A physic actor was already set");
+  rigid_body_component.physic_actor_ = this;
 
   rigid_body_type_ = rigid_body_component.body_type_;
   if (rigid_body_type_ == RigidBodyType::Static)
@@ -93,7 +100,7 @@ PhysicActor::PhysicActor(Entity entity) : entity_{entity}
   rigid_actor_->setName(entity.name().c_str());
 }
 
-PhysicActor::~PhysicActor()
+RigidBody::~RigidBody()
 {
   for (const auto &collider : colliders_)
   {
@@ -104,17 +111,19 @@ PhysicActor::~PhysicActor()
   rigid_actor_ = nullptr;
 }
 
-Entity PhysicActor::entity() const { return entity_; }
+Entity RigidBody::entity() const { return entity_; }
 
-void PhysicActor::sync_transform()
+void RigidBody::sync_transform()
 {
+  DC_ASSERT(rigid_actor_, "No rigid actor set");
+
   auto       &transform_component = entity_.component<TransformComponent>();
   const auto &actor_pose          = rigid_actor_->getGlobalPose();
   transform_component.set_absolute_position(to_glm(actor_pose.p));
   transform_component.set_absolute_rotation(to_glm(actor_pose.q));
 }
 
-void PhysicActor::set_translation(const glm::vec3 &value, bool autowake)
+void RigidBody::set_translation(const glm::vec3 &value, bool autowake)
 {
   auto transform = rigid_actor_->getGlobalPose();
   transform.p    = to_physx(value);
@@ -126,12 +135,12 @@ void PhysicActor::set_translation(const glm::vec3 &value, bool autowake)
   }
 }
 
-glm::vec3 PhysicActor::get_translation() const
+glm::vec3 RigidBody::get_translation() const
 {
   return to_glm(rigid_actor_->getGlobalPose().p);
 }
 
-void PhysicActor::set_rotation(const glm::vec3 &value, bool autowake)
+void RigidBody::set_rotation(const glm::vec3 &value, bool autowake)
 {
   auto transform = rigid_actor_->getGlobalPose();
   transform.q    = to_physx(glm::quat(value));
@@ -143,12 +152,12 @@ void PhysicActor::set_rotation(const glm::vec3 &value, bool autowake)
   }
 }
 
-glm::vec3 PhysicActor::get_rotation() const
+glm::vec3 RigidBody::get_rotation() const
 {
   return glm::eulerAngles(to_glm(rigid_actor_->getGlobalPose().q));
 }
 
-void PhysicActor::rotate(const glm::vec3 &value, bool autowake)
+void RigidBody::rotate(const glm::vec3 &value, bool autowake)
 {
   physx::PxTransform transform = rigid_actor_->getGlobalPose();
   transform.q *= (physx::PxQuat{glm::radians(value.x), {1.0f, 0.0f, 0.0f}} *
@@ -162,7 +171,7 @@ void PhysicActor::rotate(const glm::vec3 &value, bool autowake)
   }
 }
 
-void PhysicActor::wake_up()
+void RigidBody::wake_up()
 {
   if (is_dynamic())
   {
@@ -170,7 +179,7 @@ void PhysicActor::wake_up()
   }
 }
 
-void PhysicActor::put_to_sleep()
+void RigidBody::put_to_sleep()
 {
   if (is_dynamic())
   {
@@ -178,7 +187,7 @@ void PhysicActor::put_to_sleep()
   }
 }
 
-bool PhysicActor::is_sleeping() const
+bool RigidBody::is_sleeping() const
 {
   if (is_dynamic())
   {
@@ -187,7 +196,7 @@ bool PhysicActor::is_sleeping() const
   return false;
 }
 
-void PhysicActor::set_mass(float mass)
+void RigidBody::set_mass(float mass)
 {
   if (!is_dynamic())
   {
@@ -200,7 +209,7 @@ void PhysicActor::set_mass(float mass)
   physx::PxRigidBodyExt::setMassAndUpdateInertia(*actor, mass);
 }
 
-float PhysicActor::get_mass() const
+float RigidBody::get_mass() const
 {
   if (!is_dynamic())
   {
@@ -209,7 +218,7 @@ float PhysicActor::get_mass() const
   return rigid_actor_->is<physx::PxRigidDynamic>()->getMass();
 }
 
-float PhysicActor::get_inverse_mass() const
+float RigidBody::get_inverse_mass() const
 {
   if (!is_dynamic())
   {
@@ -218,7 +227,7 @@ float PhysicActor::get_inverse_mass() const
   return rigid_actor_->is<physx::PxRigidDynamic>()->getInvMass();
 }
 
-glm::mat4 PhysicActor::get_center_of_mass() const
+glm::mat4 RigidBody::get_center_of_mass() const
 {
   if (!is_dynamic())
   {
@@ -229,7 +238,7 @@ glm::mat4 PhysicActor::get_center_of_mass() const
   return to_glm(actor->getGlobalPose().transform(actor->getCMassLocalPose()));
 }
 
-glm::mat4 PhysicActor::get_local_center_of_mass() const
+glm::mat4 RigidBody::get_local_center_of_mass() const
 {
   if (!is_dynamic())
   {
@@ -238,7 +247,7 @@ glm::mat4 PhysicActor::get_local_center_of_mass() const
   return to_glm(rigid_actor_->is<physx::PxRigidDynamic>()->getCMassLocalPose());
 }
 
-void PhysicActor::add_force(const glm::vec3 &force, ForceMode force_mode)
+void RigidBody::add_force(const glm::vec3 &force, ForceMode force_mode)
 {
   DC_PROFILE_SCOPE("PhysicActor::add_force()");
 
@@ -254,7 +263,7 @@ void PhysicActor::add_force(const glm::vec3 &force, ForceMode force_mode)
   actor->addForce(to_physx(force), ::to_physx(force_mode));
 }
 
-void PhysicActor::add_torque(const glm::vec3 &torque, ForceMode force_mode)
+void RigidBody::add_torque(const glm::vec3 &torque, ForceMode force_mode)
 {
   DC_PROFILE_SCOPE("PhysicActor::add_torque()");
 
@@ -270,11 +279,11 @@ void PhysicActor::add_torque(const glm::vec3 &torque, ForceMode force_mode)
   actor->addTorque(to_physx(torque), ::to_physx(force_mode));
 }
 
-void PhysicActor::add_radial_impulse(const glm::vec3 &origin,
-                                     float            radius,
-                                     float            strength,
-                                     FalloffMode      falloff_mode,
-                                     bool             velocity_change)
+void RigidBody::add_radial_impulse(const glm::vec3 &origin,
+                                   float            radius,
+                                   float            strength,
+                                   FalloffMode      falloff_mode,
+                                   bool             velocity_change)
 {
   if (!is_dynamic() || is_kinematic())
   {
@@ -305,7 +314,7 @@ void PhysicActor::add_radial_impulse(const glm::vec3 &origin,
   add_force(impulse, mode);
 }
 
-void PhysicActor::set_linear_velocity(const glm::vec3 &value)
+void RigidBody::set_linear_velocity(const glm::vec3 &value)
 {
   if (!is_dynamic())
   {
@@ -316,7 +325,7 @@ void PhysicActor::set_linear_velocity(const glm::vec3 &value)
   rigid_actor_->is<physx::PxRigidDynamic>()->setLinearVelocity(to_physx(value));
 }
 
-glm::vec3 PhysicActor::get_linear_velocity() const
+glm::vec3 RigidBody::get_linear_velocity() const
 {
   if (!is_dynamic())
   {
@@ -329,7 +338,7 @@ glm::vec3 PhysicActor::get_linear_velocity() const
   return to_glm(actor->getLinearVelocity());
 }
 
-void PhysicActor::set_angular_velocity(const glm::vec3 &value)
+void RigidBody::set_angular_velocity(const glm::vec3 &value)
 {
   if (!is_dynamic())
   {
@@ -341,7 +350,7 @@ void PhysicActor::set_angular_velocity(const glm::vec3 &value)
       to_physx(value));
 }
 
-glm::vec3 PhysicActor::get_angular_velocity() const
+glm::vec3 RigidBody::get_angular_velocity() const
 {
   if (!is_dynamic())
   {
@@ -354,7 +363,7 @@ glm::vec3 PhysicActor::get_angular_velocity() const
   return to_glm(actor->getAngularVelocity());
 }
 
-void PhysicActor::set_max_linear_velocity(float value)
+void RigidBody::set_max_linear_velocity(float value)
 {
   if (!is_dynamic())
   {
@@ -366,7 +375,7 @@ void PhysicActor::set_max_linear_velocity(float value)
   rigid_actor_->is<physx::PxRigidDynamic>()->setMaxLinearVelocity(value);
 }
 
-float PhysicActor::get_max_linear_velocity() const
+float RigidBody::get_max_linear_velocity() const
 {
   if (!is_dynamic())
   {
@@ -380,7 +389,7 @@ float PhysicActor::get_max_linear_velocity() const
   return actor->getMaxLinearVelocity();
 }
 
-void PhysicActor::set_max_angular_velocity(float value)
+void RigidBody::set_max_angular_velocity(float value)
 {
   if (!is_dynamic())
   {
@@ -392,7 +401,7 @@ void PhysicActor::set_max_angular_velocity(float value)
   rigid_actor_->is<physx::PxRigidDynamic>()->setMaxAngularVelocity(value);
 }
 
-float PhysicActor::get_max_angular_velocity() const
+float RigidBody::get_max_angular_velocity() const
 {
   if (!is_dynamic())
   {
@@ -406,7 +415,7 @@ float PhysicActor::get_max_angular_velocity() const
   return actor->getMaxAngularVelocity();
 }
 
-void PhysicActor::set_linear_drag(float value)
+void RigidBody::set_linear_drag(float value)
 {
   if (!is_dynamic())
   {
@@ -418,7 +427,7 @@ void PhysicActor::set_linear_drag(float value)
   rigid_actor_->is<physx::PxRigidDynamic>()->setLinearDamping(value);
 }
 
-float PhysicActor::get_linear_drag() const
+float RigidBody::get_linear_drag() const
 {
   if (!is_dynamic())
   {
@@ -431,7 +440,7 @@ float PhysicActor::get_linear_drag() const
   return actor->getLinearDamping();
 }
 
-void PhysicActor::set_angular_drag(float value)
+void RigidBody::set_angular_drag(float value)
 {
   if (!is_dynamic())
   {
@@ -443,7 +452,7 @@ void PhysicActor::set_angular_drag(float value)
   rigid_actor_->is<physx::PxRigidDynamic>()->setAngularDamping(value);
 }
 
-float PhysicActor::get_angular_drag() const
+float RigidBody::get_angular_drag() const
 {
   if (!is_dynamic())
   {
@@ -456,8 +465,8 @@ float PhysicActor::get_angular_drag() const
   return actor->getAngularDamping();
 }
 
-void PhysicActor::set_kinematic_target(const glm::vec3 &target_position,
-                                       const glm::vec3 &target_rotation)
+void RigidBody::set_kinematic_target(const glm::vec3 &target_position,
+                                     const glm::vec3 &target_rotation)
 {
   if (!is_kinematic())
   {
@@ -471,7 +480,7 @@ void PhysicActor::set_kinematic_target(const glm::vec3 &target_position,
       to_physx_transform(target_position, target_rotation));
 }
 
-glm::vec3 PhysicActor::get_kinematic_target_position() const
+glm::vec3 RigidBody::get_kinematic_target_position() const
 {
   if (!is_kinematic())
   {
@@ -486,7 +495,7 @@ glm::vec3 PhysicActor::get_kinematic_target_position() const
   return to_glm(target.p);
 }
 
-glm::vec3 PhysicActor::get_kinematic_target_rotation() const
+glm::vec3 RigidBody::get_kinematic_target_rotation() const
 {
   if (!is_kinematic())
   {
@@ -501,12 +510,12 @@ glm::vec3 PhysicActor::get_kinematic_target_rotation() const
   return glm::eulerAngles(to_glm(target.q));
 }
 
-bool PhysicActor::is_dynamic() const
+bool RigidBody::is_dynamic() const
 {
   return rigid_body_type_ == RigidBodyType::Dynamic;
 }
 
-void PhysicActor::set_kinematic(bool value)
+void RigidBody::set_kinematic(bool value)
 {
   if (!is_dynamic())
   {
@@ -520,24 +529,24 @@ void PhysicActor::set_kinematic(bool value)
   entity_.component<RigidBodyComponent>().is_kinematic_ = value;
 }
 
-bool PhysicActor::is_kinematic() const
+bool RigidBody::is_kinematic() const
 {
   return is_dynamic() && entity_.component<RigidBodyComponent>().is_kinematic_;
 }
 
-void PhysicActor::set_gravity_disabled(bool value)
+void RigidBody::set_gravity_disabled(bool value)
 {
   rigid_actor_->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, value);
   entity_.component<RigidBodyComponent>().is_gravity_disabled_ = value;
 }
 
-bool PhysicActor::is_gravity_disabled() const
+bool RigidBody::is_gravity_disabled() const
 {
   return rigid_actor_->getActorFlags().isSet(
       physx::PxActorFlag::eDISABLE_GRAVITY);
 }
 
-void PhysicActor::add_collider(Entity entity, const glm::vec3 &offset)
+void RigidBody::add_collider(Entity entity, const glm::vec3 &offset)
 {
   if (entity.has_component<BoxColliderComponent>())
   {
@@ -557,26 +566,25 @@ void PhysicActor::add_collider(Entity entity, const glm::vec3 &offset)
   }
 }
 
-void PhysicActor::add_box_collider(Entity entity, const glm::vec3 &offset)
+void RigidBody::add_box_collider(Entity entity, const glm::vec3 &offset)
 {
   colliders_.push_back(
       std::make_shared<BoxCollider>(entity, rigid_actor_, offset));
 }
 
-void PhysicActor::add_sphere_collider(Entity entity, const glm::vec3 &offset)
+void RigidBody::add_sphere_collider(Entity entity, const glm::vec3 &offset)
 {
   colliders_.push_back(
       std::make_shared<SphereCollider>(entity, rigid_actor_, offset));
 }
 
-void PhysicActor::add_capsule_collider(Entity entity, const glm::vec3 &offset)
+void RigidBody::add_capsule_collider(Entity entity, const glm::vec3 &offset)
 {
   colliders_.push_back(
       std::make_shared<CapsuleCollider>(entity, rigid_actor_, offset));
 }
 
-void PhysicActor::add_mesh_collider(Entity entity,
-                                    const glm::vec3 & /*offset*/)
+void RigidBody::add_mesh_collider(Entity entity, const glm::vec3 & /*offset*/)
 {
   const auto is_convex = entity.component<MeshColliderComponent>().is_convex_;
 
@@ -597,9 +605,6 @@ void PhysicActor::add_mesh_collider(Entity entity,
       (is_convex ? MeshColliderType::Convex : MeshColliderType::Triangle)));
 }
 
-physx::PxRigidActor *PhysicActor::px_rigid_actor() const
-{
-  return rigid_actor_;
-}
+physx::PxRigidActor *RigidBody::px_rigid_actor() const { return rigid_actor_; }
 
 } // namespace dc

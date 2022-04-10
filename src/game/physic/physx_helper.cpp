@@ -1,5 +1,6 @@
 #include "physx_helper.hpp"
 
+#include <characterkinematic/PxExtended.h>
 #include <foundation/PxQuat.h>
 #include <foundation/PxVec3.h>
 #include <foundation/PxVec4.h>
@@ -23,6 +24,11 @@ glm::vec3 to_glm(const physx::PxExtendedVec3 &value)
 }
 
 physx::PxVec3 to_physx(const glm::vec3 &value)
+{
+  return {value.x, value.y, value.z};
+}
+
+physx::PxExtendedVec3 to_physx_ext(const glm::vec3 &value)
 {
   return {value.x, value.y, value.z};
 }

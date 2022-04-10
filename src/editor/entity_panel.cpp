@@ -4,7 +4,6 @@
 #include "directional_light_component.hpp"
 #include "engine.hpp"
 #include "env_map_asset.hpp"
-#include "imgui.h"
 #include "imgui.hpp"
 #include "imgui_panel.hpp"
 #include "mesh_component.hpp"
@@ -12,6 +11,7 @@
 #include "physic/box_collider_component.hpp"
 #include "physic/capsule_collider.hpp"
 #include "physic/capsule_collider_component.hpp"
+#include "physic/character_controller_component.hpp"
 #include "physic/mesh_collider_component.hpp"
 #include "physic/physic_actor.hpp"
 #include "physic/physic_collider.hpp"
@@ -185,6 +185,13 @@ void EntityPanel::on_render()
         if (ImGui::Selectable("Script"))
         {
           entity_.add_component<ScriptComponent>();
+        }
+      }
+      if (!entity_.has_component<CharacterControllerComponent>())
+      {
+        if (ImGui::Selectable("Character controller"))
+        {
+          entity_.add_component<CharacterControllerComponent>();
         }
       }
       if (!entity_.has_component<RigidBodyComponent>())
@@ -369,6 +376,36 @@ void EntityPanel::on_render()
     }
   }
 
+  if (entity_.has_component<CharacterControllerComponent>())
+  {
+    ImGui::Separator();
+    ImGui::Text("Character controller");
+
+    auto &component = entity_.component<CharacterControllerComponent>();
+
+    const auto controller = component.controller_;
+    if (controller)
+    {
+      auto slope_limit = component.slope_limit_degree_;
+      if (imgui_input("Slope limit", slope_limit))
+      {
+        controller->set_slope_limit(slope_limit);
+      }
+
+      auto step_offset = component.step_offset_;
+      if (imgui_input("Step offset", step_offset))
+      {
+        controller->set_step_offset(step_offset);
+      }
+
+      auto disable_gravity = component.disable_gravity_;
+      if (imgui_input("Disable gravity", disable_gravity))
+      {
+        controller->set_has_gravity(!disable_gravity);
+      }
+    }
+  }
+
   if (entity_.has_component<RigidBodyComponent>())
   {
     ImGui::Separator();
@@ -414,26 +451,41 @@ void EntityPanel::on_render()
     ImGui::Separator();
     ImGui::Text("Box collider");
     auto      &component = entity_.component<BoxColliderComponent>();
-    const auto collider  = component.box_collider_;
-    if (collider)
+    const auto box_collider         = component.box_collider_;
+    const auto character_controller = component.character_controller_;
+    if (box_collider)
     {
-      auto size = collider->get_size();
+      auto size = box_collider->get_size();
       if (imgui_input("Size", size))
       {
-        collider->set_size(size);
+        box_collider->set_size(size);
       }
-      auto offset = collider->get_offset();
+      auto offset = box_collider->get_offset();
       if (imgui_input("Offset", offset))
       {
-        collider->set_offset(offset);
+        box_collider->set_offset(offset);
       }
-      auto is_trigger = collider->is_trigger();
+      auto is_trigger = box_collider->is_trigger();
       if (imgui_input("Trigger", is_trigger))
       {
-        collider->set_trigger(is_trigger);
+        box_collider->set_trigger(is_trigger);
       }
 
-      draw_physic_material_properties(*collider);
+      draw_physic_material_properties(*box_collider);
+    }
+    else if (character_controller)
+    {
+      auto size = component.size_;
+      if (imgui_input("Size", size))
+      {
+        character_controller->set_size(size);
+      }
+
+      auto offset = component.offset_;
+      if (imgui_input("Offset", offset))
+      {
+        character_controller->set_offset(offset);
+      }
     }
   }
 
@@ -471,6 +523,7 @@ void EntityPanel::on_render()
     ImGui::Text("Capsule collider");
     auto      &component = entity_.component<CapsuleColliderComponent>();
     const auto collider  = component.capsule_collider_;
+    const auto character_controller = component.character_controller_;
     if (collider)
     {
       auto radius = collider->get_radius();
@@ -495,6 +548,26 @@ void EntityPanel::on_render()
       }
 
       draw_physic_material_properties(*collider);
+    }
+    else if (character_controller)
+    {
+      auto radius = component.radius_;
+      if (imgui_input("Radius", radius))
+      {
+        character_controller->set_radius(radius);
+      }
+
+      auto height = component.height_;
+      if (imgui_input("Height", height))
+      {
+        character_controller->set_height(height);
+      }
+
+      auto offset = component.offset_;
+      if (imgui_input("Offset", offset))
+      {
+        character_controller->set_offset(offset);
+      }
     }
   }
 

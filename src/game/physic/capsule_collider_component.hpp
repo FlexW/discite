@@ -1,7 +1,8 @@
 #pragma once
 
+#include "character_controller.hpp"
 #include "math.hpp"
-#include "physic/physic_material.hpp"
+#include "physic_material.hpp"
 
 namespace dc
 {
@@ -18,7 +19,8 @@ struct CapsuleColliderComponent
 
   PhysicMaterial physic_material_{};
 
-  CapsuleCollider *capsule_collider_{};
+  CapsuleCollider     *capsule_collider_{};
+  CharacterController *character_controller_{};
 };
 
 } // namespace dc

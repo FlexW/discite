@@ -67,6 +67,11 @@ private:
   void on_rigid_body_component_destroy(entt::registry &registry,
                                        entt::entity    entity);
 
+  void on_character_controller_component_construct(entt::registry &registry,
+                                                   entt::entity    entity);
+  void on_character_controller_component_destroy(entt::registry &registry,
+                                                 entt::entity    entity);
+
   void on_box_collider_component_construct(entt::registry &registry,
                                            entt::entity    entity);
   void on_box_collider_component_destroy(entt::registry &registry,

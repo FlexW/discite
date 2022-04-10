@@ -1,11 +1,12 @@
 #pragma once
 
+#include "character_controller.hpp"
 #include "entity.hpp"
 #include "math.hpp"
 #include "physic_actor.hpp"
-#include "physic_controller.hpp"
 #include "physic_types.hpp"
 #include "physx_contact_listener.hpp"
+#include "rigid_body.hpp"
 #include "uuid.hpp"
 
 #include <PxScene.h>
@@ -26,16 +27,15 @@ public:
 
   void update(float delta_time);
 
-  PhysicActor *create_actor(Entity entity);
-  PhysicActor *get_actor(Entity entity);
-  void         remove_actor(Entity entity);
+  RigidBody *create_rigid_body(Entity entity);
+  RigidBody *get_rigid_body(Entity entity);
+  void       remove_rigid_body(Entity entity);
 
-  PhysicController *create_controller(Entity entity);
-  PhysicController *get_controller(Entity entity);
-  void              remove_controller(Entity entity);
+  CharacterController *create_controller(Entity entity);
+  CharacterController *get_controller(Entity entity);
+  void                 remove_controller(Entity entity);
 
   void process_active_actors();
-  void process_controllers();
 
   void set_debug_draw(bool value);
   bool is_debug_draw() const;
@@ -45,8 +45,8 @@ public:
 private:
   bool is_debug_draw_{true};
 
-  std::unordered_map<Uuid, std::unique_ptr<PhysicActor>> actors_;
-  std::unordered_map<Uuid, std::unique_ptr<PhysicActor>> controllers_;
+  std::unordered_map<Uuid, std::unique_ptr<RigidBody>>           actors_;
+  std::unordered_map<Uuid, std::unique_ptr<CharacterController>> controllers_;
 
   physx::PxScene             *scene_{};
   physx::PxControllerManager *controller_manager_{};
