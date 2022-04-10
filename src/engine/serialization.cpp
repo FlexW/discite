@@ -39,6 +39,30 @@ void read_string(FILE *file, std::string &str)
   }
 }
 
+void write_string(std::ofstream &file, const std::string &str)
+{
+  const auto length = str.size();
+  file.write(reinterpret_cast<const char *>(&length), sizeof(std::uint32_t));
+  file.write(reinterpret_cast<const char *>(str.data()), sizeof(char) * length);
+}
+
+void read_string(std::ifstream &file, std::string &str)
+{
+  std::uint32_t length{};
+  file.read(reinterpret_cast<char *>(&length), sizeof(std::uint32_t));
+  if (length > 0)
+  {
+    std::vector<char> data(length + 1);
+    data[data.size() - 1] = '\0';
+    file.read(data.data(), sizeof(char) * length);
+    str = data.data();
+  }
+  else
+  {
+    str = "";
+  }
+}
+
 void TextureDescription::save(const std::filesystem::path &file_path,
                               const AssetDescription &asset_description) const
 {

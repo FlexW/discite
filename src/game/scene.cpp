@@ -485,4 +485,16 @@ void Scene::on_mesh_collider_component_destroy(entt::registry & /*registry*/,
   fire_component_destroy_event(entity, ComponentType::MeshCollider);
 }
 
+void Scene::on_audio_source_component_construct(entt::registry & /*registry*/,
+                                                entt::entity entity)
+{
+  fire_component_construct_event(entity, ComponentType::AudioSource);
+}
+
+void Scene::on_audio_source_component_destroy(entt::registry & /*registry*/,
+                                              entt::entity entity)
+{
+  fire_component_destroy_event(entity, ComponentType::AudioSource);
+}
+
 } // namespace dc

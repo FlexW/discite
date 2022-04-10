@@ -43,3 +43,4 @@ target_include_directories(game SYSTEM PUBLIC
 
 add_subdirectory(script)
 add_subdirectory(physic)
+add_subdirectory(audio)

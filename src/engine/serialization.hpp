@@ -8,6 +8,7 @@
 
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <memory>
 #include <stdexcept>
 #include <unordered_map>
@@ -21,16 +22,29 @@ std::filesystem::path normalize_path(const std::filesystem::path &path);
 void write_string(FILE *file, const std::string &str);
 void read_string(FILE *file, std::string &str);
 
+void write_string(std::ofstream &file, const std::string &str);
+void read_string(std::ifstream &file, std::string &str);
+
 template <typename T> void write_value(FILE *file, const T &value)
 {
   assert(file);
   std::fwrite(&value, sizeof(T), 1, file);
 }
 
+template <typename T> void write_value(std::ofstream &file, const T &value)
+{
+  file.write(reinterpret_cast<const char *>(&value), sizeof(T));
+}
+
 template <typename T> void read_value(FILE *file, T &value)
 {
   assert(file);
   std::fread(&value, sizeof(T), 1, file);
+}
+
+template <typename T> void read_value(std::ifstream &file, T &value)
+{
+  file.read(reinterpret_cast<char *>(&value), sizeof(T));
 }
 
 template <typename T> void write_vector(FILE *file, const std::vector<T> &value)

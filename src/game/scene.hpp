@@ -91,6 +91,11 @@ private:
                                             entt::entity    entity);
   void on_mesh_collider_component_destroy(entt::registry &registry,
                                           entt::entity    entity);
+
+  void on_audio_source_component_construct(entt::registry &registry,
+                                           entt::entity    entity);
+  void on_audio_source_component_destroy(entt::registry &registry,
+                                         entt::entity    entity);
 };
 
 } // namespace dc

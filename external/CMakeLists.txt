@@ -122,7 +122,7 @@ add_subdirectory(deps/src/spdlog)
 # Optick
 add_subdirectory(deps/src/optick)
 
-# # PhysX
+# PhysX
 set(TARGET_BUILD_PLATFORM "linux")
 set(PX_GENERATE_STATIC_LIBRARIES "ON" CACHE STRING "")
 set(PHYSX_ROOT_DIR ${CMAKE_SOURCE_DIR}/external/deps/src/physx/physx)
@@ -133,3 +133,15 @@ set(CMAKEMODULES_PATH ${PHYSX_ROOT_DIR}/../externals/cmakemodules)
 set(PX_OUTPUT_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/external/deps/src/physx/physx)
 set(PX_OUTPUT_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/external/deps/src/physx/physx)
 add_subdirectory(deps/src/physx/physx/source/compiler/cmake)
+
+# OpenAL
+set(ALSOFT_UTILS "OFF" CACHE STRING "")
+set(ALSOFT_NO_CONFIG_UTIL "ON" CACHE STRING "")
+set(ALSOFT_EXAMPLES "OFF" CACHE STRING "")
+set(ALSOFT_INSTALL "OFF" CACHE STRING "")
+set(ALSOFT_INSTALL_CONFIG "OFF" CACHE STRING "")
+set(ALSOFT_INSTALL_HRTF_DATA "OFF" CACHE STRING "")
+set(ALSOFT_INSTALL_AMBDEC_PRESETS "OFF" CACHE STRING "")
+set(ALSOFT_INSTALL_EXAMPLES "OFF" CACHE STRING "")
+set(ALSOFT_INSTALL_UTILS "OFF" CACHE STRING "")
+add_subdirectory(deps/src/openal)

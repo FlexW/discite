@@ -17,5 +17,7 @@ enum class ComponentType
   Mesh,
   SkinnedMesh,
   Sky,
+  AudioSource,
+  AudioListener,
 };
 }

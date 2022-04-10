@@ -95,6 +95,7 @@ target_link_libraries(engine PUBLIC
   fmt
   spdlog
   OptickCore
+  OpenAL
   )
 
 target_compile_features(engine PUBLIC cxx_std_17)

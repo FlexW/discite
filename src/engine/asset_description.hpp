@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <fstream>
 #include <string>
 
 namespace dc
@@ -14,7 +15,9 @@ struct AssetDescription
   std::string   original_file_;
 
   void write(FILE *file) const;
+  void write(std::ofstream &file) const;
   void read(FILE *file);
+  void read(std::ifstream &file);
 };
 
 } // namespace dc
