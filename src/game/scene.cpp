@@ -12,6 +12,7 @@
 #include "name_component.hpp"
 #include "physic/box_collider_component.hpp"
 #include "physic/capsule_collider_component.hpp"
+#include "physic/character_controller.hpp"
 #include "physic/character_controller_component.hpp"
 #include "physic/mesh_collider_component.hpp"
 #include "physic/rigid_body_component.hpp"
@@ -211,6 +212,42 @@ void Scene::save(const std::filesystem::path &file_path,
       entity.component<ScriptComponent>().save(file);
     }
 
+    if (entity.has_component<BoxColliderComponent>())
+    {
+      write_string(file, "*boxcollider*");
+      entity.component<BoxColliderComponent>().save(file);
+    }
+
+    if (entity.has_component<SphereColliderComponent>())
+    {
+      write_string(file, "*spherecollider*");
+      entity.component<SphereColliderComponent>().save(file);
+    }
+
+    if (entity.has_component<CapsuleColliderComponent>())
+    {
+      write_string(file, "*capsulecollider*");
+      entity.component<CapsuleColliderComponent>().save(file);
+    }
+
+    if (entity.has_component<MeshColliderComponent>())
+    {
+      write_string(file, "*meshcollider*");
+      entity.component<MeshColliderComponent>().save(file);
+    }
+
+    if (entity.has_component<RigidBodyComponent>())
+    {
+      write_string(file, "*rigidbody*");
+      entity.component<RigidBodyComponent>().save(file);
+    }
+
+    if (entity.has_component<CharacterControllerComponent>())
+    {
+      write_string(file, "*charactercontroller*");
+      entity.component<CharacterControllerComponent>().save(file);
+    }
+
     write_string(file, "*end*");
   }
 }
@@ -299,6 +336,43 @@ AssetDescription Scene::read(const std::filesystem::path &file_path)
         ScriptComponent component{};
         component.read(file);
         entity.add_component<ScriptComponent>(std::move(component));
+      }
+      else if (marker == "*boxcollider*")
+      {
+        BoxColliderComponent component{};
+        component.read(file);
+        entity.add_component<BoxColliderComponent>(std::move(component));
+      }
+      else if (marker == "*spherecollider*")
+      {
+        SphereColliderComponent component{};
+        component.read(file);
+        entity.add_component<SphereColliderComponent>(std::move(component));
+      }
+      else if (marker == "*capsulecollider*")
+      {
+        CapsuleColliderComponent component{};
+        component.read(file);
+        entity.add_component<CapsuleColliderComponent>(std::move(component));
+      }
+      else if (marker == "*meshcollider*")
+      {
+        MeshColliderComponent component{};
+        component.read(file);
+        entity.add_component<MeshColliderComponent>(std::move(component));
+      }
+      else if (marker == "*rigidbody*")
+      {
+        RigidBodyComponent component{};
+        component.read(file);
+        entity.add_component<RigidBodyComponent>(std::move(component));
+      }
+      else if (marker == "*charactercontroller*")
+      {
+        CharacterControllerComponent component{};
+        component.read(file);
+        entity.add_component<CharacterControllerComponent>(
+            std::move(component));
       }
       read_string(file, marker);
     }

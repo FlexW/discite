@@ -13,6 +13,9 @@ struct CharacterControllerComponent
   bool disable_gravity_{false};
 
   CharacterController *controller_{};
+
+  void save(FILE *file) const;
+  void read(FILE *file);
 };
 
 } // namespace dc

@@ -21,6 +21,9 @@ struct CapsuleColliderComponent
 
   CapsuleCollider     *capsule_collider_{};
   CharacterController *character_controller_{};
+
+  void save(FILE *file) const;
+  void read(FILE *file);
 };
 
 } // namespace dc

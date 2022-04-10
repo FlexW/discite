@@ -19,6 +19,9 @@ struct RigidBodyComponent
   bool is_gravity_disabled_{false};
 
   RigidBody *physic_actor_{};
+
+  void save(FILE *file) const;
+  void read(FILE *file);
 };
 
 } // namespace dc

@@ -18,6 +18,9 @@ struct SphereColliderComponent
   PhysicMaterial physic_material_{};
 
   SphereCollider *sphere_collider_{};
+
+  void save(FILE *file) const;
+  void read(FILE *file);
 };
 
 } // namespace dc

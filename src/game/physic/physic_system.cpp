@@ -82,6 +82,12 @@ void PhysicSystem::on_scene_unloaded(const SceneUnloadedEvent & /*event*/)
 
 void PhysicSystem::on_component_construct(const ComponentConstructEvent &event)
 {
+  const auto scene = scene_.lock();
+  if (!scene)
+  {
+    return;
+  }
+
   if (event.component_type_ == ComponentType::RigidBody)
   {
     physic_scene_->create_rigid_body(event.entity_);
@@ -112,6 +118,12 @@ void PhysicSystem::on_component_construct(const ComponentConstructEvent &event)
 
 void PhysicSystem::on_component_destroy(const ComponentDestroyEvent &event)
 {
+  const auto scene = scene_.lock();
+  if (!scene)
+  {
+    return;
+  }
+
   if (event.component_type_ == ComponentType::RigidBody)
   {
     physic_scene_->remove_rigid_body(event.entity_);
