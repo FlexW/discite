@@ -1,7 +1,7 @@
-add_subdirectory(glad)
-add_subdirectory(deps/src/glm)
-add_subdirectory(stb)
-add_subdirectory(fastdelegate)
+add_subdirectory(glad EXCLUDE_FROM_ALL)
+add_subdirectory(deps/src/glm EXCLUDE_FROM_ALL)
+add_subdirectory(stb EXCLUDE_FROM_ALL)
+add_subdirectory(fastdelegate EXCLUDE_FROM_ALL)
 
 # GLFW
 if (USE_WAYLAND)
@@ -12,9 +12,9 @@ endif()
 set(GLFW_BUILD_EXAMPLES "OFF" CACHE STRING "")
 set(GLFW_BUILD_TESTS "OFF" CACHE STRING "")
 set(GLFW_BUILD_DOCS "OFF" CACHE STRING "")
-set(GLFW_BUILD_INSTALL "OFF" CACHE STRING "")
+set(GLFW_INSTALL "OFF" CACHE STRING "")
 set(BUILD_SHARED_LIBS "OFF" CACHE STRING "")
-add_subdirectory(deps/src/glfw)
+add_subdirectory(deps/src/glfw EXCLUDE_FROM_ALL)
 
 # Assimp
 set(ASSIMP_BUILD_ZLIB "ON" CACHE STRING "")
@@ -70,7 +70,7 @@ set(ASSIMP_BUILD_X_IMPORTER "OFF" CACHE STRING "")
 set(ASSIMP_BUILD_X3D_IMPORTER "OFF" CACHE STRING "")
 set(ASSIMP_BUILD_3MF_IMPORTER "OFF" CACHE STRING "")
 set(ASSIMP_BUILD_MMD_IMPORTER "OFF" CACHE STRING "")
-add_subdirectory(deps/src/assimp)
+add_subdirectory(deps/src/assimp EXCLUDE_FROM_ALL)
 
 # ImGui
 add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
@@ -96,11 +96,11 @@ target_sources(imguizmo PRIVATE
 target_include_directories(imguizmo PUBLIC deps/src/imgui deps/src/imguizmo)
 
 # EnTT
-add_subdirectory(deps/src/entt)
+add_subdirectory(deps/src/entt EXCLUDE_FROM_ALL)
 
 # gli
 set(GLI_TEST_ENABLE "OFF" CACHE STRING "")
-add_subdirectory(deps/src/gli)
+add_subdirectory(deps/src/gli EXCLUDE_FROM_ALL)
 
 # RapidJSON
 set(RAPIDJSON_BUILD_DOC "OFF" CACHE STRING "")
@@ -113,14 +113,14 @@ set_property(TARGET rapidjson PROPERTY
     INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/deps/src/rapidjson/include)
 
 # Fmt
-add_subdirectory(deps/src/fmt)
+add_subdirectory(deps/src/fmt EXCLUDE_FROM_ALL)
 
 # spdlog
 set(SPDLOG_FMT_EXTERNAL "ON" CACHE STRING "")
-add_subdirectory(deps/src/spdlog)
+add_subdirectory(deps/src/spdlog EXCLUDE_FROM_ALL)
 
 # Optick
-add_subdirectory(deps/src/optick)
+add_subdirectory(deps/src/optick EXCLUDE_FROM_ALL)
 
 # PhysX
 set(TARGET_BUILD_PLATFORM "linux")
@@ -132,9 +132,10 @@ set(CMAKEMODULES_VERSION "1.27")
 set(CMAKEMODULES_PATH ${PHYSX_ROOT_DIR}/../externals/cmakemodules)
 set(PX_OUTPUT_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/external/deps/src/physx/physx)
 set(PX_OUTPUT_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/external/deps/src/physx/physx)
-add_subdirectory(deps/src/physx/physx/source/compiler/cmake)
+add_subdirectory(deps/src/physx/physx/source/compiler/cmake EXCLUDE_FROM_ALL)
 
 # OpenAL
+set(LIBTYPE "STATIC" CACHE STRING "")
 set(ALSOFT_UTILS "OFF" CACHE STRING "")
 set(ALSOFT_NO_CONFIG_UTIL "ON" CACHE STRING "")
 set(ALSOFT_EXAMPLES "OFF" CACHE STRING "")
@@ -144,4 +145,4 @@ set(ALSOFT_INSTALL_HRTF_DATA "OFF" CACHE STRING "")
 set(ALSOFT_INSTALL_AMBDEC_PRESETS "OFF" CACHE STRING "")
 set(ALSOFT_INSTALL_EXAMPLES "OFF" CACHE STRING "")
 set(ALSOFT_INSTALL_UTILS "OFF" CACHE STRING "")
-add_subdirectory(deps/src/openal)
+add_subdirectory(deps/src/openal EXCLUDE_FROM_ALL)

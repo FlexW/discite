@@ -13,7 +13,7 @@
       "displayName": "Clang Release",
       "description": "Clang Release config",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/clang_release",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_C_COMPILER": {
           "type": "STRING",
@@ -34,10 +34,6 @@
         "WERROR": {
           "type": "BOOL",
           "value": "ON"
-        },
-        "DC_BIN_DIR": {
-          "type": "STRING",
-          "value": "clang_release"
         }
       },
       "warnings": {
@@ -50,7 +46,7 @@
       "displayName": "GCC Release",
       "description": "GCC Release config",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/gcc_release",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_C_COMPILER": {
           "type": "STRING",
@@ -71,10 +67,6 @@
         "WERROR": {
           "type": "BOOL",
           "value": "OFF"
-        },
-        "DC_BIN_DIR": {
-          "type": "STRING",
-          "value": "gcc_release"
         }
       },
       "warnings": {
@@ -87,15 +79,11 @@
       "displayName": "Clang Debug",
       "description": "Clang Debug config",
       "inherits": "clang_release",
-      "binaryDir": "${sourceDir}/build/clang_debug",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": {
           "type": "STRING",
           "value": "Debug"
-        },
-        "DC_BIN_DIR": {
-          "type": "STRING",
-          "value": "clang_debug"
         }
       }
     },
@@ -105,15 +93,11 @@
       "displayName": "GCC Debug",
       "description": "GCC Debug config",
       "inherits": "gcc_release",
-      "binaryDir": "${sourceDir}/build/gcc_debug",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": {
           "type": "STRING",
           "value": "Debug"
-        },
-        "DC_BIN_DIR": {
-          "type": "STRING",
-          "value": "gcc_debug"
         }
       }
     },
@@ -123,7 +107,7 @@
       "displayName": "Clang Asan",
       "description": "Clang Asan config",
       "inherits": "clang_release",
-      "binaryDir": "${sourceDir}/build/clang_asan",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": {
           "type": "STRING",
@@ -136,10 +120,6 @@
         "CMAKE_C_FLAGS": {
           "type": "STRING",
           "value": "-g -O0 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
-        },
-        "DC_BIN_DIR": {
-          "type": "STRING",
-          "value": "clang_asan"
         }
       }
     },
@@ -149,7 +129,7 @@
       "displayName": "GCC Asan",
       "description": "GCC Asan config",
       "inherits": "gcc_release",
-      "binaryDir": "${sourceDir}/build/gcc_asan",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": {
           "type": "STRING",
@@ -162,10 +142,6 @@
         "CMAKE_C_FLAGS": {
           "type": "STRING",
           "value": "-g -O0 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls"
-        },
-        "DC_BIN_DIR": {
-          "type": "STRING",
-          "value": "gcc_asan"
         }
       }
     },
@@ -175,7 +151,7 @@
       "displayName": "MSVC Debug",
       "description": "MSVC Debug config",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/msvc_debug",
+      "binaryDir": "${sourceDir}/build",
       "architecture": {
         "value": "x64",
         "strategy": "external"
@@ -192,10 +168,6 @@
         "WERROR": {
           "type": "BOOL",
           "value": "OFF"
-        },
-        "DC_BIN_DIR": {
-          "type": "STRING",
-          "value": "msvc_debug"
         }
       },
       "vendor": {
@@ -210,7 +182,7 @@
       "displayName": "MSVC Release",
       "description": "MSVC Release build",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/msvc_release",
+      "binaryDir": "${sourceDir}/build",
       "architecture": {
         "value": "x64",
         "strategy": "external"
@@ -227,10 +199,6 @@
         "WERROR": {
           "type": "BOOL",
           "value": "OFF"
-        },
-        "DC_BIN_DIR": {
-          "type": "STRING",
-          "value": "msvc_release"
         }
       },
       "vendor": {

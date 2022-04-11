@@ -3,7 +3,7 @@
     <AssemblyName>Game</AssemblyName>
     <OutputPath>../../scripts/</OutputPath>
     <OutputType>Library</OutputType>
-    <LibPath>../../../bin/clang_debug/</LibPath>
+    <LibPath>../../../bin/</LibPath>
     <RuntimeAssembly>DisciteRuntime.dll</RuntimeAssembly>
   </PropertyGroup>
   <ItemGroup>

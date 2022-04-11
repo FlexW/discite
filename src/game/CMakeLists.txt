@@ -41,6 +41,20 @@ target_include_directories(game SYSTEM PUBLIC
   ${MONO_INCLUDE_DIRS}
   )
 
+# Generate script runtime
+file(GLOB SCRIPT_RUNTIME_FILES ${CMAKE_SOURCE_DIR}/script_runtime/*.cs)
+
+add_custom_command(OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DisciteRuntime.dll
+    COMMENT "Generate script runtime"
+    COMMAND msbuild ${CMAKE_SOURCE_DIR}/script_runtime/DisciteRuntime.csproj
+    DEPENDS ${SCRIPT_RUNTIME_FILES}
+)
+# Need to create a custom target for generating script runtime
+add_custom_target(script_runtime ALL
+  DEPENDS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DisciteRuntime.dll
+)
+
+
 add_subdirectory(script)
 add_subdirectory(physic)
 add_subdirectory(audio)

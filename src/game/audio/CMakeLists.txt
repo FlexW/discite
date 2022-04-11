@@ -9,3 +9,7 @@ target_sources(game PRIVATE
   audio_asset.cpp
   audio_system.cpp
   )
+
+# We use the static version of OpenAL
+target_compile_definitions(game PUBLIC
+  AL_LIBTYPE_STATIC)

@@ -12,13 +12,8 @@ option(USE_WAYLAND "Compile for Wayland" OFF)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 # Set binary output paths
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${DC_BIN_DIR})
-
-# It's not optimal that the file gets created in the tree.
-# However, I have no better idea
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/script_runtime/DisciteRuntime.csproj.in
-  ${CMAKE_CURRENT_SOURCE_DIR}/script_runtime/DisciteRuntime.csproj)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/)
 
 # Colored compiler output
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
