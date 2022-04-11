@@ -1,5 +1,7 @@
 #include "game_layer.hpp"
 #include "animation_system.hpp"
+#include "audio/audio_asset.hpp"
+#include "audio/audio_system.hpp"
 #include "camera_component.hpp"
 #include "camera_system.hpp"
 #include "directional_light_component.hpp"
@@ -25,6 +27,7 @@ void add_systems(dc::SystemsContext &system_context)
   system_context.add_system<dc::CameraSystem>();
   system_context.add_system<dc::PhysicSystem>();
   system_context.add_system<dc::AnimationSystem>();
+  system_context.add_system<dc::AudioSystem>();
   system_context.add_system<dc::RenderSystem>();
 }
 
@@ -39,6 +42,8 @@ void GameLayer::register_asset_loaders()
 {
   Engine::instance()->asset_cache()->register_asset_loader(".dcscn",
                                                            scene_asset_loader);
+  Engine::instance()->asset_cache()->register_asset_loader(".dcaud",
+                                                           audio_asset_loader);
 }
 
 void GameLayer::init()

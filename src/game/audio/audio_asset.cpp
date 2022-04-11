@@ -1,7 +1,7 @@
 #include "audio_asset.hpp"
 #include "asset_handle.hpp"
-#include "audio/audio_engine.hpp"
 #include "audio_buffer.hpp"
+#include "audio_engine.hpp"
 #include "log.hpp"
 #include "wav_file.hpp"
 
@@ -26,7 +26,7 @@ AudioAssetHandle::AudioAssetHandle(const std::filesystem::path &file_path,
     const auto bits_per_sample = wav_file.bits_per_sample_;
 
     DC_LOG_DEBUG("Wav file {} has {} channels and {} bits per sample",
-                 file_path,
+                 file_path.string(),
                  channels,
                  bits_per_sample);
 
@@ -52,7 +52,7 @@ AudioAssetHandle::AudioAssetHandle(const std::filesystem::path &file_path,
     }
     else
     {
-      DC_LOG_WARN(
+      DC_LOG_ERROR(
           "Unrecognized audio format with channels {} and sample rate {} in {}",
           channels,
           bits_per_sample,

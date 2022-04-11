@@ -1,9 +1,12 @@
 #include "entity_panel.hpp"
+#include "audio/audio_listener_component.hpp"
+#include "audio/audio_source_component.hpp"
 #include "camera_component.hpp"
 #include "component_types.hpp"
 #include "directional_light_component.hpp"
 #include "engine.hpp"
 #include "env_map_asset.hpp"
+#include "imgui.h"
 #include "imgui.hpp"
 #include "imgui_panel.hpp"
 #include "mesh_component.hpp"
@@ -233,6 +236,20 @@ void EntityPanel::on_render()
           entity_.add_component<MeshColliderComponent>();
         }
       }
+      if (!entity_.has_component<AudioListenerComponent>())
+      {
+        if (ImGui::Selectable("Audio listener"))
+        {
+          entity_.add_component<AudioListenerComponent>();
+        }
+      }
+      if (!entity_.has_component<AudioSourceComponent>())
+      {
+        if (ImGui::Selectable("Audio source"))
+        {
+          entity_.add_component<AudioSourceComponent>();
+        }
+      }
       ImGui::EndPopup();
     }
   }
@@ -450,7 +467,7 @@ void EntityPanel::on_render()
   {
     ImGui::Separator();
     ImGui::Text("Box collider");
-    auto      &component = entity_.component<BoxColliderComponent>();
+    auto      &component            = entity_.component<BoxColliderComponent>();
     const auto box_collider         = component.box_collider_;
     const auto character_controller = component.character_controller_;
     if (box_collider)
@@ -590,6 +607,77 @@ void EntityPanel::on_render()
       //   yet");
       // }
       draw_physic_material_properties(*collider);
+    }
+  }
+
+  if (entity_.has_component<AudioListenerComponent>())
+  {
+    ImGui::Separator();
+    ImGui::Text("Audio listener");
+    auto &component = entity_.component<AudioListenerComponent>();
+    imgui_input("Active", component.active_);
+  }
+
+  if (entity_.has_component<AudioSourceComponent>())
+  {
+    ImGui::Separator();
+    ImGui::Text("Audio source");
+    auto &component = entity_.component<AudioSourceComponent>();
+
+    std::string audio_name;
+    if (component.audio_asset_)
+    {
+      audio_name = component.audio_asset_->asset().id();
+    }
+
+    auto gain = component.gain_;
+    if (imgui_input("Gain", gain))
+    {
+      component.audio_source_->set_gain(gain);
+    }
+
+    auto pitch = component.pitch_;
+    if (imgui_input("Pitch", pitch))
+    {
+      component.audio_source_->set_pitch(pitch);
+    }
+
+    auto looping = component.looping_;
+    if (imgui_input("Looping", looping))
+    {
+      component.audio_source_->set_looping(looping);
+    }
+
+    auto velocity = component.velocity_;
+    if (imgui_input("Velocity", velocity))
+    {
+      component.audio_source_->set_velocity(velocity);
+    }
+
+    imgui_input("Start on create", component.start_on_create_);
+
+    if (imgui_input("Audio asset",
+                    audio_name,
+                    ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+      auto handle =
+          Engine::instance()->asset_cache()->load_asset(Asset{audio_name});
+      component.audio_asset_ =
+          std::dynamic_pointer_cast<AudioAssetHandle>(handle);
+      if (component.audio_asset_ && component.audio_asset_->is_ready())
+      {
+        component.audio_source_->set_buffer(component.audio_asset_->get());
+      }
+    }
+
+    if (ImGui::Button("Play"))
+    {
+      component.audio_source_->play();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Stop"))
+    {
+      component.audio_source_->stop();
     }
   }
 }

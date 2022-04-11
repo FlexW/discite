@@ -15,8 +15,9 @@ class AudioEngine
 {
 public:
   static AudioEngine *get_instance();
+  ~AudioEngine();
 
-  std::shared_ptr<AudioSource> create_source() const;
+  std::shared_ptr<AudioSource> create_source(Entity entity) const;
 
   std::shared_ptr<AudioBuffer>
   create_buffer(const AudioBufferInfo &audio_buffer_info) const;
@@ -26,7 +27,6 @@ public:
 
 private:
   AudioEngine();
-  ~AudioEngine();
 
   ALCdevice  *open_al_device_{};
   ALCcontext *open_al_context_{};

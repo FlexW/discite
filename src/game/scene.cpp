@@ -1,4 +1,6 @@
 #include "scene.hpp"
+#include "audio/audio_listener_component.hpp"
+#include "audio/audio_source_component.hpp"
 #include "camera_component.hpp"
 #include "component_types.hpp"
 #include "directional_light_component.hpp"
@@ -77,6 +79,11 @@ Scene::Scene()
       .connect<&Scene::on_mesh_collider_component_construct>(this);
   registry_.on_destroy<MeshColliderComponent>()
       .connect<&Scene::on_mesh_collider_component_destroy>(this);
+
+  registry_.on_construct<AudioSourceComponent>()
+      .connect<&Scene::on_audio_source_component_construct>(this);
+  registry_.on_destroy<AudioSourceComponent>()
+      .connect<&Scene::on_audio_source_component_destroy>(this);
 }
 
 Entity Scene::create_entity(const std::string &name)
@@ -248,6 +255,18 @@ void Scene::save(const std::filesystem::path &file_path,
       entity.component<CharacterControllerComponent>().save(file);
     }
 
+    if (entity.has_component<AudioSourceComponent>())
+    {
+      write_string(file, "*audiosource*");
+      entity.component<AudioSourceComponent>().save(file);
+    }
+
+    if (entity.has_component<AudioListenerComponent>())
+    {
+      write_string(file, "*audiolistener*");
+      entity.component<AudioListenerComponent>().save(file);
+    }
+
     write_string(file, "*end*");
   }
 }
@@ -373,6 +392,18 @@ AssetDescription Scene::read(const std::filesystem::path &file_path)
         component.read(file);
         entity.add_component<CharacterControllerComponent>(
             std::move(component));
+      }
+      else if (marker == "*audiosource*")
+      {
+        AudioSourceComponent component{};
+        component.read(file);
+        entity.add_component<AudioSourceComponent>(std::move(component));
+      }
+      else if (marker == "*audiolistener*")
+      {
+        AudioListenerComponent component{};
+        component.read(file);
+        entity.add_component<AudioListenerComponent>(std::move(component));
       }
       read_string(file, marker);
     }

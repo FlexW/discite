@@ -41,6 +41,9 @@ public:
   void save(const std::filesystem::path &file_path,
             const AssetDescription      &asset_description) const;
   AssetDescription read(const std::filesystem::path &file_path);
+
+private:
+  void load_wav(const std::filesystem::path &file_path, std::ifstream &in);
 };
 
 } // namespace dc

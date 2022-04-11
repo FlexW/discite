@@ -160,36 +160,6 @@ bool load_wav_file_header(std::ifstream &file,
   return true;
 }
 
-std::unique_ptr<WavFile> load_wav(const std::filesystem::path &file_path,
-                                  std::ifstream               &in)
-{
-
-  if (!in.is_open())
-  {
-    throw std::runtime_error("Could not open \"" + file_path.string() + "\"");
-  }
-
-  std::size_t  size;
-  std::uint8_t channels;
-  std::int32_t sample_rate;
-  std::uint8_t bits_per_sample;
-  if (!load_wav_file_header(in, channels, sample_rate, bits_per_sample, size))
-  {
-    std::runtime_error("Could not load wav header of \"" + file_path.string() +
-                       "\"");
-  }
-
-  auto data =
-      std::vector<unsigned char>(std::istreambuf_iterator<char>(in), {});
-
-  return std::make_unique<WavFile>(file_path,
-                                   channels,
-                                   sample_rate,
-                                   bits_per_sample,
-                                   size,
-                                   data);
-}
-
 } // namespace
 
 namespace dc
@@ -223,9 +193,43 @@ AssetDescription WavFile::read(const std::filesystem::path &file_path)
   AssetDescription asset_description;
   asset_description.read(in);
 
+  // Skip write_vector() length marker
+  in.seekg(sizeof(std::uint64_t), std::ios::cur);
+
   load_wav(file_path, in);
 
   return asset_description;
+}
+
+void WavFile::load_wav(const std::filesystem::path &file_path,
+                       std::ifstream               &in)
+{
+
+  if (!in.is_open())
+  {
+    throw std::runtime_error("Could not open \"" + file_path.string() + "\"");
+  }
+
+  std::size_t  size;
+  std::uint8_t channels;
+  std::int32_t sample_rate;
+  std::uint8_t bits_per_sample;
+
+  if (!load_wav_file_header(in, channels, sample_rate, bits_per_sample, size))
+  {
+    throw std::runtime_error("Could not load wav header of \"" +
+                             file_path.string() + "\"");
+  }
+
+  auto data =
+      std::vector<unsigned char>(std::istreambuf_iterator<char>(in), {});
+
+  name_            = file_path.string();
+  channels_        = channels;
+  sample_rate_     = sample_rate;
+  bits_per_sample_ = bits_per_sample;
+  size_            = size;
+  data_            = std::move(data);
 }
 
 } // namespace dc

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "audio_buffer.hpp"
+#include "entity.hpp"
 #include "math.hpp"
 
 #include <AL/al.h>
@@ -21,7 +22,7 @@ enum class AudioSourceState
 class AudioSource
 {
 public:
-  AudioSource();
+  AudioSource(Entity entity);
   ~AudioSource();
 
   void set_positon(const glm::vec3 &value);
@@ -36,6 +37,8 @@ public:
   AudioSourceState state() const;
 
 private:
+  Entity entity_;
+
   ALuint                       source_{};
   std::shared_ptr<AudioBuffer> buffer_{};
 };

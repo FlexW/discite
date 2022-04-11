@@ -11,7 +11,7 @@ namespace dc
 
 AudioEngine *AudioEngine::get_instance()
 {
-  static std::unique_ptr<AudioEngine> audio_engine{new AudioEngine};
+  static auto audio_engine = std::unique_ptr<AudioEngine>(new AudioEngine);
   return audio_engine.get();
 }
 
@@ -69,9 +69,9 @@ AudioEngine::~AudioEngine()
   }
 }
 
-std::shared_ptr<AudioSource> AudioEngine::create_source() const
+std::shared_ptr<AudioSource> AudioEngine::create_source(Entity entity) const
 {
-  return std::make_shared<AudioSource>();
+  return std::make_shared<AudioSource>(entity);
 }
 
 std::shared_ptr<AudioBuffer>

@@ -17,8 +17,13 @@ struct AudioSourceComponent
 
   bool looping_{false};
 
-  std::shared_ptr<AudioAsset>  audio_asset_{};
-  std::shared_ptr<AudioSource> audio_source_{};
+  bool start_on_create_{false};
+
+  std::shared_ptr<AudioAssetHandle> audio_asset_{};
+  AudioSource                      *audio_source_{};
+
+  void save(FILE *file) const;
+  void read(FILE *file);
 };
 
 } // namespace dc

@@ -18,7 +18,10 @@ void write_string(FILE *file, const std::string &str)
   assert(file);
   const auto length = str.size();
   std::fwrite(&length, sizeof(std::uint32_t), 1, file);
-  std::fwrite(str.c_str(), sizeof(char), length, file);
+  if (length > 0)
+  {
+    std::fwrite(str.c_str(), sizeof(char), length, file);
+  }
 }
 
 void read_string(FILE *file, std::string &str)
@@ -43,7 +46,11 @@ void write_string(std::ofstream &file, const std::string &str)
 {
   const auto length = str.size();
   file.write(reinterpret_cast<const char *>(&length), sizeof(std::uint32_t));
-  file.write(reinterpret_cast<const char *>(str.data()), sizeof(char) * length);
+  if (length > 0)
+  {
+    file.write(reinterpret_cast<const char *>(str.data()),
+               sizeof(char) * length);
+  }
 }
 
 void read_string(std::ifstream &file, std::string &str)
