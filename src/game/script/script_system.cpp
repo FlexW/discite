@@ -1,8 +1,10 @@
 #include "script_system.hpp"
+#include "assert.hpp"
 #include "component_types.hpp"
 #include "engine.hpp"
 #include "game_layer.hpp"
 #include "log.hpp"
+#include "physic/physic_events.hpp"
 #include "scene_events.hpp"
 #include "script_component.hpp"
 #include "script_engine.hpp"
@@ -81,6 +83,29 @@ bool ScriptSystem::on_event(const Event &event)
     on_component_destroy(dynamic_cast<const ComponentDestroyEvent &>(event));
     return false;
   }
+  else if (event_id == EntityCollisionBeginEvent::id)
+  {
+    on_entity_collision_begin(
+        dynamic_cast<const EntityCollisionBeginEvent &>(event));
+    return false;
+  }
+  else if (event_id == EntityCollisionEndEvent::id)
+  {
+    on_entity_collision_end(
+        dynamic_cast<const EntityCollisionEndEvent &>(event));
+    return false;
+  }
+  else if (event_id == EntityTriggerBeginEvent::id)
+  {
+    on_entity_trigger_begin(
+        dynamic_cast<const EntityTriggerBeginEvent &>(event));
+    return false;
+  }
+  else if (event_id == EntityTriggerEndEvent::id)
+  {
+    on_entity_trigger_end(dynamic_cast<const EntityTriggerEndEvent &>(event));
+    return false;
+  }
 
   return false;
 }
@@ -104,12 +129,54 @@ void ScriptSystem::on_component_construct(const ComponentConstructEvent &event)
       script_engine_->construct_entity(event.entity_, module_name);
   if (script_entity)
   {
+    script_entity->on_create();
     script_component.entity_script_ = std::move(script_entity);
   }
 }
 
 void ScriptSystem::on_component_destroy(const ComponentDestroyEvent & /*event*/)
 {
+}
+
+void ScriptSystem::on_entity_collision_begin(
+    const EntityCollisionBeginEvent &event)
+{
+  if (!event.collider_.has_component<ScriptComponent>())
+  {
+    return;
+  }
+  auto &component = event.collider_.component<ScriptComponent>();
+  component.entity_script_->on_collison_begin(event.collidee_);
+}
+
+void ScriptSystem::on_entity_collision_end(const EntityCollisionEndEvent &event)
+{
+  if (!event.collider_.has_component<ScriptComponent>())
+  {
+    return;
+  }
+  auto &component = event.collider_.component<ScriptComponent>();
+  component.entity_script_->on_collison_end(event.collidee_);
+}
+
+void ScriptSystem::on_entity_trigger_begin(const EntityTriggerBeginEvent &event)
+{
+  if (!event.trigger_.has_component<ScriptComponent>())
+  {
+    return;
+  }
+  auto &component = event.trigger_.component<ScriptComponent>();
+  component.entity_script_->on_trigger_begin(event.other_);
+}
+
+void ScriptSystem::on_entity_trigger_end(const EntityTriggerEndEvent &event)
+{
+  if (!event.trigger_.has_component<ScriptComponent>())
+  {
+    return;
+  }
+  auto &component = event.trigger_.component<ScriptComponent>();
+  component.entity_script_->on_trigger_end(event.other_);
 }
 
 } // namespace dc

@@ -53,8 +53,7 @@ namespace dc
 {
 
 RigidBody::RigidBody(Entity entity)
-    : PhysicActor{PhysicActorType::RigidBody},
-      entity_{entity}
+    : PhysicActor{entity, PhysicActorType::RigidBody}
 {
   DC_ASSERT(entity.has_component<RigidBodyComponent>(),
             "Entity has not rigid body component");
@@ -111,13 +110,11 @@ RigidBody::~RigidBody()
   rigid_actor_ = nullptr;
 }
 
-Entity RigidBody::entity() const { return entity_; }
-
 void RigidBody::sync_transform()
 {
   DC_ASSERT(rigid_actor_, "No rigid actor set");
 
-  auto       &transform_component = entity_.component<TransformComponent>();
+  auto &transform_component = get_entity().component<TransformComponent>();
   const auto &actor_pose          = rigid_actor_->getGlobalPose();
   transform_component.set_absolute_position(to_glm(actor_pose.p));
   transform_component.set_absolute_rotation(to_glm(actor_pose.q));
@@ -205,7 +202,7 @@ void RigidBody::set_mass(float mass)
 
   const auto actor = rigid_actor_->is<physx::PxRigidDynamic>();
   DC_ASSERT(actor, "Not a rigid dynamic actor");
-  entity_.component<RigidBodyComponent>().mass_ = mass;
+  get_entity().component<RigidBodyComponent>().mass_ = mass;
   physx::PxRigidBodyExt::setMassAndUpdateInertia(*actor, mass);
 }
 
@@ -423,7 +420,7 @@ void RigidBody::set_linear_drag(float value)
     return;
   }
 
-  entity_.component<RigidBodyComponent>().linear_drag_ = value;
+  get_entity().component<RigidBodyComponent>().linear_drag_ = value;
   rigid_actor_->is<physx::PxRigidDynamic>()->setLinearDamping(value);
 }
 
@@ -448,7 +445,7 @@ void RigidBody::set_angular_drag(float value)
     return;
   }
 
-  entity_.component<RigidBodyComponent>().angular_drag_ = value;
+  get_entity().component<RigidBodyComponent>().angular_drag_ = value;
   rigid_actor_->is<physx::PxRigidDynamic>()->setAngularDamping(value);
 }
 
@@ -526,18 +523,19 @@ void RigidBody::set_kinematic(bool value)
   rigid_actor_->is<physx::PxRigidDynamic>()->setRigidBodyFlag(
       physx::PxRigidBodyFlag::eKINEMATIC,
       value);
-  entity_.component<RigidBodyComponent>().is_kinematic_ = value;
+  get_entity().component<RigidBodyComponent>().is_kinematic_ = value;
 }
 
 bool RigidBody::is_kinematic() const
 {
-  return is_dynamic() && entity_.component<RigidBodyComponent>().is_kinematic_;
+  return is_dynamic() &&
+         get_entity().component<RigidBodyComponent>().is_kinematic_;
 }
 
 void RigidBody::set_gravity_disabled(bool value)
 {
   rigid_actor_->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, value);
-  entity_.component<RigidBodyComponent>().is_gravity_disabled_ = value;
+  get_entity().component<RigidBodyComponent>().is_gravity_disabled_ = value;
 }
 
 bool RigidBody::is_gravity_disabled() const

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "entity.hpp"
 namespace dc
 {
 
@@ -14,15 +15,19 @@ class PhysicActor
 public:
   virtual ~PhysicActor() = default;
 
+  Entity get_entity() const { return entity_; }
+
   PhysicActorType physic_actor_type() const { return physic_actor_type_; }
 
 protected:
-  PhysicActor(PhysicActorType physic_actor_type)
-      : physic_actor_type_{physic_actor_type}
+  PhysicActor(Entity entity, PhysicActorType physic_actor_type)
+      : entity_{entity},
+        physic_actor_type_{physic_actor_type}
   {
   }
 
 private:
+  Entity          entity_;
   PhysicActorType physic_actor_type_;
 };
 

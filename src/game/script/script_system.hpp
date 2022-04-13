@@ -1,5 +1,6 @@
 #pragma once
 
+#include "physic/physic_events.hpp"
 #include "scene.hpp"
 #include "scene_events.hpp"
 #include "script_engine.hpp"
@@ -27,6 +28,10 @@ private:
   void on_component_construct(const ComponentConstructEvent &event);
   void on_component_destroy(const ComponentDestroyEvent &event);
   void on_scene_loaded(const SceneLoadedEvent &event);
+  void on_entity_collision_begin(const EntityCollisionBeginEvent &event);
+  void on_entity_collision_end(const EntityCollisionEndEvent &event);
+  void on_entity_trigger_begin(const EntityTriggerBeginEvent &event);
+  void on_entity_trigger_end(const EntityTriggerEndEvent &event);
 };
 
 } // namespace dc

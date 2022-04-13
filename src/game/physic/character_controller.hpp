@@ -19,8 +19,6 @@ public:
                       physx::PxControllerManager &controller_manager);
   ~CharacterController();
 
-  Entity entity() const;
-
   void sync_transform();
 
   void set_has_gravity(bool value);
@@ -49,8 +47,6 @@ public:
   physx::PxController *px_controller() const;
 
 private:
-  Entity entity_;
-
   physx::PxMaterial *material_{};
 
   physx::PxController              *controller_{};

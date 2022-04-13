@@ -237,14 +237,14 @@ void PhysicScene::clear()
   // Remove controllers
   for (const auto &controller : controllers_)
   {
-    remove_controller_from_scene(controller.second->entity());
+    remove_controller_from_scene(controller.second->get_entity());
   }
   controllers_.clear();
 
   // Remove actors
   for (const auto &actor : actors_)
   {
-    remove_actor_from_scene(actor.second->entity());
+    remove_actor_from_scene(actor.second->get_entity());
   }
   actors_.clear();
 }

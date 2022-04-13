@@ -14,6 +14,8 @@ namespace dc
 
 class Monitor;
 
+// NOTE: If that enum gets modified, the corresponding enum in Key.cs needs to
+// be modified as well
 enum class Key : int
 {
   Undefined = 0,
@@ -77,6 +79,8 @@ enum class KeyAction
   Repeat,
 };
 
+// NOTE: If that enum gets modified, the corresponding enum in MouseButton.cs
+// needs to be modified as well
 enum class MouseButton : int
 {
   Undefined = 0,
@@ -253,7 +257,8 @@ public:
   int framebuffer_width() const;
   int framebuffer_height() const;
 
-  KeyAction key(Key value) const;
+  KeyAction         key(Key value) const;
+  MouseButtonAction mouse_button(MouseButton button) const;
 
   void dispatch_events();
   void swap_buffers();

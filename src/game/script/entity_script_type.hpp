@@ -1,5 +1,6 @@
 #pragma once
 
+#include "entity.hpp"
 #include "uuid.hpp"
 
 #include <mono/metadata/class.h>
@@ -19,7 +20,12 @@ struct EntityScriptType
   MonoClass *mono_class_{};
 
   MonoMethod *constructor_{};
+  MonoMethod *method_on_create_{};
   MonoMethod *method_on_update_{};
+  MonoMethod *method_on_collision_begin_{};
+  MonoMethod *method_on_collision_end_{};
+  MonoMethod *method_on_trigger_begin_{};
+  MonoMethod *method_on_trigger_end_{};
 
   EntityScriptType(const std::string &full_name,
                    const std::string &namespace_name,
@@ -28,7 +34,12 @@ struct EntityScriptType
                    MonoImage         *game_image);
 
   void construct(MonoObject *object, Uuid id);
+  void on_create(MonoObject *object);
   void on_update(MonoObject *object, float delta_time);
+  void on_collision_begin(MonoObject *object, Entity collidee);
+  void on_collision_end(MonoObject *object, Entity collidee);
+  void on_trigger_begin(MonoObject *object, Entity other);
+  void on_trigger_end(MonoObject *object, Entity other);
 
 private:
   static MonoClass  *get_class(MonoImage         *image,

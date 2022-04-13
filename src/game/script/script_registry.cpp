@@ -36,6 +36,11 @@ std::unordered_map<MonoType *, std::function<void(dc::Entity &)>>
     }                                                                          \
   }
 
+#define REGISTER_FUNCTION(module, name)                                        \
+  mono_add_internal_call(                                                      \
+      "Dc." #module "::" #name "_Native",                                      \
+      MONO_METHOD(dc::script_wrapper::Dc_##module##_##name))
+
 namespace dc::script_registry
 {
 
@@ -45,16 +50,21 @@ void register_all(MonoImage *core_image)
   REGISTER_COMPONENT_TYPE(TransformComponent, core_image);
 
   // entity
-  mono_add_internal_call(
-      "Dc.Entity::CreateComponent_Native",
-      MONO_METHOD(dc::script_wrapper::Dc_Entity_CreateComponent));
-  mono_add_internal_call(
-      "Dc.Entity::HasComponent_Native",
-      MONO_METHOD(dc::script_wrapper::Dc_Entity_HasComponent));
+  REGISTER_FUNCTION(Entity, CreateComponent);
+  REGISTER_FUNCTION(Entity, HasComponent);
+  REGISTER_FUNCTION(Entity, GetPosition);
+  REGISTER_FUNCTION(Entity, SetPosition);
+  REGISTER_FUNCTION(Entity, GetRotation);
+  REGISTER_FUNCTION(Entity, SetRotation);
+  REGISTER_FUNCTION(Entity, GetScale);
+  REGISTER_FUNCTION(Entity, SetScale);
 
   // logging
-  mono_add_internal_call("Dc.Log::LogMessage_Native",
-                         MONO_METHOD(dc::script_wrapper::Dc_Log_LogMessage));
+  REGISTER_FUNCTION(Log, LogMessage);
+
+  // input
+  REGISTER_FUNCTION(Input, IsKeyPressed);
+  REGISTER_FUNCTION(Input, IsMouseButtonPressed);
 }
 
 } // namespace dc::script_registry

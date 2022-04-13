@@ -23,21 +23,19 @@ namespace dc
 CharacterController::CharacterController(
     Entity                      entity,
     physx::PxControllerManager &controller_manager)
-    : PhysicActor{PhysicActorType::CharacterController},
-      entity_{entity}
+    : PhysicActor{entity, PhysicActorType::CharacterController}
 {
-  DC_ASSERT(entity_.has_component<CharacterControllerComponent>(),
+  DC_ASSERT(entity.has_component<CharacterControllerComponent>(),
             "Entity has not character controller component");
 
-  auto &controller_component =
-      entity_.component<CharacterControllerComponent>();
+  auto &controller_component = entity.component<CharacterControllerComponent>();
   controller_component.controller_ = this;
 
-  if (entity_.has_component<CapsuleColliderComponent>())
+  if (entity.has_component<CapsuleColliderComponent>())
   {
     create_capsule_collider_controller(controller_manager);
   }
-  else if (entity_.has_component<BoxColliderComponent>())
+  else if (entity.has_component<BoxColliderComponent>())
   {
     auto &collider = entity.component<BoxColliderComponent>();
     DC_ASSERT(!collider.character_controller_ && !collider.box_collider_,
@@ -50,9 +48,9 @@ CharacterController::CharacterController(
 
     physx::PxBoxControllerDesc desc{};
     desc.position          = to_physx_ext(entity.position() + collider.offset_);
-    desc.halfHeight        = (collider.size_.y * entity_.scale().y) / 2.0f;
-    desc.halfSideExtent    = (collider.size_.x * entity_.scale().x) / 2.0f;
-    desc.halfForwardExtent = (collider.size_.z * entity_.scale().z) / 2.0f;
+    desc.halfHeight        = (collider.size_.y * entity.scale().y) / 2.0f;
+    desc.halfSideExtent    = (collider.size_.x * entity.scale().x) / 2.0f;
+    desc.halfForwardExtent = (collider.size_.z * entity.scale().z) / 2.0f;
     desc.nonWalkableMode =
         physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING;
     desc.slopeLimit = std::max(
@@ -71,7 +69,7 @@ CharacterController::CharacterController(
   {
     DC_LOG_DEBUG("No collider component set for character controller. Add "
                  "capsule collider.");
-    entity_.add_component<CapsuleColliderComponent>();
+    entity.add_component<CapsuleColliderComponent>();
     create_capsule_collider_controller(controller_manager);
   }
 
@@ -93,14 +91,9 @@ CharacterController::~CharacterController()
   }
 }
 
-Entity CharacterController::CharacterController::entity() const
-{
-  return entity_;
-}
-
 void CharacterController::sync_transform()
 {
-  auto &component = entity_.component<TransformComponent>();
+  auto &component = get_entity().component<TransformComponent>();
 
   component.set_absolute_position(get_position());
 }
@@ -108,7 +101,7 @@ void CharacterController::sync_transform()
 void CharacterController::set_has_gravity(bool value)
 {
   has_gravity_ = value;
-  entity_.component<CharacterControllerComponent>().disable_gravity_ =
+  get_entity().component<CharacterControllerComponent>().disable_gravity_ =
       !has_gravity_;
 }
 
@@ -119,7 +112,7 @@ void CharacterController::set_slope_limit(float slope_limit_degree)
     controller_->setSlopeLimit(
         std::max(0.0f, glm::cos(glm::radians(slope_limit_degree))));
   }
-  entity_.component<CharacterControllerComponent>().slope_limit_degree_ =
+  get_entity().component<CharacterControllerComponent>().slope_limit_degree_ =
       slope_limit_degree;
 }
 
@@ -129,7 +122,7 @@ void CharacterController::set_step_offset(float offset)
   {
     controller_->setStepOffset(offset);
   }
-  entity_.component<CharacterControllerComponent>().step_offset_ = offset;
+  get_entity().component<CharacterControllerComponent>().step_offset_ = offset;
 }
 
 void CharacterController::set_position(const glm::vec3 &value)
@@ -137,18 +130,18 @@ void CharacterController::set_position(const glm::vec3 &value)
   DC_ASSERT(controller_, "No controller set");
   if (controller_->getType() == physx::PxControllerShapeType::eBOX)
   {
-    DC_ASSERT(entity_.has_component<BoxColliderComponent>(),
+    DC_ASSERT(get_entity().has_component<BoxColliderComponent>(),
               "No box collider component set");
 
-    auto &collider = entity_.component<BoxColliderComponent>();
+    auto &collider = get_entity().component<BoxColliderComponent>();
     controller_->setPosition(to_physx_ext(value + collider.offset_));
   }
   else if (controller_->getType() == physx::PxControllerShapeType::eCAPSULE)
   {
-    DC_ASSERT(entity_.has_component<CapsuleColliderComponent>(),
+    DC_ASSERT(get_entity().has_component<CapsuleColliderComponent>(),
               "No capsule collider component set");
 
-    auto &collider = entity_.component<CapsuleColliderComponent>();
+    auto &collider = get_entity().component<CapsuleColliderComponent>();
     controller_->setPosition(to_physx_ext(value + collider.offset_));
   }
   else
@@ -156,20 +149,20 @@ void CharacterController::set_position(const glm::vec3 &value)
     DC_FAIL("Unknown shape type");
   }
 
-  entity_.component<TransformComponent>().set_absolute_position(value);
+  get_entity().component<TransformComponent>().set_absolute_position(value);
 }
 
 void CharacterController::set_offset(const glm::vec3 &value)
 {
   if (controller_->getType() == physx::PxControllerShapeType::eBOX)
   {
-    entity_.component<BoxColliderComponent>().offset_ = value;
-    set_position(entity_.position());
+    get_entity().component<BoxColliderComponent>().offset_ = value;
+    set_position(get_entity().position());
   }
   else if (controller_->getType() == physx::PxControllerShapeType::eCAPSULE)
   {
-    entity_.component<CapsuleColliderComponent>().offset_ = value;
-    set_position(entity_.position());
+    get_entity().component<CapsuleColliderComponent>().offset_ = value;
+    set_position(get_entity().position());
   }
   else
   {
@@ -182,14 +175,14 @@ glm::vec3 CharacterController::get_position() const
   DC_ASSERT(controller_, "No controller set");
 
   auto position = to_glm(controller_->getPosition());
-  if (entity_.has_component<CapsuleColliderComponent>())
+  if (get_entity().has_component<CapsuleColliderComponent>())
   {
-    const auto &component = entity_.component<CapsuleColliderComponent>();
+    const auto &component = get_entity().component<CapsuleColliderComponent>();
     position -= component.offset_;
   }
-  else if (entity_.has_component<BoxColliderComponent>())
+  else if (get_entity().has_component<BoxColliderComponent>())
   {
-    const auto &component = entity_.component<BoxColliderComponent>();
+    const auto &component = get_entity().component<BoxColliderComponent>();
     position -= component.offset_;
   }
 
@@ -252,9 +245,10 @@ physx::PxController *CharacterController::px_controller() const
 void CharacterController::create_capsule_collider_controller(
     physx::PxControllerManager &controller_manager)
 {
+  auto        entity = get_entity();
   const auto &controller_component =
-      entity_.component<CharacterControllerComponent>();
-  auto &collider = entity_.component<CapsuleColliderComponent>();
+      entity.component<CharacterControllerComponent>();
+  auto &collider = entity.component<CapsuleColliderComponent>();
   DC_ASSERT(!collider.character_controller_ && !collider.capsule_collider_,
             "Collider is already used");
   collider.character_controller_ = this;
@@ -263,11 +257,11 @@ void CharacterController::create_capsule_collider_controller(
       collider.physic_material_.dynamic_friction_,
       collider.physic_material_.bounciness_);
 
-  const auto radius_scale = glm::max(entity_.scale().x, entity_.scale().z);
+  const auto radius_scale = glm::max(entity.scale().x, entity.scale().z);
 
   physx::PxCapsuleControllerDesc desc{};
-  desc.position        = to_physx_ext(entity_.position() + collider.offset_);
-  desc.height          = collider.height_ * entity_.scale().y;
+  desc.position        = to_physx_ext(entity.position() + collider.offset_);
+  desc.height          = collider.height_ * entity.scale().y;
   desc.radius          = collider.radius_ * radius_scale;
   desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING;
   desc.climbingMode    = physx::PxCapsuleClimbingMode::eCONSTRAINED;
@@ -286,37 +280,39 @@ void CharacterController::create_capsule_collider_controller(
 
 void CharacterController::set_size(const glm::vec3 &size)
 {
+  auto entity = get_entity();
   DC_ASSERT(controller_, "No controller set");
   DC_ASSERT(controller_->getType() == physx::PxControllerShapeType::eBOX,
             "Not a box controller");
-  DC_ASSERT(entity_.has_component<BoxColliderComponent>(),
-            "Not a box collider");
-  auto &collider = entity_.component<BoxColliderComponent>();
+  DC_ASSERT(entity.has_component<BoxColliderComponent>(), "Not a box collider");
+  auto &collider = entity.component<BoxColliderComponent>();
 
   const auto box_controller =
       static_cast<physx::PxBoxController *>(controller_);
 
-  box_controller->setHalfHeight((size.y * entity_.scale().y) / 2.0f);
-  box_controller->setHalfSideExtent((size.x * entity_.scale().x) / 2.0f);
-  box_controller->setHalfForwardExtent((size.z * entity_.scale().z) / 2.0f);
+  box_controller->setHalfHeight((size.y * entity.scale().y) / 2.0f);
+  box_controller->setHalfSideExtent((size.x * entity.scale().x) / 2.0f);
+  box_controller->setHalfForwardExtent((size.z * entity.scale().z) / 2.0f);
 
   collider.size_ = size;
 }
 
 void CharacterController::set_radius(float radius)
 {
+  auto entity = get_entity();
+
   DC_ASSERT(controller_, "No controller set");
   DC_ASSERT(controller_->getType() == physx::PxControllerShapeType::eCAPSULE,
             "Not a capsule controller");
-  DC_ASSERT(entity_.has_component<CapsuleColliderComponent>(),
+  DC_ASSERT(entity.has_component<CapsuleColliderComponent>(),
             "Not a capsule collider");
 
-  auto &collider = entity_.component<CapsuleColliderComponent>();
+  auto &collider = entity.component<CapsuleColliderComponent>();
 
   const auto capsule_controller =
       static_cast<physx::PxCapsuleController *>(controller_);
 
-  const auto radius_scale = glm::max(entity_.scale().x, entity_.scale().z);
+  const auto radius_scale = glm::max(entity.scale().x, entity.scale().z);
 
   capsule_controller->setRadius(radius * radius_scale);
 
@@ -325,36 +321,40 @@ void CharacterController::set_radius(float radius)
 
 void CharacterController::set_height(float height)
 {
+  auto entity = get_entity();
+
   DC_ASSERT(controller_, "No controller set");
   DC_ASSERT(controller_->getType() == physx::PxControllerShapeType::eCAPSULE,
             "Not a capsule controller");
-  DC_ASSERT(entity_.has_component<CapsuleColliderComponent>(),
+  DC_ASSERT(entity.has_component<CapsuleColliderComponent>(),
             "Not a capsule collider");
 
-  auto &collider = entity_.component<CapsuleColliderComponent>();
+  auto &collider = entity.component<CapsuleColliderComponent>();
 
   const auto capsule_controller =
       static_cast<physx::PxCapsuleController *>(controller_);
 
-  capsule_controller->setHeight(height * entity_.scale().y);
+  capsule_controller->setHeight(height * entity.scale().y);
 
   collider.height_ = height;
 }
 
 void CharacterController::resize(float height)
 {
+  auto entity = get_entity();
+
   DC_ASSERT(controller_, "No controller set");
   DC_ASSERT(controller_->getType() == physx::PxControllerShapeType::eCAPSULE,
             "Not a capsule controller");
-  DC_ASSERT(entity_.has_component<CapsuleColliderComponent>(),
+  DC_ASSERT(entity.has_component<CapsuleColliderComponent>(),
             "Not a capsule collider");
 
-  auto &collider = entity_.component<CapsuleColliderComponent>();
+  auto &collider = entity.component<CapsuleColliderComponent>();
 
   const auto capsule_controller =
       static_cast<physx::PxCapsuleController *>(controller_);
 
-  capsule_controller->resize(height * entity_.scale().y);
+  capsule_controller->resize(height * entity.scale().y);
 
   collider.height_ = height;
 }

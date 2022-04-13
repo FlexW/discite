@@ -42,8 +42,6 @@ public:
   RigidBody(Entity entity);
   ~RigidBody();
 
-  Entity entity() const;
-
   void sync_transform();
 
   void      set_translation(const glm::vec3 &value, bool autowake = true);
@@ -111,8 +109,6 @@ public:
   physx::PxRigidActor *px_rigid_actor() const;
 
 private:
-  Entity entity_;
-
   RigidBodyType rigid_body_type_;
 
   physx::PxRigidActor *rigid_actor_{};

@@ -1044,6 +1044,11 @@ KeyAction Window::key(Key value) const
   return to_key_action(action);
 }
 
+MouseButtonAction Window::mouse_button(MouseButton button) const
+{
+  return to_mouse_button_action(glfwGetMouseButton(window_, to_glfw(button)));
+}
+
 GLFWwindow *Window::handle() const { return window_; }
 
 bool Window::focused() const

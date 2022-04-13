@@ -1,5 +1,6 @@
 #pragma once
 
+#include "entity.hpp"
 #include "entity_script_type.hpp"
 #include "uuid.hpp"
 
@@ -19,7 +20,12 @@ public:
                        std::shared_ptr<EntityScriptType> type);
 
   void construct();
+  void on_create();
   void on_update(float delta_time);
+  void on_collison_begin(Entity collidee);
+  void on_collison_end(Entity collidee);
+  void on_trigger_begin(Entity collidee);
+  void on_trigger_end(Entity collidee);
 
 private:
   std::shared_ptr<EntityScriptType> type_{};

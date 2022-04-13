@@ -46,12 +46,29 @@ EntityScriptType::EntityScriptType(const std::string &full_name,
 void EntityScriptType::init_methods(MonoImage *core_image,
                                     MonoImage *game_image)
 {
-
+  // base methods
   constructor_ = get_method(core_image, "Dc.Entity:.ctor(ulong)");
   DC_ASSERT(constructor_, "Method not set");
 
+  method_on_collision_begin_ =
+      get_method(core_image, "Dc.Entity:OnCollisionBeginInternal(ulong)");
+  DC_ASSERT(method_on_collision_begin_, "Method not set");
+
+  method_on_collision_end_ =
+      get_method(core_image, "Dc.Entity:OnCollisionEndInternal(ulong)");
+  DC_ASSERT(method_on_collision_end_, "Method not set");
+
+  method_on_trigger_begin_ =
+      get_method(core_image, "Dc.Entity:OnTriggerBeginInternal(ulong)");
+  DC_ASSERT(method_on_trigger_begin_, "Method not set");
+
+  method_on_trigger_end_ =
+      get_method(core_image, "Dc.Entity:OnTriggerEndInternal(ulong)");
+  DC_ASSERT(method_on_trigger_end_, "Method not set");
+
+  // child methods
+  method_on_create_ = get_method(game_image, full_name_ + ":OnCreate()");
   method_on_update_ = get_method(game_image, full_name_ + ":OnUpdate(single)");
-  DC_ASSERT(method_on_update_, "Method not set");
 }
 
 MonoObject *EntityScriptType::call_method(MonoObject *object,
@@ -84,10 +101,47 @@ void EntityScriptType::construct(MonoObject *object, Uuid id)
   call_method(object, constructor_, param.data());
 }
 
+void EntityScriptType::on_create(MonoObject *object)
+{
+  call_method(object, method_on_create_);
+}
+
 void EntityScriptType::on_update(MonoObject *object, float delta_time)
 {
   std::array<void *, 1> args{{&delta_time}};
   call_method(object, method_on_update_, args.data());
+}
+
+void EntityScriptType::on_collision_begin(MonoObject *object, Entity collidee)
+{
+  auto id = collidee.id();
+
+  std::array<void *, 1> args{{&id}};
+  call_method(object, method_on_collision_begin_, args.data());
+}
+
+void EntityScriptType::on_collision_end(MonoObject *object, Entity collidee)
+{
+  auto id = collidee.id();
+
+  std::array<void *, 1> args{{&id}};
+  call_method(object, method_on_collision_end_, args.data());
+}
+
+void EntityScriptType::on_trigger_begin(MonoObject *object, Entity other)
+{
+  auto id = other.id();
+
+  std::array<void *, 1> args{{&id}};
+  call_method(object, method_on_trigger_begin_, args.data());
+}
+
+void EntityScriptType::on_trigger_end(MonoObject *object, Entity other)
+{
+  auto id = other.id();
+
+  std::array<void *, 1> args{{&id}};
+  call_method(object, method_on_trigger_end_, args.data());
 }
 
 std::string

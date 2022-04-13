@@ -39,9 +39,31 @@ void EntityScriptInstance::construct()
   type_->construct(mono_instance(), id_);
 }
 
+void EntityScriptInstance::on_create() { type_->on_create(mono_instance()); }
+
 void EntityScriptInstance::on_update(float delta_time)
 {
   type_->on_update(mono_instance(), delta_time);
+}
+
+void EntityScriptInstance::on_collison_begin(Entity collidee)
+{
+  type_->on_collision_begin(mono_instance(), collidee);
+}
+
+void EntityScriptInstance::on_collison_end(Entity collidee)
+{
+  type_->on_collision_end(mono_instance(), collidee);
+}
+
+void EntityScriptInstance::on_trigger_begin(Entity collidee)
+{
+  type_->on_trigger_begin(mono_instance(), collidee);
+}
+
+void EntityScriptInstance::on_trigger_end(Entity collidee)
+{
+  type_->on_trigger_end(mono_instance(), collidee);
 }
 
 } // namespace dc

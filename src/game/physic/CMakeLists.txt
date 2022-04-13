@@ -22,6 +22,7 @@ target_sources(game PRIVATE
   mesh_collider_data.cpp
   mesh_collider.cpp
   mesh_collider_component.cpp
+  physic_events.cpp
   )
 
 target_link_libraries(game PUBLIC
