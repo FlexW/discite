@@ -2,16 +2,24 @@
 
 #include "camera.hpp"
 
+#include <cstdint>
+#include <utility>
+
 namespace dc
 {
 
 struct CameraComponent
 {
-  bool   active_{true};
-  Camera camera_;
+  bool primary_{true};
 
-  CameraComponent() = default;
-  CameraComponent(float near_plane, float far_plane, float aspect_ratio);
+  ProjectionType projection_type_{ProjectionType::Perspective};
+
+  float fov_degree_{45.0f};
+  float perspective_near_{0.1f};
+  float perspective_far_{1000.0f};
+
+  float orthographic_near_{-1.0f};
+  float orthographic_far_{1.0f};
 
   void save(FILE *file) const;
   void read(FILE *file);

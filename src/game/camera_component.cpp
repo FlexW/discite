@@ -1,19 +1,30 @@
 #include "camera_component.hpp"
+#include "camera.hpp"
+#include "serialization.hpp"
 
 namespace dc
 {
 
-CameraComponent::CameraComponent(float near_plane,
-                                 float far_plane,
-                                 float aspect_ratio)
+void CameraComponent::save(FILE *file) const
 {
-  camera_.set_near_plane(near_plane);
-  camera_.set_far_plane(far_plane);
-  camera_.set_aspect_ratio(aspect_ratio);
+  write_value(file, primary_);
+  write_value(file, projection_type_);
+  write_value(file, fov_degree_);
+  write_value(file, perspective_near_);
+  write_value(file, perspective_far_);
+  write_value(file, orthographic_near_);
+  write_value(file, orthographic_far_);
 }
 
-void CameraComponent::save(FILE *file) const { camera_.save(file); }
-
-void CameraComponent::read(FILE *file) { camera_.read(file); }
+void CameraComponent::read(FILE *file)
+{
+  read_value(file, primary_);
+  read_value(file, projection_type_);
+  read_value(file, fov_degree_);
+  read_value(file, perspective_near_);
+  read_value(file, perspective_far_);
+  read_value(file, orthographic_near_);
+  read_value(file, orthographic_far_);
+}
 
 } // namespace dc

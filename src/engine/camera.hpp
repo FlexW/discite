@@ -2,8 +2,16 @@
 
 #include "math.hpp"
 
+#include <cstdint>
+
 namespace dc
 {
+
+enum class ProjectionType : std::uint8_t
+{
+  Orthographic = 0,
+  Perspective,
+};
 
 class Camera
 {

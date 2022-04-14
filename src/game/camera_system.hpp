@@ -24,8 +24,6 @@ public:
 private:
   std::weak_ptr<Scene> scene_{};
 
-  bool on_mouse_movement(const MouseMovementEvent &event);
-  bool on_window_resize(const WindowResizeEvent &event);
   void on_scene_loaded(const SceneLoadedEvent &event);
 };
 

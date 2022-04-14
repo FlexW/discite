@@ -7,6 +7,7 @@
 #include "directional_light_component.hpp"
 #include "engine.hpp"
 #include "entity.hpp"
+#include "glm/ext/matrix_clip_space.hpp"
 #include "physic/physic_system.hpp"
 #include "profiling.hpp"
 #include "render_system.hpp"
@@ -62,7 +63,7 @@ void GameLayer::init()
   if (!scene_manager_.active_scene())
   {
     // TODO: Load main scene from config file
-    scene_manager_.load_scene("scenes/myscene.dcscn");
+    // scene_manager_.load_scene("scenes/myscene.dcscn");
   }
 }
 
@@ -85,7 +86,18 @@ bool GameLayer::render()
   systems_context_.render(scene_render_info, view_render_info);
 
   const auto window = Engine::instance()->window();
-  view_render_info.set_viewport_info({0, 0, window->width(), window->height()});
+
+  const auto width  = window->width();
+  const auto height = window->height();
+  const auto aspect_ratio = static_cast<float>(width) / height;
+  const auto projection = glm::perspective(glm::radians(view_render_info.fov()),
+                                           aspect_ratio,
+                                           view_render_info.near_plane(),
+                                           view_render_info.far_plane());
+
+  view_render_info.set_viewport_info({0, 0, width, height});
+  view_render_info.set_aspect_ratio(aspect_ratio);
+  view_render_info.set_projection_matrix(projection);
 
   renderer_->render(scene_render_info, view_render_info);
 

@@ -103,7 +103,10 @@ void EntityScriptType::construct(MonoObject *object, Uuid id)
 
 void EntityScriptType::on_create(MonoObject *object)
 {
-  call_method(object, method_on_create_);
+  if (method_on_create_)
+  {
+    call_method(object, method_on_create_);
+  }
 }
 
 void EntityScriptType::on_update(MonoObject *object, float delta_time)
