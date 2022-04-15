@@ -63,7 +63,7 @@ void GameLayer::init()
   if (!scene_manager_.active_scene())
   {
     // TODO: Load main scene from config file
-    // scene_manager_.load_scene("scenes/game.dcscn");
+    scene_manager_.load_scene("scenes/game.dcscn");
   }
 }
 

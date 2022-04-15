@@ -21,9 +21,10 @@ namespace Dc
         {
             var enemy = Scene.CreateEntity("Enemy");
             enemy.Position = Position + new Vector3(spawnPoint, 1.5f, -60.0f);
+            enemy.Scale = new Vector3(2.0f, 1.0f, 1.0f);
 
             var mesh = enemy.CreateComponent<MeshComponent>();
-            mesh.SetMesh("meshes/cube.dcmesh");
+            mesh.SetMesh("meshes/enemy.dcmesh");
 
             enemy.CreateComponent<BoxColliderComponent>();
             var rigid_body = enemy.CreateComponent<RigidBodyComponent>();

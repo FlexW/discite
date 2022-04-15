@@ -61,13 +61,18 @@ void EditorLayer::shutdown() {}
 
 bool EditorLayer::update(float delta_time)
 {
-  if (is_playing_)
+  const auto game_layer = Engine::instance()->layer_stack()->layer<GameLayer>();
+  if (game_layer)
   {
-    if (const auto game_layer =
-            Engine::instance()->layer_stack()->layer<GameLayer>();
-        game_layer)
+    if (is_playing_)
     {
       game_layer->update(delta_time);
+    }
+
+    const auto scene = game_layer->scene();
+    if (scene && scene->is_ready())
+    {
+      scene->get()->remove_entities();
     }
   }
   return false;
