@@ -43,7 +43,7 @@ public:
   std::vector<DebugLineInfo> get_debug_lines() const;
 
 private:
-  bool is_debug_draw_{true};
+  bool is_debug_draw_{false};
 
   std::unordered_map<Uuid, std::unique_ptr<RigidBody>>           actors_;
   std::unordered_map<Uuid, std::unique_ptr<CharacterController>> controllers_;

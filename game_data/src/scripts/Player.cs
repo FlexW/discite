@@ -3,7 +3,7 @@ namespace Dc
     class Player : Entity
     {
         private float PlayerSpeed = 10.0f;
-        private float ProjectileSpeed = 10.0f;
+        private float ProjectileSpeed = 200.0f;
 
         public void OnUpdate(float deltaTime)
         {

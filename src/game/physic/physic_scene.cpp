@@ -1,6 +1,7 @@
 #include "physic_scene.hpp"
 #include "assert.hpp"
 #include "character_controller.hpp"
+#include "engine.hpp"
 #include "entity.hpp"
 #include "frame_data.hpp"
 #include "log.hpp"
@@ -64,6 +65,9 @@ namespace dc
 PhysicScene::PhysicScene()
     : sub_step_size_{default_physic_settings().fixed_timestep}
 {
+  is_debug_draw_ =
+      Engine::instance()->config()->config_value_bool("Physic", "debug", false);
+
   const auto &settings = default_physic_settings();
 
   const auto sdk = PhysXSdk::get_instance();
