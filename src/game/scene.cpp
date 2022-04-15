@@ -111,15 +111,24 @@ Entity Scene::create_entity(const std::string &name, Uuid uuid)
 void Scene::remove_entity(Uuid uuid)
 {
   DC_PROFILE_SCOPE("Scene::remove_entity()");
-  entities_to_remove.push_back(uuid);
+  const auto iter =
+      std::find(entities_to_remove.begin(), entities_to_remove.end(), uuid);
+  if (iter == entities_to_remove.end())
+  {
+    entities_to_remove.push_back(uuid);
+  }
 }
 
 void Scene::remove_entities()
 {
-  for (const auto &id : entities_to_remove)
+  if (entities_to_remove.size() > 0)
   {
-    const auto e = entity(id);
-    registry_.destroy(e.entity_handle());
+    for (const auto &id : entities_to_remove)
+    {
+      const auto e = entity(id);
+      registry_.destroy(e.entity_handle());
+    }
+    entities_to_remove.clear();
   }
 }
 
