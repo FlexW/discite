@@ -69,6 +69,10 @@ void CameraSystem::render(SceneRenderInfo & /*scene_render_info*/,
     }
     found = true;
   }
+  if (!found)
+  {
+    DC_LOG_WARN("No camera active");
+  }
 }
 
 bool CameraSystem::on_event(const Event &event)

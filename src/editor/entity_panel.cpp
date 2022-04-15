@@ -1,6 +1,7 @@
 #include "entity_panel.hpp"
 #include "audio/audio_listener_component.hpp"
 #include "audio/audio_source_component.hpp"
+#include "camera.hpp"
 #include "camera_component.hpp"
 #include "component_types.hpp"
 #include "directional_light_component.hpp"
@@ -35,6 +36,7 @@
 #include "sky_component.hpp"
 #include "transform_component.hpp"
 
+#include <array>
 #include <memory>
 
 namespace
@@ -330,6 +332,32 @@ void EntityPanel::on_render()
   {
     ImGui::Separator();
     ImGui::Text("Camera");
+
+    auto &component = entity_.component<CameraComponent>();
+
+    imgui_input("Primary", component.primary_);
+
+    const std::array<const char *, 2> items = {
+        "Orthographic",
+        "Perspective",
+    };
+    auto current_item = static_cast<int>(component.projection_type_);
+    if (ImGui::Combo("Projection", &current_item, items.data(), items.size()))
+    {
+        component.projection_type_ = static_cast<ProjectionType>(current_item);
+    }
+
+    if (component.projection_type_ == ProjectionType::Orthographic)
+    {
+      imgui_input("Near", component.orthographic_near_);
+      imgui_input("Far", component.orthographic_far_);
+    }
+    else if (component.projection_type_ == ProjectionType::Perspective)
+    {
+      imgui_input("Near", component.perspective_near_);
+      imgui_input("Far", component.perspective_far_);
+      imgui_input("Fov (Degree)", component.fov_degree_);
+    }
   }
 
   if (entity_.has_component<DirectionalLightComponent>())
