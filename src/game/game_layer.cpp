@@ -62,8 +62,11 @@ void GameLayer::init()
 
   if (!scene_manager_.active_scene())
   {
-    // TODO: Load main scene from config file
-    scene_manager_.load_scene("scenes/game.dcscn");
+    const auto main_scene_name =
+        Engine::instance()->config()->config_value_string("General",
+                                                          "main_scene",
+                                                          "main");
+    scene_manager_.load_scene(fmt::format("scenes/{}.dcscn", main_scene_name));
   }
 }
 

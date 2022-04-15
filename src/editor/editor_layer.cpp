@@ -87,12 +87,6 @@ void EditorLayer::setup_game()
   game_layer->init();
 
   DC_ASSERT(game_layer, "Game layer not loaded");
-  if (game_layer)
-  {
-    game_layer->set_scene(std::dynamic_pointer_cast<SceneAssetHandle>(
-        Engine::instance()->asset_cache()->load_asset(
-            Asset{"scenes/game.dcscn"})));
-  }
 }
 
 void EditorLayer::set_capture_mouse(bool value)
