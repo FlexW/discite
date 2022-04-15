@@ -16,9 +16,9 @@
 namespace dc
 {
 
-enum class RigidBodyType
+enum class RigidBodyType : std::uint8_t
 {
-  Static,
+  Static = 0,
   Dynamic,
 };
 

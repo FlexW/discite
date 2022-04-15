@@ -353,6 +353,15 @@ bool Entity::has_childs() const
 
 bool Entity::operator!=(const Entity &other) const { return !(*this == other); }
 
-bool Entity::valid() const { return entity_handle_ != entt::null; }
+bool Entity::valid() const
+{
+
+  const auto scene = scene_.lock();
+  if (!scene)
+  {
+    return false;
+  }
+  return entity_handle_ != entt::null && scene->registry_.valid(entity_handle_);
+}
 
 } // namespace dc

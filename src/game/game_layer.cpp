@@ -63,7 +63,7 @@ void GameLayer::init()
   if (!scene_manager_.active_scene())
   {
     // TODO: Load main scene from config file
-    // scene_manager_.load_scene("scenes/myscene.dcscn");
+    // scene_manager_.load_scene("scenes/game.dcscn");
   }
 }
 
@@ -73,6 +73,11 @@ bool GameLayer::update(float delta_time)
 {
   DC_PROFILE_SCOPE("GameLayer::update()");
   systems_context_.update(delta_time);
+  const auto scene = scene_manager_.active_scene();
+  if (scene && scene->is_ready())
+  {
+    scene->get()->remove_entities();
+  }
 
   return false;
 }

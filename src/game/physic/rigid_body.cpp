@@ -87,8 +87,6 @@ RigidBody::RigidBody(Entity entity)
 
     rigid_actor->setSolverIterationCounts(settings.solver_iterations,
                                           settings.solver_velocity_iterations);
-
-    rigid_actor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
   }
 
   add_collider(entity);
@@ -520,6 +518,9 @@ void RigidBody::set_kinematic(bool value)
     return;
   }
 
+  rigid_actor_->is<physx::PxRigidDynamic>()->setRigidBodyFlag(
+      physx::PxRigidBodyFlag::eENABLE_CCD,
+      !value);
   rigid_actor_->is<physx::PxRigidDynamic>()->setRigidBodyFlag(
       physx::PxRigidBodyFlag::eKINEMATIC,
       value);

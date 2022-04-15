@@ -16,14 +16,14 @@ MonoMethod *EntityScriptType::get_method(MonoImage         *image,
   const auto desc = mono_method_desc_new(name.c_str(), 0);
   if (!desc)
   {
-    DC_LOG_WARN("Can not find method desc {}", name);
+    DC_LOG_DEBUG("Can not find method desc {}", name);
     return {};
   }
 
   const auto method = mono_method_desc_search_in_image(desc, image);
   if (!method)
   {
-    DC_LOG_WARN("Can not find method {}", name);
+    DC_LOG_DEBUG("Can not find method {}", name);
     return {};
   }
 
@@ -111,8 +111,11 @@ void EntityScriptType::on_create(MonoObject *object)
 
 void EntityScriptType::on_update(MonoObject *object, float delta_time)
 {
-  std::array<void *, 1> args{{&delta_time}};
-  call_method(object, method_on_update_, args.data());
+  if (method_on_update_)
+  {
+    std::array<void *, 1> args{{&delta_time}};
+    call_method(object, method_on_update_, args.data());
+  }
 }
 
 void EntityScriptType::on_collision_begin(MonoObject *object, Entity collidee)

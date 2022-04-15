@@ -7,4 +7,5 @@ target_sources(game PRIVATE
   script_registry.cpp
   script_wrapper.cpp
   script_component.cpp
+  script_helper.cpp
   )

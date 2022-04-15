@@ -37,6 +37,8 @@ public:
   Entity entity(Uuid uuid);
   bool   exists(Uuid uuid) const;
 
+  void remove_entities();
+
   void             save(const std::filesystem::path &file_path,
                         const AssetDescription      &asset_description);
   AssetDescription read(const std::filesystem::path &file_path);
@@ -44,6 +46,8 @@ public:
 private:
   // TODO: Consider creating a proper API for entities
   friend Entity;
+
+  std::vector<Uuid> entities_to_remove;
 
   std::unordered_map<Uuid, entt::entity> uuid_to_entity_map_;
   entt::registry                         registry_;

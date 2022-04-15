@@ -13,6 +13,7 @@
 #include <mono/metadata/class.h>
 #include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/image.h>
+#include <mono/metadata/mono-config.h>
 
 #include <memory>
 #include <mono/metadata/object-forward.h>
@@ -160,7 +161,11 @@ ScriptEngine::~ScriptEngine()
   // this mono_jit_cleanup(s_MonoDomain);
 }
 
-void ScriptEngine::init_mono() { mono_jit_init("discite"); }
+void ScriptEngine::init_mono()
+{
+  mono_config_parse(nullptr);
+  mono_jit_init("discite");
+}
 
 void ScriptEngine::load_game_assembly(const std::filesystem::path &file_path)
 {

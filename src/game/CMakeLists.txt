@@ -42,7 +42,7 @@ target_include_directories(game SYSTEM PUBLIC
   )
 
 # Generate script runtime
-file(GLOB SCRIPT_RUNTIME_FILES ${CMAKE_SOURCE_DIR}/script_runtime/*.cs)
+file(GLOB_RECURSE SCRIPT_RUNTIME_FILES ${CMAKE_SOURCE_DIR}/script_runtime/*.cs)
 
 add_custom_command(OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DisciteRuntime.dll
     COMMENT "Generate script runtime"

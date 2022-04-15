@@ -86,7 +86,7 @@ void EditorLayer::setup_game()
   {
     game_layer->set_scene(std::dynamic_pointer_cast<SceneAssetHandle>(
         Engine::instance()->asset_cache()->load_asset(
-            Asset{"scenes/myscene.dcscn"})));
+            Asset{"scenes/game.dcscn"})));
   }
 }
 

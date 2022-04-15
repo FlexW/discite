@@ -90,6 +90,8 @@ void EntityPanel::on_render()
     if (ImGui::Button("Remove entity"))
     {
       entity_.remove();
+      entity_ = {};
+      return;
     }
   }
 
@@ -388,6 +390,7 @@ void EntityPanel::on_render()
                     component.module_name_,
                     ImGuiInputTextFlags_EnterReturnsTrue))
     {
+      // TODO: This needs to be made better
       ComponentConstructEvent event{entity_, ComponentType::Script};
       Engine::instance()->event_manager()->fire_event(event);
     }

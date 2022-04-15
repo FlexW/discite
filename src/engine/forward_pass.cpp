@@ -711,7 +711,7 @@ void ForwardPass::set_material(GlShader       &shader,
                                int            &texture_slot,
                                const Material &material)
 {
-  shader.set_uniform("albedo_color", glm::vec3(1.0f));
+  shader.set_uniform("albedo_color", glm::vec3{material.albedo_color()});
   if (material.albedo_texture())
   {
     const auto albedo_texture = material.albedo_texture();
@@ -760,7 +760,7 @@ void ForwardPass::set_material(GlShader       &shader,
     const auto emissive_texture = material.emissive_texture();
     emissive_texture->bind_unit(texture_slot);
     shader.set_uniform("emissive_tex", texture_slot);
-    shader.set_uniform("emissive", glm::vec3(1.0f));
+    shader.set_uniform("emissive", material.emissive_color());
     ++texture_slot;
   }
   else

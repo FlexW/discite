@@ -103,8 +103,16 @@ void MeshCollider::set_trigger(bool value)
 {
   for (const auto &shape : shapes_)
   {
-    shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !value);
-    shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, value);
+    if (value)
+    {
+      shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+      shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+    }
+    else
+    {
+      shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, false);
+      shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
+    }
   }
 
   entity_.component<MeshColliderComponent>().is_trigger_ = value;

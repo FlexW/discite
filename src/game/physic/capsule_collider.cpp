@@ -98,8 +98,16 @@ glm::vec3 CapsuleCollider::get_offset() const
 
 void CapsuleCollider::set_trigger(bool value)
 {
-  shape_->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !value);
-  shape_->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, value);
+  if (value)
+  {
+    shape_->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+    shape_->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+  }
+  else
+  {
+    shape_->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, false);
+    shape_->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, true);
+  }
   entity_.component<CapsuleColliderComponent>().is_trigger_ = value;
 }
 

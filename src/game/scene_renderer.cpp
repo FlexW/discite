@@ -22,8 +22,8 @@ SceneRenderer::SceneRenderer()
       });
 
   forward_pass_->set_output(
-      [this](const SceneRenderInfo &        scene_render_info,
-             const ViewRenderInfo &         view_render_info,
+      [this](const SceneRenderInfo         &scene_render_info,
+             const ViewRenderInfo          &view_render_info,
              std::shared_ptr<GlFramebuffer> scene_framebuffer,
              std::shared_ptr<GlCubeTexture> sky_irradiance_map)
       {
