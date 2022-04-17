@@ -58,14 +58,33 @@ void ViewportPanel::on_render()
     game_layer->systems_context()->render(scene_render_info, view_render_info);
 
     // set editor camera information
-    view_render_info.set_projection_matrix(editor_camera_.projection_matrix());
-    view_render_info.set_near_plane(editor_camera_.near_plane());
-    view_render_info.set_far_plane(editor_camera_.far_plane());
-    view_render_info.set_aspect_ratio(editor_camera_.aspect_ratio());
-    view_render_info.set_fov(editor_camera_.zoom());
-    view_render_info.set_view_matrix(editor_camera_.view_matrix());
-    view_render_info.set_view_position(editor_camera_.position());
-    view_render_info.set_viewport_info({0, 0, scene_width_, scene_height_});
+    if (is_playing_)
+    {
+      const auto aspect_ratio =
+          static_cast<float>(viewport_size.x) / viewport_size.y;
+      view_render_info.set_viewport_info(
+          {0, 0, viewport_size.x, viewport_size.y});
+      view_render_info.set_aspect_ratio(aspect_ratio);
+
+      const auto projection =
+          glm::perspective(glm::radians(view_render_info.fov()),
+                           aspect_ratio,
+                           view_render_info.near_plane(),
+                           view_render_info.far_plane());
+      view_render_info.set_projection_matrix(projection);
+    }
+    else
+    {
+      view_render_info.set_projection_matrix(
+          editor_camera_.projection_matrix());
+      view_render_info.set_near_plane(editor_camera_.near_plane());
+      view_render_info.set_far_plane(editor_camera_.far_plane());
+      view_render_info.set_aspect_ratio(editor_camera_.aspect_ratio());
+      view_render_info.set_fov(editor_camera_.zoom());
+      view_render_info.set_view_matrix(editor_camera_.view_matrix());
+      view_render_info.set_view_position(editor_camera_.position());
+      view_render_info.set_viewport_info({0, 0, scene_width_, scene_height_});
+    }
 
     view_render_info.set_framebuffer(scene_framebuffer_.get());
     renderer->render(scene_render_info, view_render_info);
