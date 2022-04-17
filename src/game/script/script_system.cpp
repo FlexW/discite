@@ -8,6 +8,7 @@
 #include "scene_events.hpp"
 #include "script_component.hpp"
 #include "script_engine.hpp"
+#include "window.hpp"
 
 #include <filesystem>
 #include <memory>
@@ -106,6 +107,11 @@ bool ScriptSystem::on_event(const Event &event)
     on_entity_trigger_end(dynamic_cast<const EntityTriggerEndEvent &>(event));
     return false;
   }
+  else if (event_id == KeyEvent::id)
+  {
+    on_key(dynamic_cast<const KeyEvent &>(event));
+    return false;
+  }
 
   return false;
 }
@@ -177,6 +183,32 @@ void ScriptSystem::on_entity_trigger_end(const EntityTriggerEndEvent &event)
   }
   auto &component = event.trigger_.component<ScriptComponent>();
   component.entity_script_->on_trigger_end(event.other_);
+}
+
+void ScriptSystem::on_key(const KeyEvent &event)
+{
+  auto scene = scene_.lock();
+  if (!scene)
+  {
+    return;
+  }
+
+  auto view = scene->all_entities_with<ScriptComponent>();
+  for (const auto &entity : view)
+  {
+    const auto &script_component = view.get<ScriptComponent>(entity);
+    if (script_component.entity_script_)
+    {
+      if (event.key_action_ == KeyAction::Press)
+      {
+        script_component.entity_script_->on_key_press(event.key_);
+      }
+      else if (event.key_action_ == KeyAction::Release)
+      {
+        script_component.entity_script_->on_key_release(event.key_);
+      }
+    }
+  }
 }
 
 } // namespace dc

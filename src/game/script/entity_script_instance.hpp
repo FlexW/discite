@@ -26,6 +26,8 @@ public:
   void on_collison_end(Entity collidee);
   void on_trigger_begin(Entity collidee);
   void on_trigger_end(Entity collidee);
+  void on_key_press(Key key);
+  void on_key_release(Key key);
 
 private:
   std::shared_ptr<EntityScriptType> type_{};

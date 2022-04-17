@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 namespace Dc
 {
 
-    public class Input
+    public static class Input
     {
         public static bool IsKeyPressed(Key key)
         {

@@ -66,6 +66,14 @@ void EntityScriptType::init_methods(MonoImage *core_image,
       get_method(core_image, "Dc.Entity:OnTriggerEndInternal(ulong)");
   DC_ASSERT(method_on_trigger_end_, "Method not set");
 
+  method_on_key_press_ =
+      get_method(core_image, "Dc.Entity:OnKeyPressInternal(Key)");
+  DC_ASSERT(method_on_key_press_, "Method not set");
+
+  method_on_key_release_ =
+      get_method(core_image, "Dc.Entity:OnKeyReleaseInternal(Key)");
+  DC_ASSERT(method_on_key_release_, "Method not set");
+
   // child methods
   method_on_create_ = get_method(game_image, full_name_ + ":OnCreate()");
   method_on_update_ = get_method(game_image, full_name_ + ":OnUpdate(single)");
@@ -148,6 +156,18 @@ void EntityScriptType::on_trigger_end(MonoObject *object, Entity other)
 
   std::array<void *, 1> args{{&id}};
   call_method(object, method_on_trigger_end_, args.data());
+}
+
+void EntityScriptType::on_key_press(MonoObject *object, Key key)
+{
+  std::array<void *, 1> args{{&key}};
+  call_method(object, method_on_key_press_, args.data());
+}
+
+void EntityScriptType::on_key_release(MonoObject *object, Key key)
+{
+  std::array<void *, 1> args{{&key}};
+  call_method(object, method_on_key_release_, args.data());
 }
 
 std::string

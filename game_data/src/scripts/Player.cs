@@ -5,6 +5,11 @@ namespace Dc
         private float PlayerSpeed = 10.0f;
         private float ProjectileSpeed = 200.0f;
 
+        public void OnCreate()
+        {
+            KeyPressEvent += OnKeyPress;
+        }
+
         public void OnUpdate(float deltaTime)
         {
             if (Input.IsKeyPressed(Key.A))
@@ -15,7 +20,11 @@ namespace Dc
             {
                 Position += Vector3.Right * PlayerSpeed * deltaTime;
             }
-            if (Input.IsKeyPressed(Key.Space))
+        }
+
+        void OnKeyPress(Key key)
+        {
+            if (key == Key.Space)
             {
                 // Create projectile entity
                 var projectile = Scene.CreateEntity("Projectile");

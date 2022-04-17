@@ -10,6 +10,9 @@ namespace Dc
         public event Action<Entity> TriggerBeginEvent;
         public event Action<Entity> TriggerEndEvent;
 
+        public event Action<Key> KeyPressEvent;
+        public event Action<Key> KeyReleaseEvent;
+
         protected Entity()
         {
             Id = 0;
@@ -95,6 +98,9 @@ namespace Dc
 
         private void OnTriggerBeginInternal(ulong id) => TriggerBeginEvent?.Invoke(new Entity(id));
         private void OnTriggerEndInternal(ulong id) => TriggerEndEvent?.Invoke(new Entity(id));
+
+        private void OnKeyPressInternal(Key key) => KeyPressEvent?.Invoke(key);
+        private void OnKeyReleaseInternal(Key key) => KeyReleaseEvent?.Invoke(key);
 
     };
 }

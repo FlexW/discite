@@ -66,4 +66,14 @@ void EntityScriptInstance::on_trigger_end(Entity collidee)
   type_->on_trigger_end(mono_instance(), collidee);
 }
 
+void EntityScriptInstance::on_key_press(Key key)
+{
+  type_->on_key_press(mono_instance(), key);
+}
+
+void EntityScriptInstance::on_key_release(Key key)
+{
+  type_->on_key_release(mono_instance(), key);
+}
+
 } // namespace dc

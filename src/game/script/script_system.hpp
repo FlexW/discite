@@ -5,6 +5,7 @@
 #include "scene_events.hpp"
 #include "script_engine.hpp"
 #include "system.hpp"
+#include "window.hpp"
 
 #include <memory>
 
@@ -32,6 +33,7 @@ private:
   void on_entity_collision_end(const EntityCollisionEndEvent &event);
   void on_entity_trigger_begin(const EntityTriggerBeginEvent &event);
   void on_entity_trigger_end(const EntityTriggerEndEvent &event);
+  void on_key(const KeyEvent &event);
 };
 
 } // namespace dc

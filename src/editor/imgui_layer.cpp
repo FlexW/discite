@@ -165,7 +165,8 @@ bool ImGuiLayer::on_key_event(const KeyEvent &event)
                              event.scancode_,
                              to_glfw(event.key_action_),
                              0);
-  return true;
+  // FIXME: Otherwise game will get no input in play mode
+  return false;
 }
 
 bool ImGuiLayer::on_windows_focus_event(const WindowFocusEvent &event)

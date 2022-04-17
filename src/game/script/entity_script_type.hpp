@@ -2,6 +2,7 @@
 
 #include "entity.hpp"
 #include "uuid.hpp"
+#include "window.hpp"
 
 #include <mono/metadata/class.h>
 #include <mono/metadata/object-forward.h>
@@ -26,6 +27,8 @@ struct EntityScriptType
   MonoMethod *method_on_collision_end_{};
   MonoMethod *method_on_trigger_begin_{};
   MonoMethod *method_on_trigger_end_{};
+  MonoMethod *method_on_key_press_{};
+  MonoMethod *method_on_key_release_{};
 
   EntityScriptType(const std::string &full_name,
                    const std::string &namespace_name,
@@ -40,6 +43,8 @@ struct EntityScriptType
   void on_collision_end(MonoObject *object, Entity collidee);
   void on_trigger_begin(MonoObject *object, Entity other);
   void on_trigger_end(MonoObject *object, Entity other);
+  void on_key_press(MonoObject *object, Key key);
+  void on_key_release(MonoObject *object, Key key);
 
 private:
   static MonoClass  *get_class(MonoImage         *image,
