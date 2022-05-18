@@ -1,5 +1,6 @@
 #pragma once
 
+#include "camera.hpp"
 #include "directional_light.hpp"
 #include "environment_map.hpp"
 #include "gl_framebuffer.hpp"
@@ -83,6 +84,9 @@ struct ViewportInfo
 class ViewRenderInfo
 {
 public:
+  void           set_projection_type(ProjectionType projection_type);
+  ProjectionType projection_type() const;
+
   void      set_view_matrix(const glm::mat4 &value);
   glm::mat4 view_matrix() const;
 
@@ -111,14 +115,15 @@ public:
   std::optional<GlFramebuffer *> framebuffer() const;
 
 private:
-  float        fov_{};
-  float        aspect_ratio_{};
-  float        near_plane_{};
-  float        far_plane_{};
-  ViewportInfo viewport_info_{};
-  glm::vec3    view_position_{0.0f};
-  glm::mat4    view_matrix_{1.0f};
-  glm::mat4    projection_matrix_{1.0f};
+  float          fov_{};
+  float          aspect_ratio_{};
+  float          near_plane_{};
+  float          far_plane_{};
+  ViewportInfo   viewport_info_{};
+  glm::vec3      view_position_{0.0f};
+  glm::mat4      view_matrix_{1.0f};
+  ProjectionType projection_type_{ProjectionType::Perspective};
+  glm::mat4      projection_matrix_{1.0f};
 
   std::optional<GlFramebuffer *> framebuffer_;
 };

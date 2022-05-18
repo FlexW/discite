@@ -52,15 +52,22 @@ void CameraSystem::render(SceneRenderInfo & /*scene_render_info*/,
       continue;
     }
 
-    DC_ASSERT(camera_component.projection_type_ == ProjectionType::Perspective,
-              "Only perspective projection supported");
     const auto &view_matrix =
         glm::inverse(transform_component.transform_matrix());
     view_render_info.set_fov(camera_component.fov_degree_);
-    view_render_info.set_near_plane(camera_component.perspective_near_);
-    view_render_info.set_far_plane(camera_component.perspective_far_);
+    if (camera_component.projection_type_ == ProjectionType::Perspective)
+    {
+      view_render_info.set_near_plane(camera_component.perspective_near_);
+      view_render_info.set_far_plane(camera_component.perspective_far_);
+    }
+    else
+    {
+      view_render_info.set_near_plane(camera_component.orthographic_near_);
+      view_render_info.set_far_plane(camera_component.orthographic_far_);
+    }
     view_render_info.set_view_position(transform_component.position());
     view_render_info.set_view_matrix(view_matrix);
+    view_render_info.set_projection_type(camera_component.projection_type_);
 
     if (found)
     {

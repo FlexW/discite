@@ -78,6 +78,16 @@ std::vector<DebugLineInfo> SceneRenderInfo::debug_lines() const
 
 EnvironmentMap SceneRenderInfo::env_map() const { return env_map_; }
 
+void ViewRenderInfo::set_projection_type(ProjectionType projection_type)
+{
+  projection_type_ = projection_type;
+}
+
+ProjectionType ViewRenderInfo::projection_type() const
+{
+  return projection_type_;
+}
+
 void ViewRenderInfo::set_view_matrix(const glm::mat4 &value)
 {
   view_matrix_ = value;

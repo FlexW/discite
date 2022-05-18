@@ -66,11 +66,23 @@ void ViewportPanel::on_render()
           {0, 0, viewport_size.x, viewport_size.y});
       view_render_info.set_aspect_ratio(aspect_ratio);
 
-      const auto projection =
-          glm::perspective(glm::radians(view_render_info.fov()),
-                           aspect_ratio,
-                           view_render_info.near_plane(),
-                           view_render_info.far_plane());
+      glm::mat4 projection;
+      if (view_render_info.projection_type() == ProjectionType::Perspective)
+      {
+        projection = glm::perspective(glm::radians(view_render_info.fov()),
+                                      aspect_ratio,
+                                      view_render_info.near_plane(),
+                                      view_render_info.far_plane());
+      }
+      else
+      {
+        projection = glm::ortho(-viewport_size.x * 0.5f,
+                                viewport_size.x * 0.5f,
+                                -viewport_size.y * 0.5f,
+                                viewport_size.y * 0.5f,
+                                view_render_info.near_plane(),
+                                view_render_info.far_plane());
+      }
       view_render_info.set_projection_matrix(projection);
     }
     else

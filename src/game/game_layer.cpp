@@ -2,6 +2,7 @@
 #include "animation_system.hpp"
 #include "audio/audio_asset.hpp"
 #include "audio/audio_system.hpp"
+#include "camera.hpp"
 #include "camera_component.hpp"
 #include "camera_system.hpp"
 #include "directional_light_component.hpp"
@@ -98,10 +99,23 @@ bool GameLayer::render()
   const auto width  = window->width();
   const auto height = window->height();
   const auto aspect_ratio = static_cast<float>(width) / height;
-  const auto projection = glm::perspective(glm::radians(view_render_info.fov()),
-                                           aspect_ratio,
-                                           view_render_info.near_plane(),
-                                           view_render_info.far_plane());
+  glm::mat4  projection;
+  if (view_render_info.projection_type() == ProjectionType::Perspective)
+  {
+    projection = glm::perspective(glm::radians(view_render_info.fov()),
+                                  aspect_ratio,
+                                  view_render_info.near_plane(),
+                                  view_render_info.far_plane());
+  }
+  else
+  {
+    projection = glm::ortho(-width * 0.5f,
+                            width * 0.5f,
+                            -height * 0.5f,
+                            height * 0.5f,
+                            view_render_info.near_plane(),
+                            view_render_info.far_plane());
+  }
 
   view_render_info.set_viewport_info({0, 0, width, height});
   view_render_info.set_aspect_ratio(aspect_ratio);
