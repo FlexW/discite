@@ -1,10 +1,11 @@
 #pragma once
 
-#include "gl_vertex_array.hpp"
 #include "material.hpp"
 #include "material_asset.hpp"
 #include "mesh.hpp"
+#include "platform/gl/gl_vertex_array.hpp"
 #include "skeleton.hpp"
+
 #include <memory>
 
 namespace dc

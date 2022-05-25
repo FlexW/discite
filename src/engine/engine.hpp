@@ -4,9 +4,10 @@
 #include "asset_importer_manager.hpp"
 #include "config.hpp"
 #include "event_manager.hpp"
-#include "gl.hpp"
 #include "layer_stack.hpp"
 #include "log.hpp"
+#include "platform/gl/gl.hpp"
+#include "platform/gl/gl_renderer.hpp"
 #include "time.hpp"
 #include "window.hpp"
 
@@ -45,6 +46,7 @@ private:
   std::unique_ptr<Config>       config_{std::make_unique<Config>()};
   LayerStack                    layer_stack_;
   std::shared_ptr<Window>       window_;
+  std::shared_ptr<Renderer>     renderer_;
   std::unique_ptr<EventManager> event_manager_{};
   std::unique_ptr<AssetCache> asset_cache_{std::make_unique<AssetCache>()};
   std::unique_ptr<AssetImporterManager> asset_importer_manager_{

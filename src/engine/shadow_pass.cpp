@@ -1,7 +1,7 @@
 #include "shadow_pass.hpp"
 #include "defer.hpp"
-#include "gl_texture_array.hpp"
 #include "log.hpp"
+#include "platform/gl/gl_texture_array.hpp"
 
 namespace dc
 {

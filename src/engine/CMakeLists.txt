@@ -31,15 +31,6 @@ target_sources(engine PRIVATE
   debug_draw.cpp
   event.cpp
   event_manager.cpp
-  gl_framebuffer.cpp
-  gl_index_buffer.cpp
-  gl_renderbuffer.cpp
-  gl_shader.cpp
-  gl_texture.cpp
-  gl_texture_array.cpp
-  gl_vertex_buffer.cpp
-  gl_vertex_array.cpp
-  gl.cpp
   image.cpp
   string.cpp
   time.cpp
@@ -53,9 +44,6 @@ target_sources(engine PRIVATE
   directional_light.cpp
   point_light.cpp
   layer_stack.cpp
-  gl_shader_storage_buffer.cpp
-  gl_cube_texture.cpp
-  gl_texture_view.cpp
   asset.cpp
   asset_description.cpp
   mesh_asset.cpp
@@ -99,3 +87,6 @@ target_link_libraries(engine PUBLIC
   )
 
 target_compile_features(engine PUBLIC cxx_std_17)
+
+add_subdirectory(graphic)
+add_subdirectory(platform)

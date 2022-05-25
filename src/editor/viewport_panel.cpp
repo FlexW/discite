@@ -258,14 +258,14 @@ void ViewportPanel::recreate_scene_framebuffer()
   FramebufferAttachmentCreateConfig color_config{};
   color_config.type_            = AttachmentType::Texture;
   color_config.format_          = GL_RGBA;
-  color_config.internal_format_ = GL_RGBA16F;
+  color_config.sized_format_    = GL_RGBA16F;
   color_config.width_           = scene_width_;
   color_config.height_          = scene_height_;
 
   FramebufferAttachmentCreateConfig depth_config{};
   depth_config.type_            = AttachmentType::Renderbuffer;
   depth_config.format_          = GL_DEPTH_COMPONENT;
-  depth_config.internal_format_ = GL_DEPTH_COMPONENT32F;
+  depth_config.sized_format_    = GL_DEPTH_COMPONENT32F;
   depth_config.width_           = scene_width_;
   depth_config.height_          = scene_height_;
 

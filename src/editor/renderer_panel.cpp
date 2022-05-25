@@ -159,7 +159,7 @@ void RendererPanel::recreate_debug_quad_framebuffer(int new_width,
 
   FramebufferAttachmentCreateConfig color_attachment_config{};
   color_attachment_config.format_          = GL_RGB;
-  color_attachment_config.internal_format_ = GL_RGB32F;
+  color_attachment_config.sized_format_    = GL_RGB32F;
   color_attachment_config.width_           = debug_quad_width_;
   color_attachment_config.height_          = debug_quad_height_;
   color_attachment_config.type_            = AttachmentType::Texture;

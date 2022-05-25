@@ -1,9 +1,9 @@
 #pragma once
 
 #include "asset_description.hpp"
-#include "gl_vertex_array.hpp"
 #include "material.hpp"
 #include "material_asset.hpp"
+#include "platform/gl/gl_vertex_array.hpp"
 
 #include <filesystem>
 #include <memory>

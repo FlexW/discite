@@ -409,17 +409,15 @@ void ForwardPass::set_ibl(GlShader         &shader,
                           int              &global_texture_slot,
                           const EnvMapData &env_map_data)
 {
-  shader.set_uniform("brdf_lut_tex", *brdf_lut_texture_, global_texture_slot);
+  shader.set_uniform("brdf_lut_tex", global_texture_slot);
   ++global_texture_slot;
 
-  shader.set_uniform("env_tex",
-                     *env_map_data.prefilter_tex_,
-                     global_texture_slot);
+  shader.set_uniform("env_tex", global_texture_slot);
   ++global_texture_slot;
 
-  shader.set_uniform("env_irradiance_tex",
-                     *env_map_data.irradiance_tex_,
-                     global_texture_slot);
+  env_map_data.irradiance_tex_->bind_unit(global_texture_slot);
+  shader.set_uniform("env_irradiance_tex", global_texture_slot);
+  shader.set_uniform("env_irradiance_tex", global_texture_slot);
   ++global_texture_slot;
 }
 

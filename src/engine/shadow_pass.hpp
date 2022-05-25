@@ -1,9 +1,9 @@
 #pragma once
 
 #include "frame_data.hpp"
-#include "gl_framebuffer.hpp"
-#include "gl_shader.hpp"
-#include "gl_texture_array.hpp"
+#include "platform/gl/gl_framebuffer.hpp"
+#include "platform/gl/gl_shader.hpp"
+#include "platform/gl/gl_texture_array.hpp"
 
 #include <functional>
 

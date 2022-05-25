@@ -2,7 +2,7 @@
 
 #include "asset.hpp"
 #include "asset_handle.hpp"
-#include "gl_texture.hpp"
+#include "platform/gl/gl_texture.hpp"
 
 #include <filesystem>
 #include <memory>

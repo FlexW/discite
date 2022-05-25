@@ -1,8 +1,8 @@
 #pragma once
 
 #include "asset.hpp"
-#include "gl_texture.hpp"
 #include "math.hpp"
+#include "platform/gl/gl_texture.hpp"
 #include "texture_asset.hpp"
 
 #include <memory>

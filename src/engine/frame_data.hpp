@@ -3,9 +3,9 @@
 #include "camera.hpp"
 #include "directional_light.hpp"
 #include "environment_map.hpp"
-#include "gl_framebuffer.hpp"
 #include "math.hpp"
 #include "mesh.hpp"
+#include "platform/gl/gl_framebuffer.hpp"
 #include "point_light.hpp"
 #include "skinned_mesh.hpp"
 

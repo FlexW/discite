@@ -6,6 +6,7 @@
 #include "log.hpp"
 #include "material_asset.hpp"
 #include "mesh_asset.hpp"
+#include "platform/gl/gl_renderer.hpp"
 #include "profiling.hpp"
 #include "skinned_mesh_asset.hpp"
 #include "spdlog/logger.h"
@@ -167,7 +168,8 @@ void Engine::init(int argc, char *argv[], bool show_window)
   layer_stack_.register_asset_loaders();
   load_config();
   init_logger();
-  window_ = std::make_shared<Window>(show_window);
+  window_   = std::make_shared<Window>(show_window);
+  renderer_ = std::make_shared<GlRenderer>();
   layer_stack_.init();
 }
 

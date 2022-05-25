@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gl_cube_texture.hpp"
+#include "platform/gl/gl_cube_texture.hpp"
 
 namespace dc
 {

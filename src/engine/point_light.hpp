@@ -1,7 +1,7 @@
 #pragma once
 
 #include "math.hpp"
-#include "gl_cube_texture.hpp"
+#include "platform/gl/gl_cube_texture.hpp"
 
 namespace dc
 {

@@ -1,14 +1,10 @@
 #pragma once
 
 #include "frame_data.hpp"
-#include "gl_cube_texture.hpp"
-#include "gl_framebuffer.hpp"
-#include "gl_shader.hpp"
-#include "gl_texture.hpp"
-#include "gl_vertex_array.hpp"
-#include "gl_vertex_buffer.hpp"
+#include "graphic/renderer.hpp"
 #include "render_pass.hpp"
 #include "shadow_pass.hpp"
+
 #include <memory>
 
 namespace dc
@@ -18,16 +14,16 @@ class ForwardPass
 {
 public:
   using Output =
-      std::function<void(const SceneRenderInfo &        scene_render_info,
-                         const ViewRenderInfo &         view_render_info,
-                         std::shared_ptr<GlFramebuffer> scene_framebuffer,
-                         std::shared_ptr<GlCubeTexture> sky_irradiance_map)>;
+      std::function<void(const SceneRenderInfo       &scene_render_info,
+                         const ViewRenderInfo        &view_render_info,
+                         std::shared_ptr<Framebuffer> scene_framebuffer,
+                         std::shared_ptr<CubeTexture> sky_irradiance_map)>;
 
-  ForwardPass();
+  ForwardPass(std::shared_ptr<Renderer> renderer);
 
   void execute(const SceneRenderInfo           &scene_render_info,
                const ViewRenderInfo            &view_render_info,
-               std::shared_ptr<GlTextureArray>  shadow_tex_array,
+               std::shared_ptr<TextureArray>    shadow_tex_array,
                const std::vector<glm::mat4>    &light_space_matrices,
                const std::vector<CascadeSplit> &cascade_frustums);
 
@@ -39,9 +35,11 @@ private:
 
   struct EnvMapData
   {
-    std::shared_ptr<GlCubeTexture> irradiance_tex_{};
-    std::shared_ptr<GlCubeTexture> prefilter_tex_{};
+    std::shared_ptr<CubeTexture> irradiance_tex_{};
+    std::shared_ptr<CubeTexture> prefilter_tex_{};
   };
+
+  std::shared_ptr<Renderer> renderer_{};
 
   std::unordered_map<std::string, EnvMapData> env_maps_;
 
@@ -54,23 +52,23 @@ private:
 
   int                            scene_framebuffer_width_{0};
   int                            scene_framebuffer_height_{0};
-  std::shared_ptr<GlFramebuffer> scene_framebuffer_{};
-  std::shared_ptr<GlFramebuffer> scene_framebuffer_msaa_{};
+  std::shared_ptr<Framebuffer>   scene_framebuffer_{};
+  std::shared_ptr<Framebuffer>   scene_framebuffer_msaa_{};
 
-  std::shared_ptr<GlTexture> white_texture_{};
-  std::shared_ptr<GlCubeTexture> dummy_cube_texture_{};
+  std::shared_ptr<Texture>     white_texture_{};
+  std::shared_ptr<CubeTexture> dummy_cube_texture_{};
 
-  std::shared_ptr<GlShader> line_shader_{};
-  std::shared_ptr<GlShader> depth_only_shader_{};
-  std::shared_ptr<GlShader> skinned_depth_only_shader_{};
-  std::shared_ptr<GlShader> mesh_shader_{};
-  std::shared_ptr<GlShader> skinned_mesh_shader_{};
+  std::shared_ptr<Shader> line_shader_{};
+  std::shared_ptr<Shader> depth_only_shader_{};
+  std::shared_ptr<Shader> skinned_depth_only_shader_{};
+  std::shared_ptr<Shader> mesh_shader_{};
+  std::shared_ptr<Shader> skinned_mesh_shader_{};
 
   static constexpr std::size_t    max_debug_lines_count{1024 * 8};
-  std::shared_ptr<GlVertexBuffer> lines_vertex_buffer_{};
-  std::shared_ptr<GlVertexArray>  lines_vertex_array_;
+  std::shared_ptr<VertexBuffer>   lines_vertex_buffer_{};
+  // std::shared_ptr<GlVertexArray>  lines_vertex_array_;
 
-  std::shared_ptr<GlTexture> brdf_lut_texture_{};
+  std::shared_ptr<Texture> brdf_lut_texture_{};
 
   float light_size_{2.0f};
   float shadow_bias_min_{0.0f};
