@@ -37,6 +37,7 @@ target_sources(engine PRIVATE
   gl_shader.cpp
   gl_texture.cpp
   gl_texture_array.cpp
+  gl_cube_texture_array.cpp
   gl_vertex_buffer.cpp
   gl_vertex_array.cpp
   gl.cpp

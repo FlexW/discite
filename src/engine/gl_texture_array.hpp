@@ -45,7 +45,7 @@ struct GlTextureArrayConfig
 class GlTextureArray
 {
 public:
-  GlTextureArray(const GlTextureArrayConfig &texture_array_data);
+  GlTextureArray(const GlTextureArrayConfig &config);
   ~GlTextureArray();
 
   GLuint id() const;

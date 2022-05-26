@@ -2,6 +2,7 @@
 
 #include "gl.hpp"
 #include "gl_cube_texture.hpp"
+#include "gl_cube_texture_array.hpp"
 #include "gl_renderbuffer.hpp"
 #include "gl_texture.hpp"
 #include "gl_texture_array.hpp"
@@ -33,13 +34,15 @@ struct FramebufferAttachmentCreateConfig
 using TextureArrayAttachment = std::shared_ptr<GlTextureArray>;
 using TextureAttachment      = std::shared_ptr<GlTexture>;
 using RenderbufferAttachment = std::shared_ptr<GlRenderbuffer>;
-using CubeTextureAttachment  = std::shared_ptr<GlCubeTexture>;
+using CubeTextureAttachment      = std::shared_ptr<GlCubeTexture>;
+using CubeTextureArrayAttachment = std::shared_ptr<GlCubeTextureArray>;
 
 using FramebufferAttachmentConfig =
     std::variant<TextureAttachment,
                  RenderbufferAttachment,
                  TextureArrayAttachment,
                  CubeTextureAttachment,
+                 CubeTextureArrayAttachment,
                  FramebufferAttachmentCreateConfig>;
 
 struct FramebufferConfig
@@ -52,7 +55,8 @@ struct FramebufferConfig
 using Attachment = std::variant<TextureAttachment,
                                 TextureArrayAttachment,
                                 RenderbufferAttachment,
-                                CubeTextureAttachment>;
+                                CubeTextureAttachment,
+                                CubeTextureArrayAttachment>;
 
 class GlFramebuffer
 {
@@ -76,6 +80,8 @@ public:
   Attachment depth_attachment() const;
   void       set_depth_attachment(std::shared_ptr<GlRenderbuffer> value);
   void       set_depth_attachment(std::shared_ptr<GlCubeTexture> value);
+  void       set_depth_attachment(std::shared_ptr<GlCubeTextureArray> value,
+                                  GLint                               layer);
   Attachment stencil_attachment() const;
 
   GLuint id() const;

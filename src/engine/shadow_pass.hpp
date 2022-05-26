@@ -1,11 +1,14 @@
 #pragma once
 
 #include "frame_data.hpp"
+#include "gl_cube_texture.hpp"
+#include "gl_cube_texture_array.hpp"
 #include "gl_framebuffer.hpp"
 #include "gl_shader.hpp"
 #include "gl_texture_array.hpp"
 
 #include <functional>
+#include <memory>
 
 namespace dc
 {
@@ -19,19 +22,20 @@ struct CascadeSplit
 class ShadowPass
 {
 public:
-  using Output =
-      std::function<void(const SceneRenderInfo          &scene_render_info,
-                         const ViewRenderInfo           &view_render_info,
-                         std::shared_ptr<GlTextureArray> shadow_tex_array,
-                         const std::vector<glm::mat4>    light_space_matrices,
-                         const std::vector<CascadeSplit> cascade_frustums)>;
+    using Output = std::function<void(
+        const SceneRenderInfo              &scene_render_info,
+        const ViewRenderInfo               &view_render_info,
+        std::shared_ptr<GlCubeTextureArray> point_light_shadow_tex_array,
+        std::shared_ptr<GlTextureArray>     shadow_tex_array,
+        const std::vector<glm::mat4>        light_space_matrices,
+        const std::vector<CascadeSplit>     cascade_frustums)>;
 
-  ShadowPass();
+    ShadowPass();
 
-  void execute(const SceneRenderInfo &scene_render_info,
-               const ViewRenderInfo  &view_render_info);
+    void execute(const SceneRenderInfo &scene_render_info,
+                 const ViewRenderInfo  &view_render_info);
 
-  void set_output(Output output);
+    void set_output(Output output);
 
 private:
   // TODO: Workaround. Expose public API
@@ -54,9 +58,10 @@ private:
   std::shared_ptr<GlShader> shadow_map_skinned_shader_{};
   std::shared_ptr<GlShader> shadow_map_transparent_shader_{};
 
-  std::shared_ptr<GlShader>      point_light_shadow_map_shader_{};
-  std::shared_ptr<GlShader>      point_light_shadow_map_skinned_shader_{};
-  std::shared_ptr<GlFramebuffer> point_light_framebuffer_{};
+  std::shared_ptr<GlShader>           point_light_shadow_map_shader_{};
+  std::shared_ptr<GlShader>           point_light_shadow_map_skinned_shader_{};
+  std::shared_ptr<GlCubeTextureArray> point_light_shadow_tex_array_{};
+  std::shared_ptr<GlFramebuffer>      point_light_framebuffer_{};
 
   void calc_shadow_cascades_splits(const ViewRenderInfo &view_render_info);
 
@@ -78,6 +83,8 @@ private:
   void init_shaders();
 
   void generate_point_light_shadows(const SceneRenderInfo &scene_render_info);
+
+  void recreate_point_light_shadow_tex_array();
 };
 
 } // namespace dc

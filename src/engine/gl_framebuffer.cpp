@@ -1,5 +1,6 @@
 #include "gl_framebuffer.hpp"
 #include "assert.hpp"
+#include "gl_cube_texture_array.hpp"
 #include "gl_renderbuffer.hpp"
 #include "gl_texture.hpp"
 #include "gl_texture_array.hpp"
@@ -175,6 +176,18 @@ void GlFramebuffer::attach(const FramebufferConfig &config)
                                 0);
       depth_attachment_ = cube_texture;
     }
+    else if (std::holds_alternative<std::shared_ptr<GlCubeTextureArray>>(
+                 attachment_config))
+    {
+        const auto cube_texture =
+            std::get<std::shared_ptr<GlCubeTextureArray>>(attachment_config);
+        glNamedFramebufferTextureLayer(id_,
+                                       GL_DEPTH_ATTACHMENT,
+                                       cube_texture->id(),
+                                       0,
+                                       0);
+        depth_attachment_ = cube_texture;
+    }
     else
     {
       DC_FAIL("Not implemented");
@@ -329,6 +342,18 @@ void GlFramebuffer::set_depth_attachment(std::shared_ptr<GlCubeTexture> value)
 {
   glNamedFramebufferTexture(id_, GL_DEPTH_ATTACHMENT, value->id(), 0);
   depth_attachment_ = value;
+}
+
+void GlFramebuffer::set_depth_attachment(
+    std::shared_ptr<GlCubeTextureArray> value,
+    GLint                               layer)
+{
+    glNamedFramebufferTextureLayer(id_,
+                                   GL_DEPTH_ATTACHMENT,
+                                   value->id(),
+                                   0,
+                                   layer * 6);
+    depth_attachment_ = value;
 }
 
 Attachment GlFramebuffer::stencil_attachment() const
